@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
     try {
         const { number, password } = req.body;
 
-        // ===== الخطوة 1: تسجيل الدخول =====
+        // خطوة 1: تسجيل الدخول
         const signinRes = await axios.post(
             'https://services.orange.eg/SignIn.svc/SignInUser',
             {
@@ -38,19 +38,20 @@ module.exports = async (req, res) => {
                     'Connection': 'Keep-Alive',
                     'Accept-Encoding': 'gzip',
                     'Content-Type': 'application/json; charset=UTF-8'
-                }
+                },
+                timeout: 20000
             }
         );
 
         const signinData = signinRes.data;
         
         if (!signinData.SignInUserResult || !signinData.SignInUserResult.AccessToken) {
-            return res.status(400).json({ error: 'رقم الهاتف أو كلمة المرور غير صحيحة' });
+            return res.json({ error: 'رقم الهاتف أو كلمة المرور غير صحيحة' });
         }
 
         const AccessToken = signinData.SignInUserResult.AccessToken;
 
-        // ===== الخطوة 2: توليد Token =====
+        // خطوة 2: توليد Token
         const genRes = await axios.post(
             'https://services.orange.eg/APIs/Profile/api/BasicAuthentication/Generate',
             {
@@ -66,20 +67,36 @@ module.exports = async (req, res) => {
                     'User-Agent': 'okhttp/4.10.0',
                     'Connection': 'Keep-Alive',
                     'Accept-Encoding': 'gzip',
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json; charset=UTF-8',
                     'AppVersion': '9.0.1',
                     'OsVersion': '13',
                     'IsAndroid': 'true',
                     'IsEasyLogin': 'false',
-                    'Token': AccessToken,
-                    'Content-Type': 'application/json; charset=UTF-8'
-                }
+                    'Token': AccessToken
+                },
+                timeout: 20000
             }
         );
 
         const Token = genRes.data.Token;
 
-        // ===== الخطوة 3: جلب الأسئلة =====
+        // خطوة 3: جلب الأسئلة
+        const qHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 13; 21061119AG Build/TP1A.220624.014; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/139.0.7258.158 Mobile Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
+            'Content-Type': 'application/json',
+            'sec-ch-ua-platform': '"Android"',
+            'sec-ch-ua': '"Not;A=Brand";v="99", "Android WebView";v="139", "Chromium";v="139"',
+            'sec-ch-ua-mobile': '?1',
+            'Origin': 'https://services.orange.eg',
+            'X-Requested-With': 'com.orange.mobinilandmf',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Dest': 'empty',
+            'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8'
+        };
+
         const questionsRes = await axios.post(
             'https://services.orange.eg/APIs/Ramadan2024/api/RamadanOffers/Fawazeer/Questions',
             {
@@ -88,28 +105,15 @@ module.exports = async (req, res) => {
                 Token: Token
             },
             {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Linux; Android 13; 21061119AG Build/TP1A.220624.014; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/139.0.7258.158 Mobile Safari/537.36',
-                    'Accept': 'application/json, text/plain, */*',
-                    'Accept-Encoding': 'gzip, deflate, br, zstd',
-                    'Content-Type': 'application/json',
-                    'sec-ch-ua-platform': '"Android"',
-                    'sec-ch-ua': '"Not;A=Brand";v="99", "Android WebView";v="139", "Chromium";v="139"',
-                    'sec-ch-ua-mobile': '?1',
-                    'Origin': 'https://services.orange.eg',
-                    'X-Requested-With': 'com.orange.mobinilandmf',
-                    'Sec-Fetch-Site': 'same-origin',
-                    'Sec-Fetch-Mode': 'cors',
-                    'Sec-Fetch-Dest': 'empty',
-                    'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8'
-                }
+                headers: qHeaders,
+                timeout: 20000
             }
         );
 
         const data = questionsRes.data;
 
         if (data.ErrorCode === 1) {
-            return res.status(400).json({ error: 'انت دخلت على الفوازير النهارده، جرب بكره' });
+            return res.json({ error: 'انت دخلت على الفوازير النهارده، جرب بكره' });
         }
 
         const questions = data.Questions;
@@ -127,7 +131,7 @@ module.exports = async (req, res) => {
             }
         }
 
-        // ===== الخطوة 4: إرسال الإجابات =====
+        // خطوة 4: إرسال الإجابات
         const submitRes = await axios.post(
             'https://services.orange.eg/APIs/Ramadan2024/api/RamadanOffers/Fawazeer/Submit',
             {
@@ -137,37 +141,21 @@ module.exports = async (req, res) => {
                 Answers: answersList
             },
             {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Linux; Android 13; 21061119AG Build/TP1A.220624.014; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/139.0.7258.158 Mobile Safari/537.36',
-                    'Accept': 'application/json, text/plain, */*',
-                    'Accept-Encoding': 'gzip, deflate, br, zstd',
-                    'Content-Type': 'application/json',
-                    'sec-ch-ua-platform': '"Android"',
-                    'sec-ch-ua': '"Not;A=Brand";v="99", "Android WebView";v="139", "Chromium";v="139"',
-                    'sec-ch-ua-mobile': '?1',
-                    'Origin': 'https://services.orange.eg',
-                    'X-Requested-With': 'com.orange.mobinilandmf',
-                    'Sec-Fetch-Site': 'same-origin',
-                    'Sec-Fetch-Mode': 'cors',
-                    'Sec-Fetch-Dest': 'empty',
-                    'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8'
-                }
+                headers: qHeaders,
+                timeout: 20000
             }
         );
 
         if (submitRes.data.ErrorDescription === 'FawazeerSuccess') {
-            return res.status(200).json({ success: true, message: '🎉 تم إرسال 250 ميجا بنجاح! استمتع.' });
+            return res.json({ success: true, message: '🎉 تم بنجاح! 250 ميجا في طريقها إليك.' });
         } else {
-            return res.status(200).json({ success: false, message: submitRes.data.ErrorDescription });
+            return res.json({ error: submitRes.data.ErrorDescription || 'فشل الإرسال' });
         }
 
     } catch (error) {
-        if (error.response) {
-            return res.status(500).json({ 
-                error: 'خطأ من أورنج: ' + error.response.status,
-                details: JSON.stringify(error.response.data).substring(0, 300)
-            });
-        }
-        return res.status(500).json({ error: 'حدث خطأ: ' + error.message });
+        const msg = error.response?.data 
+            ? JSON.stringify(error.response.data).substring(0, 300) 
+            : error.message;
+        return res.json({ error: msg });
     }
 };
