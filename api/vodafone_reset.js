@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { JSDOM } = require('jsdom');
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,29 +9,26 @@ module.exports = async (req, res) => {
 
     try {
         const { number, step, otp, newPassword } = req.body;
-        const session = axios.create({
-            headers: {
-                'User-Agent': 'vodafoneandroid',
-                'X-Requested-With': 'com.emeint.android.myservices',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            maxRedirects: 0,
-            validateStatus: s => s < 400 || s === 302
-        });
+        const baseHeaders = {
+            'User-Agent': 'vodafoneandroid',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        };
 
         // خطوة 1: طلب OTP
         if (step === 1 || !step) {
-            const initUrl = 'https://web.vodafone.com.eg/auth/realms/vf-realm/login-actions/reset-credentials?client_id=ana-vodafone-app';
-            const initRes = await session.get(initUrl);
+            const r1 = await axios.get(
+                'https://web.vodafone.com.eg/auth/realms/vf-realm/login-actions/reset-credentials?client_id=ana-vodafone-app',
+                { headers: baseHeaders, maxRedirects: 5, timeout: 20000 }
+            );
 
-            const dom = new JSDOM(initRes.data);
-            const form = dom.window.document.querySelector('form');
-            if (!form) return res.json({ error: 'فشل تحميل الصفحة' });
+            // استخراج action URL
+            const match = r1.data.match(/action="([^"]+)"/);
+            if (!match) return res.json({ error: 'فشل تحميل الصفحة' });
 
-            const actionUrl = form.getAttribute('action');
-            await session.post(actionUrl, new URLSearchParams({ username: number }), {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            const actionUrl = match[1].replace(/&amp;/g, '&');
+
+            await axios.post(actionUrl, new URLSearchParams({ username: number }), {
+                headers: baseHeaders, maxRedirects: 5, timeout: 20000
             });
 
             return res.json({ success: true, message: '✅ تم إرسال كود OTP إلى هاتفك', step: 2 });
@@ -44,38 +40,42 @@ module.exports = async (req, res) => {
                 return res.json({ error: 'مطلوب OTP وكلمة سر جديدة' });
             }
 
-            // إعادة تحميل الصفحة
-            const initUrl = 'https://web.vodafone.com.eg/auth/realms/vf-realm/login-actions/reset-credentials?client_id=ana-vodafone-app';
-            const initRes = await session.get(initUrl);
-            const dom1 = new JSDOM(initRes.data);
-            const form1 = dom1.window.document.querySelector('form');
-            if (!form1) return res.json({ error: 'فشل تحميل الصفحة' });
+            // إعادة الخطوات
+            const r1 = await axios.get(
+                'https://web.vodafone.com.eg/auth/realms/vf-realm/login-actions/reset-credentials?client_id=ana-vodafone-app',
+                { headers: baseHeaders, maxRedirects: 5, timeout: 20000 }
+            );
 
-            const actionUrl1 = form1.getAttribute('action');
-            await session.post(actionUrl1, new URLSearchParams({ username: number }), {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            const match1 = r1.data.match(/action="([^"]+)"/);
+            if (!match1) return res.json({ error: 'فشل تحميل الصفحة' });
+
+            const actionUrl1 = match1[1].replace(/&amp;/g, '&');
+
+            await axios.post(actionUrl1, new URLSearchParams({ username: number }), {
+                headers: baseHeaders, maxRedirects: 5, timeout: 20000
             });
 
             // إرسال OTP
-            const otpRes = await session.post(actionUrl1, new URLSearchParams({ username: number, smsCode: otp }), {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            const otpRes = await axios.post(actionUrl1, new URLSearchParams({ username: number, smsCode: otp }), {
+                headers: baseHeaders, maxRedirects: 5, timeout: 20000
             });
 
-            if (otpRes.data.includes('smsCode') || otpRes.data.includes('error')) {
-                return res.json({ error: 'الكود غير صحيح' });
+            if (otpRes.data.includes('smsCode') || otpRes.data.includes('Invalid')) {
+                return res.json({ error: '❌ الكود غير صحيح' });
             }
 
-            const dom2 = new JSDOM(otpRes.data);
-            const passForm = dom2.window.document.querySelector('form');
-            if (!passForm) return res.json({ error: 'فشل في صفحة كلمة المرور' });
+            // استخراج action النهائي
+            const match2 = otpRes.data.match(/action="([^"]+)"/);
+            if (!match2) return res.json({ error: 'فشل في صفحة كلمة المرور' });
 
-            const finalUrl = passForm.getAttribute('action');
-            await session.post(finalUrl, new URLSearchParams({
+            const finalUrl = match2[1].replace(/&amp;/g, '&');
+
+            await axios.post(finalUrl, new URLSearchParams({
                 username: number,
                 'password-new': newPassword,
                 'password-confirm': newPassword
             }), {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                headers: baseHeaders, maxRedirects: 5, timeout: 20000
             });
 
             return res.json({ success: true, message: '🎉 تم تغيير كلمة مرور فودافون بنجاح!' });
@@ -84,7 +84,7 @@ module.exports = async (req, res) => {
         return res.json({ error: 'خطوة غير معروفة' });
 
     } catch (error) {
-        const msg = error.response?.data ? error.response.data.substring(0, 300) : error.message;
+        const msg = error.message;
         return res.json({ error: msg });
     }
 };
