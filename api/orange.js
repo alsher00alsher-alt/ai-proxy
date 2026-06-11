@@ -4,81 +4,60 @@ module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
-    }
-
-    if (req.method !== 'POST') {
-        res.status(405).json({ error: 'Method not allowed' });
-        return;
-    }
+    if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+    if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
 
     try {
         const { number, password } = req.body;
 
         // خطوة 1: تسجيل الدخول
-        const signinRes = await axios.post(
-            'https://services.orange.eg/SignIn.svc/SignInUser',
-            {
-                appVersion: '9.0.1',
-                channel: {
-                    ChannelName: 'MobinilAndMe',
-                    Password: 'ig3yh*mk5l42@oj7QAR8yF'
-                },
-                dialNumber: number,
-                isAndroid: true,
-                lang: 'ar',
-                password: password
+        const r1 = await axios.post('https://services.orange.eg/SignIn.svc/SignInUser', {
+            appVersion: '9.0.1',
+            channel: { ChannelName: 'MobinilAndMe', Password: 'ig3yh*mk5l42@oj7QAR8yF' },
+            dialNumber: number,
+            isAndroid: true,
+            lang: 'ar',
+            password: password
+        }, {
+            headers: {
+                'User-Agent': 'okhttp/4.10.0',
+                'Connection': 'Keep-Alive',
+                'Accept-Encoding': 'gzip',
+                'Content-Type': 'application/json; charset=UTF-8'
             },
-            {
-                headers: {
-                    'User-Agent': 'okhttp/4.10.0',
-                    'Connection': 'Keep-Alive',
-                    'Accept-Encoding': 'gzip',
-                    'Content-Type': 'application/json; charset=UTF-8'
-                },
-                timeout: 20000
-            }
-        );
+            timeout: 20000
+        });
 
-        const signinData = signinRes.data;
-        
-        if (!signinData.SignInUserResult || !signinData.SignInUserResult.AccessToken) {
+        if (!r1.data.SignInUserResult?.AccessToken) {
             return res.json({ error: 'رقم الهاتف أو كلمة المرور غير صحيحة' });
         }
 
-        const AccessToken = signinData.SignInUserResult.AccessToken;
+        const AccessToken = r1.data.SignInUserResult.AccessToken;
 
         // خطوة 2: توليد Token
-        const genRes = await axios.post(
-            'https://services.orange.eg/APIs/Profile/api/BasicAuthentication/Generate',
-            {
-                ChannelName: 'MobinilAndMe',
-                ChannelPassword: 'ig3yh*mk5l42@oj7QAR8yF',
-                Dial: number,
-                Language: 'ar',
-                Module: '0',
-                Password: password
+        const r2 = await axios.post('https://services.orange.eg/APIs/Profile/api/BasicAuthentication/Generate', {
+            ChannelName: 'MobinilAndMe',
+            ChannelPassword: 'ig3yh*mk5l42@oj7QAR8yF',
+            Dial: number,
+            Language: 'ar',
+            Module: '0',
+            Password: password
+        }, {
+            headers: {
+                'User-Agent': 'okhttp/4.10.0',
+                'Connection': 'Keep-Alive',
+                'Accept-Encoding': 'gzip',
+                'Content-Type': 'application/json; charset=UTF-8',
+                'AppVersion': '9.0.1',
+                'OsVersion': '13',
+                'IsAndroid': 'true',
+                'IsEasyLogin': 'false',
+                'Token': AccessToken
             },
-            {
-                headers: {
-                    'User-Agent': 'okhttp/4.10.0',
-                    'Connection': 'Keep-Alive',
-                    'Accept-Encoding': 'gzip',
-                    'Content-Type': 'application/json; charset=UTF-8',
-                    'AppVersion': '9.0.1',
-                    'OsVersion': '13',
-                    'IsAndroid': 'true',
-                    'IsEasyLogin': 'false',
-                    'Token': AccessToken
-                },
-                timeout: 20000
-            }
-        );
+            timeout: 20000
+        });
 
-        const Token = genRes.data.Token;
+        const Token = r2.data.Token;
 
         // خطوة 3: جلب الأسئلة
         const qHeaders = {
@@ -97,20 +76,16 @@ module.exports = async (req, res) => {
             'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8'
         };
 
-        const questionsRes = await axios.post(
-            'https://services.orange.eg/APIs/Ramadan2024/api/RamadanOffers/Fawazeer/Questions',
-            {
-                Dial: number,
-                Language: 'ar',
-                Token: Token
-            },
-            {
-                headers: qHeaders,
-                timeout: 20000
-            }
-        );
+        const r3 = await axios.post('https://services.orange.eg/APIs/Ramadan2024/api/RamadanOffers/Fawazeer/Questions', {
+            Dial: number,
+            Language: 'ar',
+            Token: Token
+        }, {
+            headers: qHeaders,
+            timeout: 20000
+        });
 
-        const data = questionsRes.data;
+        const data = r3.data;
 
         if (data.ErrorCode === 1) {
             return res.json({ error: 'انت دخلت على الفوازير النهارده، جرب بكره' });
@@ -132,30 +107,24 @@ module.exports = async (req, res) => {
         }
 
         // خطوة 4: إرسال الإجابات
-        const submitRes = await axios.post(
-            'https://services.orange.eg/APIs/Ramadan2024/api/RamadanOffers/Fawazeer/Submit',
-            {
-                Dial: number,
-                Language: 'ar',
-                Token: Token,
-                Answers: answersList
-            },
-            {
-                headers: qHeaders,
-                timeout: 20000
-            }
-        );
+        const r4 = await axios.post('https://services.orange.eg/APIs/Ramadan2024/api/RamadanOffers/Fawazeer/Submit', {
+            Dial: number,
+            Language: 'ar',
+            Token: Token,
+            Answers: answersList
+        }, {
+            headers: qHeaders,
+            timeout: 20000
+        });
 
-        if (submitRes.data.ErrorDescription === 'FawazeerSuccess') {
-            return res.json({ success: true, message: '🎉 تم بنجاح! 250 ميجا في طريقها إليك.' });
+        if (r4.data.ErrorDescription === 'FawazeerSuccess') {
+            return res.json({ success: true, message: '🎉 تم إرسال 250 ميجا بنجاح!' });
         } else {
-            return res.json({ error: submitRes.data.ErrorDescription || 'فشل الإرسال' });
+            return res.json({ error: r4.data.ErrorDescription || 'فشل التفعيل' });
         }
 
     } catch (error) {
-        const msg = error.response?.data 
-            ? JSON.stringify(error.response.data).substring(0, 300) 
-            : error.message;
+        const msg = error.response?.data ? JSON.stringify(error.response.data).substring(0, 300) : error.message;
         return res.json({ error: msg });
     }
 };
