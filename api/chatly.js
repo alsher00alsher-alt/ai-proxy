@@ -11,17 +11,15 @@ module.exports = async (req, res) => {
         const { message } = req.body;
         if (!message) return res.json({ error: 'الرسالة مطلوبة' });
 
-        // تسجيل حساب جديد
-        const signup = await axios.post('https://chatlyapp.ai/api/v1/signup/', {}, {
-            headers: { 'User-Agent': 'okhttp/4.12.0', 'Content-Length': '0' },
+        const signup = await axios.post('https://chatlyapp.ai/api/v1/signup/', null, {
+            headers: { 'User-Agent': 'okhttp/4.12.0' },
             timeout: 15000
         });
         const token = signup.data.accessToken;
 
-        // إرسال الرسالة
         const chat = await axios.post('https://chatlyapp.ai/api/v1/chats', {
             model: 'gpt-5-nano',
-            systemContent: 'أنت مساعد ذكي ومفيد. أجب بالعربية.',
+            systemContent: 'أنت مساعد ذكي. أجب بالعربية.',
             text: message
         }, {
             headers: {
@@ -33,7 +31,6 @@ module.exports = async (req, res) => {
             responseType: 'text'
         });
 
-        // تجميع الرد من stream
         const lines = chat.data.split('\n');
         let finalText = '';
         for (const line of lines) {
