@@ -2,6 +2,16 @@ const axios = require('axios');
 
 const KEY = 'sk-SSm9WQhvSdToPglJTXv4jYM9RAz81nG2aR6DDG1HjqhsxumS';
 
+function calcFrames(seconds) {
+    const fps = 24;
+    let frames = seconds * fps;
+    // قاعدة 8n+1
+    frames = Math.floor(frames / 8) * 8 + 1;
+    if (frames > 441) frames = 441;
+    if (frames < 81) frames = 81;
+    return frames;
+}
+
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -10,9 +20,9 @@ module.exports = async (req, res) => {
     if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
 
     try {
-        const { prompt, video_id, mode, image_url } = req.body;
+        const { prompt, video_id, image_url, seconds } = req.body;
 
-        // لو عايز يستعلم عن فيديو موجود
+        // استعلام عن فيديو موجود
         if (video_id) {
             const statusRes = await axios.get(
                 `https://apihub.agnes-ai.com/agnesapi?video_id=${video_id}`,
@@ -30,16 +40,18 @@ module.exports = async (req, res) => {
         // إنشاء فيديو جديد
         if (!prompt) return res.json({ error: 'الوصف مطلوب' });
 
+        const duration = Math.min(Math.max(parseInt(seconds) || 5, 5), 120);
+        const num_frames = calcFrames(duration);
+
         const payload = {
             model: 'agnes-video-v2.0',
             prompt: prompt,
-            num_frames: 121,
+            num_frames: num_frames,
             frame_rate: 24,
             height: 768,
             width: 1152
         };
 
-        // لو فيه صورة
         if (image_url) {
             payload.image = image_url;
         }
@@ -59,7 +71,9 @@ module.exports = async (req, res) => {
             task_id: data.task_id || data.id,
             video_id: data.video_id,
             status: data.status,
-            message: '🎬 تم إنشاء مهمة الفيديو. استعلم عن النتيجة بعد دقائق.'
+            seconds: duration,
+            frames: num_frames,
+            message: `🎬 تم إنشاء مهمة الفيديو (${duration} ثانية). استعلم عن النتيجة بعد دقائق.`
         });
 
     } catch (error) {
