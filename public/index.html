@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ahmed AI</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    
+    <style>
+        :root {
+            --bg: #0a0e14; --primary: #2563eb; --success: #059669;
+            --border: #1f2937; --text: #e2e8f0; --muted: #9ca3af;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body {
+            font-family: system-ui, sans-serif; background: var(--bg);
+            color: var(--text); height: 100vh; height: 100dvh;
+            overflow: hidden; position: fixed; width: 100%;
+        }
+        .login-screen {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 100%; gap: 20px; padding: 30px;
+        }
+        .login-screen .logo { font-size: 64px; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        .login-screen h1 { font-size: 28px; color: #60a5fa; }
+        .login-screen p { color: var(--muted); text-align: center; }
+        .google-btn {
+            display: flex; align-items: center; gap: 12px;
+            background: #fff; color: #1f2937; border: none;
+            padding: 14px 28px; border-radius: 28px;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .google-btn:active { transform: scale(0.96); }
+        .google-btn img { width: 24px; height: 24px; }
+        
+        .app { display:none; flex-direction:column; height:100%; }
+        .app.show { display:flex; }
+        
+        .header {
+            background: #0f172a; padding: 10px 14px;
+            display:flex; align-items:center; justify-content:space-between;
+            border-bottom:1px solid var(--border); z-index:20;
+        }
+        .header-title { font-size:18px; font-weight:700; color:#60a5fa; }
+        .header-user { display:flex; align-items:center; gap:8px; }
+        .header-user img { width:30px; height:30px; border-radius:50%; }
+        .logout-btn {
+            background:none; border:1px solid var(--border);
+            color:var(--muted); padding:4px 10px; border-radius:12px;
+            font-size:12px; cursor:pointer;
+        }
+        
+        .content { flex:1; overflow:hidden; position:relative; }
+        .page {
+            position:absolute; top:0; left:0; right:0; bottom:0;
+            display:flex; flex-direction:column;
+            opacity:0; pointer-events:none; transition:opacity 0.2s;
+        }
+        .page.active { opacity:1; pointer-events:auto; position:relative; }
+        
+        .scroll-area {
+            flex:1; overflow-y:auto; padding:14px;
+            display:flex; flex-direction:column; gap:10px;
+        }
+        
+        .msg {
+            display:flex; gap:8px; max-width:88%;
+            animation: fadeUp 0.25s;
+        }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+        .msg.user { align-self:flex-end; flex-direction:row-reverse; }
+        .msg.bot { align-self:flex-start; }
+        .avatar {
+            width:32px; height:32px; border-radius:50%;
+            overflow:hidden; flex-shrink:0; background:#1e293b;
+        }
+        .avatar img { width:100%; height:100%; object-fit:cover; }
+        .bubble {
+            padding:10px 14px; border-radius:16px;
+            font-size:15px; line-height:1.6; word-break:break-word;
+        }
+        .user .bubble { background:#1d4ed8; border-bottom-right-radius:4px; }
+        .bot .bubble { background:#1e293b; border:1px solid var(--border); border-bottom-left-radius:4px; }
+        
+        .typing {
+            display:flex; gap:4px; padding:10px 14px; align-self:flex-start;
+            background:#1e293b; border:1px solid var(--border);
+            border-radius:16px; border-bottom-left-radius:4px;
+        }
+        .typing span {
+            width:6px; height:6px; border-radius:50%;
+            background:#60a5fa; animation:bounce 1.4s infinite;
+        }
+        .typing span:nth-child(2){animation-delay:0.2s}
+        .typing span:nth-child(3){animation-delay:0.4s}
+        @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-8px)} }
+        
+        .empty {
+            flex:1; display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            color:var(--muted); text-align:center; gap:8px;
+        }
+        .empty .icon { font-size:48px; }
+        
+        .media-box {
+            background:#0f172a; border-radius:16px;
+            border:1px solid var(--border); overflow:hidden;
+            margin-bottom:10px; min-height:180px;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .media-box img, .media-box video {
+            width:100%; max-height:50vh; object-fit:contain;
+            background:#000; display:none;
+        }
+        .media-empty { color:var(--muted); text-align:center; padding:20px; }
+        
+        .loading { text-align:center; padding:20px; display:none; }
+        .spinner {
+            width:32px; height:32px; border:3px solid var(--border);
+            border-top-color:#60a5fa; border-radius:50%;
+            animation:spin 1s linear infinite; margin:0 auto 10px;
+        }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        
+        .actions { display:none; gap:8px; margin-bottom:10px; }
+        .btn {
+            flex:1; color:#fff; border:none; border-radius:18px;
+            padding:10px; font-size:14px; font-weight:600;
+            cursor:pointer; text-align:center; background:#1e293b;
+        }
+        .btn-dl { background:var(--success); }
+        
+        .input-bar {
+            padding:8px 14px 14px;
+            background:linear-gradient(to top, #0f172a 80%, transparent);
+            flex-shrink:0; z-index:10;
+        }
+        .input-row {
+            display:flex; align-items:center; gap:6px;
+            background:#1e293b; border:1px solid var(--border);
+            border-radius:22px; padding:3px 3px 3px 12px;
+            max-width:600px; margin:0 auto;
+        }
+        .input-row input {
+            flex:1; background:none; border:none;
+            color:var(--text); font-size:15px; outline:none;
+            padding:8px 0;
+        }
+        .input-row input::placeholder { color:#4b5563; }
+        .send-btn {
+            width:36px; height:36px; border-radius:50%;
+            background:var(--primary); border:none; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .send-btn svg { width:15px; height:15px; fill:#fff; }
+        
+        .tabs {
+            display:flex; gap:6px; padding:6px 14px;
+            background:#0f172a; border-top:1px solid var(--border);
+            flex-shrink:0; z-index:10;
+        }
+        .tab {
+            flex:1; text-align:center; padding:10px;
+            border-radius:18px; border:1px solid var(--border);
+            background:#1e293b; color:var(--muted);
+            font-size:13px; font-weight:600; cursor:pointer;
+        }
+        .tab.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+    </style>
+</head>
+<body>
+
+<div id="login-screen" class="login-screen">
+    <div class="logo">🤖</div>
+    <h1>Ahmed AI</h1>
+    <p>سجل دخولك بحساب Google للاستمتاع بكل الميزات</p>
+    <button class="google-btn" onclick="loginWithGoogle()">
+        <img src="https://www.google.com/favicon.ico" alt="Google">
+        تسجيل الدخول بـ Google
+    </button>
+</div>
+
+<div id="app" class="app">
+    <div class="header">
+        <span class="header-title">🤖 Ahmed AI</span>
+        <div class="header-user">
+            <img id="user-photo" src="" alt="User">
+            <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
+        </div>
+    </div>
+    
+    <div class="content">
+        <div class="page active" id="page-chat">
+            <div class="scroll-area" id="chat-scroll">
+                <div class="empty"><div class="icon">🧠</div><h2>أهلاً بك في Ahmed AI</h2><p>اسألني أي شيء</p></div>
+            </div>
+            <div class="input-bar">
+                <div class="input-row">
+                    <input type="text" id="chat-input" placeholder="اسأل أي شيء..." autocomplete="off">
+                    <button class="send-btn" id="chat-send">
+                        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page" id="page-img">
+            <div class="scroll-area">
+                <div class="media-box" id="img-box">
+                    <div class="media-empty" id="img-empty"><div class="icon">🎨</div><p>اكتب وصف الصورة أدناه</p></div>
+                    <img id="img-display" style="display:none;">
+                    <div class="loading" id="img-loading"><div class="spinner"></div><p>🎨 جاري الرسم...</p></div>
+                </div>
+                <div class="actions" id="img-actions">
+                    <button class="btn btn-dl" id="img-dl">📥 تحميل</button>
+                    <button class="btn" id="img-new">🔄 جديد</button>
+                </div>
+            </div>
+            <div class="input-bar">
+                <div class="input-row">
+                    <input type="text" id="img-input" placeholder="وصف الصورة..." autocomplete="off">
+                    <button class="send-btn" id="img-send">
+                        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page" id="page-vid">
+            <div class="scroll-area">
+                <div class="media-box" id="vid-box">
+                    <div class="media-empty" id="vid-empty"><div class="icon">🎬</div><p>اكتب وصف الفيديو أدناه</p></div>
+                    <video id="vid-display" controls style="display:none;"></video>
+                    <div class="loading" id="vid-loading">
+                        <div class="spinner"></div>
+                        <p>🎬 جاري إنشاء الفيديو...</p>
+                    </div>
+                </div>
+                <div class="actions" id="vid-actions">
+                    <button class="btn btn-dl" id="vid-dl">📥 تحميل</button>
+                    <button class="btn" id="vid-new">🔄 جديد</button>
+                </div>
+            </div>
+            <div class="input-bar">
+                <div class="input-row">
+                    <input type="text" id="vid-input" placeholder="وصف الفيديو..." autocomplete="off">
+                    <button class="send-btn" id="vid-send">
+                        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <div class="tab active" data-tab="chat">💬 شات</div>
+        <div class="tab" data-tab="img">🎨 صور</div>
+        <div class="tab" data-tab="vid">🎬 فيديو</div>
+    </div>
+</div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyBv3s0IJ5BAUEDGl8eCTDwvx6adsp_Dz0U",
+    authDomain: "ahmed-d9554.firebaseapp.com",
+    projectId: "ahmed-d9554",
+    storageBucket: "ahmed-d9554.firebasestorage.app",
+    messagingSenderId: "4260878632",
+    appId: "1:4260878632:ios:e1717176f2e88ee250581d"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').classList.add('show');
+        document.getElementById('user-photo').src = user.photoURL || '';
+        document.getElementById('header-title').textContent = '🤖 Ahmed AI - ' + (user.displayName || '');
+    } else {
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('app').classList.remove('show');
+    }
+});
+
+function loginWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithRedirect(provider);
+}
+
+function logout() {
+    auth.signOut();
+}
+
+// ========== التطبيق ==========
+const BASE = 'https://ai-proxy-eosin.vercel.app/api';
+const SP = 'اسمك "Ahmed AI". صانعك اسمه "احمد الشاعر". خاطبني بـ "يا أحمد". تكلم بالعربية.';
+const AVATARS = {
+    'agnes': 'https://i.ibb.co/S7XTd6CZ/file-00000000db1471f4802756b613dec613.png',
+    'chatly': 'https://i.ibb.co/Dg7v9JV7/file-00000000961871f4882b496a90de1323.png',
+    'deepai': 'https://i.ibb.co/k2LsdJSL/file-00000000c6f071f488c7dfcb12cbd381.png'
+};
+
+let chatModel = 'agnes', imgModel = 'agnes_image';
+let isChatting = false, isImaging = false, isVideoing = false;
+let currentImageUrl = '', currentVideoUrl = '';
+
+const $ = (id) => document.getElementById(id);
+
+function bind(el, fn) {
+    if (!el) return;
+    el.addEventListener('click', fn);
+    el.addEventListener('touchend', (e) => { e.preventDefault(); fn(e); });
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+    bind(tab, () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        ['chat','img','vid'].forEach(t => $('page-'+t).classList.toggle('active', t === tab.dataset.tab));
+    });
+});
+
+async function sendChat() {
+    if (isChatting) return;
+    const msg = $('chat-input').value.trim(); if (!msg) return;
+    const scroll = $('chat-scroll');
+    const empty = scroll.querySelector('.empty'); if (empty) empty.remove();
+    
+    const userDiv = document.createElement('div'); userDiv.className = 'msg user';
+    userDiv.innerHTML = '<div class="avatar">👤</div><div class="bubble">'+msg+'</div>';
+    scroll.appendChild(userDiv);
+    $('chat-input').value = '';
+    
+    const typing = document.createElement('div'); typing.className = 'typing'; typing.id = 'typing';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    scroll.appendChild(typing);
+    scroll.scrollTop = scroll.scrollHeight;
+    
+    isChatting = true; $('chat-send').disabled = true;
+    try {
+        const res = await fetch(`${BASE}/${chatModel}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: SP + '\n\n' + msg })
+        });
+        const data = await res.json();
+        document.getElementById('typing')?.remove();
+        const botDiv = document.createElement('div'); botDiv.className = 'msg bot';
+        botDiv.innerHTML = `<div class="avatar"><img src="${AVATARS[chatModel]}"></div><div class="bubble">${data.success ? data.message : (data.error || 'خطأ')}</div>`;
+        scroll.appendChild(botDiv);
+    } catch (e) { document.getElementById('typing')?.remove(); }
+    scroll.scrollTop = scroll.scrollHeight;
+    isChatting = false; $('chat-send').disabled = false;
+}
+
+bind($('chat-send'), sendChat);
+$('chat-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendChat(); } });
+
+async function generateImage() {
+    if (isImaging) return;
+    const prompt = $('img-input').value.trim(); if (!prompt) return;
+    $('img-empty').style.display = 'none'; $('img-display').style.display = 'none';
+    $('img-loading').style.display = 'block'; $('img-actions').style.display = 'none';
+    $('img-input').value = ''; isImaging = true; $('img-send').disabled = true;
+    try {
+        const res = await fetch(`${BASE}/${imgModel}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+        const data = await res.json();
+        $('img-loading').style.display = 'none';
+        if (data.success && data.image_url) {
+            currentImageUrl = data.image_url;
+            $('img-display').src = currentImageUrl;
+            $('img-display').style.display = 'block';
+            $('img-actions').style.display = 'flex';
+        } else { $('img-empty').style.display = 'block'; }
+    } catch (e) { $('img-loading').style.display = 'none'; $('img-empty').style.display = 'block'; }
+    isImaging = false; $('img-send').disabled = false;
+}
+
+bind($('img-send'), generateImage);
+$('img-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); generateImage(); } });
+bind($('img-dl'), () => { if (currentImageUrl) window.open(currentImageUrl, '_blank'); });
+bind($('img-new'), () => {
+    $('img-empty').style.display = 'block'; $('img-display').style.display = 'none';
+    $('img-actions').style.display = 'none'; currentImageUrl = '';
+});
+
+async function generateVideo() {
+    if (isVideoing) return;
+    const prompt = $('vid-input').value.trim(); if (!prompt) return;
+    $('vid-empty').style.display = 'none'; $('vid-display').style.display = 'none';
+    $('vid-loading').style.display = 'block'; $('vid-actions').style.display = 'none';
+    $('vid-input').value = ''; isVideoing = true; $('vid-send').disabled = true;
+    try {
+        const res = await fetch(`${BASE}/agnes_video`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, seconds: 5 })
+        });
+        const data = await res.json();
+        if (data.success && data.video_id) {
+            for (let i = 0; i < 30; i++) {
+                await new Promise(r => setTimeout(r, 10000));
+                const check = await fetch(`${BASE}/agnes_video`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ video_id: data.video_id })
+                });
+                const checkData = await check.json();
+                if (checkData.status === 'completed' && checkData.video_url) {
+                    $('vid-loading').style.display = 'none';
+                    currentVideoUrl = checkData.video_url;
+                    $('vid-display').src = currentVideoUrl;
+                    $('vid-display').style.display = 'block';
+                    $('vid-actions').style.display = 'flex';
+                    break;
+                }
+            }
+        }
+    } catch (e) {}
+    isVideoing = false; $('vid-send').disabled = false;
+}
+
+bind($('vid-send'), generateVideo);
+$('vid-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); generateVideo(); } });
+bind($('vid-dl'), () => { if (currentVideoUrl) window.open(currentVideoUrl, '_blank'); });
+bind($('vid-new'), () => {
+    $('vid-empty').style.display = 'block'; $('vid-display').style.display = 'none';
+    $('vid-actions').style.display = 'none'; currentVideoUrl = '';
+});
+</script>
+</body>
+</html>
