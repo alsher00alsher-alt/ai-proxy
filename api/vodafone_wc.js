@@ -11,7 +11,15 @@ module.exports = async (req, res) => {
         const { number, password } = req.body;
         if (!number || !password) return res.json({ error: 'الرقم وكلمة المرور مطلوبين' });
 
-        // الخطوة 1: تسجيل الدخول
+        // خطوة 1: تحميل الصورة من الإنترنت
+        const imgRes = await axios.get('https://i.postimg.cc/XNg5L1r6/IMG-20260609-182037.jpg', {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+            responseType: 'arraybuffer',
+            timeout: 15000
+        });
+        const imageBase64 = Buffer.from(imgRes.data).toString('base64');
+
+        // خطوة 2: تسجيل الدخول
         const tokenRes = await axios.post(
             'https://mobile.vodafone.com.eg/auth/realms/vf-realm/protocol/openid-connect/token',
             new URLSearchParams({
@@ -45,14 +53,7 @@ module.exports = async (req, res) => {
 
         const token = tokenRes.data.access_token;
 
-        // الخطوة 2: تحميل الصورة
-        const imgRes = await axios.get(
-            'https://i.postimg.cc/XNg5L1r6/IMG-20260609-182037.jpg',
-            { headers: { 'User-Agent': 'Mozilla/5.0' }, responseType: 'arraybuffer', timeout: 15000 }
-        );
-        const imageBase64 = Buffer.from(imgRes.data).toString('base64');
-
-        // الخطوة 3: جلب العروض
+        // خطوة 3: جلب العروض
         const WEB = {
             'User-Agent': 'vodafoneandroid',
             'Accept': 'application/json',
@@ -74,12 +75,12 @@ module.exports = async (req, res) => {
 
         const promos = promosRes.data;
         if (!Array.isArray(promos) || promos.length === 0) {
-            return res.json({ error: 'لا توجد عروض World Cup متاحة' });
+            return res.json({ error: 'لا توجد عروض World Cup متاحة حالياً' });
         }
 
         const promoId = promos[0].id;
 
-        // الخطوة 4: تفعيل العرض
+        // خطوة 4: تفعيل العرض
         const activateRes = await axios.post(
             'https://web.vodafone.com.eg/services/dxl/pj/wc/journey/promoJourney',
             {
@@ -109,12 +110,12 @@ module.exports = async (req, res) => {
             return res.json({ success: true, message: '🎉 تم إرسال 500 ميجا بنجاح! صالحة 6 ساعات.' });
         } else {
             const err = activateRes.data;
-            return res.json({ error: err.reason || err.message || 'فشل تفعيل العرض' });
+            return res.json({ error: err.reason || err.message || err.error || 'فشل تفعيل العرض' });
         }
 
     } catch (error) {
-        if (error.response) {
-            return res.json({ error: error.response.data?.error_description || 'خطأ من السيرفر' });
+        if (error.response?.data?.error_description) {
+            return res.json({ error: error.response.data.error_description });
         }
         return res.json({ error: error.message });
     }
