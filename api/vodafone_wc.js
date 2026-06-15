@@ -11,15 +11,7 @@ module.exports = async (req, res) => {
         const { number, password } = req.body;
         if (!number || !password) return res.json({ error: 'الرقم وكلمة المرور مطلوبين' });
 
-        // خطوة 1: تحميل الصورة من الإنترنت
-        const imgRes = await axios.get('https://i.postimg.cc/XNg5L1r6/IMG-20260609-182037.jpg', {
-            headers: { 'User-Agent': 'Mozilla/5.0' },
-            responseType: 'arraybuffer',
-            timeout: 15000
-        });
-        const imageBase64 = Buffer.from(imgRes.data).toString('base64');
-
-        // خطوة 2: تسجيل الدخول
+        // خطوة 1: تسجيل الدخول
         const tokenRes = await axios.post(
             'https://mobile.vodafone.com.eg/auth/realms/vf-realm/protocol/openid-connect/token',
             new URLSearchParams({
@@ -32,7 +24,9 @@ module.exports = async (req, res) => {
             {
                 headers: {
                     'User-Agent': 'okhttp/4.12.0',
-                    'Accept': 'application/json',
+                    'Accept': 'application/json, text/plain, */*',
+                    'Accept-Encoding': 'gzip',
+                    'silentLogin': 'true',
                     'msisdn': number,
                     'x-agent-operatingsystem': '15',
                     'clientId': 'AnaVodafoneAndroid',
@@ -41,9 +35,10 @@ module.exports = async (req, res) => {
                     'x-agent-version': '2026.4.1',
                     'x-agent-build': '1139',
                     'digitalId': '28LZHSGCX7QC4',
+                    'device-id': 'aba8140ecd392169',
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                timeout: 15000
+                timeout: 20000
             }
         );
 
@@ -53,48 +48,58 @@ module.exports = async (req, res) => {
 
         const token = tokenRes.data.access_token;
 
+        // خطوة 2: تحميل الصورة
+        const imgRes = await axios.get('https://i.postimg.cc/XNg5L1r6/IMG-20260609-182037.jpg', {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+            responseType: 'arraybuffer',
+            timeout: 15000
+        });
+        const imageBase64 = Buffer.from(imgRes.data).toString('base64');
+
         // خطوة 3: جلب العروض
         const WEB = {
             'User-Agent': 'vodafoneandroid',
             'Accept': 'application/json',
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
+            'sec-ch-ua-platform': '"Android"',
             'Authorization': `Bearer ${token}`,
+            'Accept-Language': 'AR',
             'msisdn': number,
+            'sec-ch-ua': '"Chromium";v="148", "Android WebView";v="148", "Not/A)Brand";v="99"',
             'clientId': 'WebsiteConsumer',
+            'sec-ch-ua-mobile': '?1',
             'channel': 'APP_PORTAL',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'com.emeint.android.myservices',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Dest': 'empty'
         };
 
         const promosRes = await axios.get(
             'https://web.vodafone.com.eg/services/dxl/promo/promotion',
             {
                 params: { '@type': 'Promo', '$.context.type': 'worldCupWow26' },
-                headers: WEB,
+                headers: { ...WEB, 'Referer': 'https://web.vodafone.com.eg/portal/bf/worldCup26/home' },
                 timeout: 15000
             }
         );
 
         const promos = promosRes.data;
         if (!Array.isArray(promos) || promos.length === 0) {
-            return res.json({ error: 'لا توجد عروض World Cup متاحة حالياً' });
+            return res.json({ error: 'لا توجد عروض World Cup' });
         }
 
         const promoId = promos[0].id;
 
-        // خطوة 4: تفعيل العرض
+        // خطوة 4: تفعيل
         const activateRes = await axios.post(
             'https://web.vodafone.com.eg/services/dxl/pj/wc/journey/promoJourney',
             {
                 '@type': 'worldCupWow26',
                 id: promoId,
-                attachment: [{
-                    attachmentType: 'Image',
-                    content: imageBase64,
-                    mimeType: 'image/jpeg'
-                }],
-                characteristics: [{
-                    name: 'pharaohName',
-                    value: 'tutankhamun'
-                }]
+                attachment: [{ attachmentType: 'Image', content: imageBase64, mimeType: 'image/jpeg' }],
+                characteristics: [{ name: 'pharaohName', value: 'tutankhamun' }]
             },
             {
                 headers: {
@@ -107,10 +112,9 @@ module.exports = async (req, res) => {
         );
 
         if (activateRes.status === 201) {
-            return res.json({ success: true, message: '🎉 تم إرسال 500 ميجا بنجاح! صالحة 6 ساعات.' });
+            return res.json({ success: true, message: '🎉 تم إرسال 500 ميجا! صالحة 6 ساعات.' });
         } else {
-            const err = activateRes.data;
-            return res.json({ error: err.reason || err.message || err.error || 'فشل تفعيل العرض' });
+            return res.json({ error: 'فشل التفعيل (Status: ' + activateRes.status + ')' });
         }
 
     } catch (error) {
