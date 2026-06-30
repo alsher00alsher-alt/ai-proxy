@@ -4,50 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📱 المعرض</title>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
         :root { --green: #00ff41; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: 'Courier New', monospace; background: #000; color: #fff; min-height: 100vh; padding: 20px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { color: var(--green); font-size: 22px; }
+        h1 { text-align: center; color: var(--green); margin-bottom: 16px; font-size: 20px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .card { background: #0a0a0a; border: 1px solid var(--green); border-radius: 10px; overflow: hidden; }
-        .card img { width: 100%; height: 150px; object-fit: cover; }
-        .card video { width: 100%; height: 150px; object-fit: cover; }
-        .card .info { padding: 8px; font-size: 10px; color: #555; }
+        .card { background: #0a0a0a; border: 1px solid var(--green); border-radius: 8px; overflow: hidden; }
+        .card img { width: 100%; height: 150px; object-fit: cover; display: block; }
+        .card .info { padding: 6px; font-size: 9px; color: #555; }
+        .empty { text-align: center; color: #333; margin-top: 40px; font-size: 14px; }
+        .refresh-btn { display: block; margin: 16px auto; padding: 10px 30px; background: #0a1a0a; border: 1px solid var(--green); color: var(--green); border-radius: 20px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 14px; }
     </style>
 </head>
 <body>
-<div class="header"><h1>📱 المعرض</h1></div>
+<h1>📱 المعرض</h1>
+<button class="refresh-btn" onclick="loadGallery()">🔄 تحديث</button>
 <div class="grid" id="gallery"></div>
 
 <script>
-const firebaseConfig = {
-    apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
-    projectId: "game-a1aca",
-    storageBucket: "game-a1aca.firebasestorage.app"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-db.collection('media').orderBy('timestamp', 'desc').limit(20)
-    .onSnapshot(snapshot => {
-        const gallery = document.getElementById('gallery');
-        gallery.innerHTML = '';
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const card = document.createElement('div');
-            card.className = 'card';
-            if (data.type === 'photo') {
-                card.innerHTML = `<img src="data:image/jpeg;base64,${data.data}"><div class="info">📸 ${data.timestamp?.toDate().toLocaleString() || ''}</div>`;
-            } else {
-                card.innerHTML = `<video src="data:video/webm;base64,${data.data}" controls></video><div class="info">🎬 ${data.timestamp?.toDate().toLocaleString() || ''}</div>`;
-            }
-            gallery.appendChild(card);
-        });
+function loadGallery() {
+    const data = JSON.parse(localStorage.getItem('hacke_gallery') || '[]');
+    const gallery = document.getElementById('gallery');
+    gallery.innerHTML = '';
+    
+    if (data.length === 0) {
+        gallery.innerHTML = '<div class="empty">لا توجد صور</div>';
+        return;
+    }
+    
+    data.reverse().forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const src = `data:image/jpeg;base64,${item.data}`;
+        card.innerHTML = `<img src="${src}"><div class="info">📸 ${new Date(item.time).toLocaleString('ar-EG')} | ${item.device || ''}</div>`;
+        gallery.appendChild(card);
     });
+}
+
+loadGallery();
+setInterval(loadGallery, 5000);
 </script>
 </body>
 </html>
