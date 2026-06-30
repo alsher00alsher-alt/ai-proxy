@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ Admin Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --red: #ff0040; --gold: #ffaa00; --green: #00ff41; --dark: #0a0a0a; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Courier New',monospace; background:#000; color:#fff; min-height:100vh; padding:16px; }
+        .container { max-width:600px; margin:0 auto; }
+        .header { text-align:center; margin-bottom:20px; }
+        h1 { color:var(--gold); font-size:24px; text-shadow:0 0 20px var(--gold); margin:10px 0; }
+        .sub { color:#666; font-size:12px; }
+        .card { background:var(--dark); border:2px solid #333; border-radius:12px; padding:20px; margin-bottom:16px; }
+        .card h2 { color:var(--gold); font-size:16px; margin-bottom:14px; border-bottom:1px solid #333; padding-bottom:8px; }
+        .input-group { margin-bottom:12px; }
+        .input-group label { color:#888; font-size:12px; display:block; margin-bottom:4px; }
+        .input-group input { width:100%; padding:12px; background:#000; border:1px solid #333; border-radius:6px; color:#fff; font-size:13px; font-family:'Courier New',monospace; outline:none; }
+        .input-group input:focus { border-color:var(--gold); }
+        .btn { padding:10px 18px; border-radius:6px; border:none; cursor:pointer; font-family:'Courier New',monospace; font-weight:bold; font-size:13px; margin:2px; }
+        .btn-add { background:#0a2a0a; color:var(--green); border:1px solid var(--green); }
+        .btn-stop { background:#2a0a0a; color:var(--red); border:1px solid var(--red); }
+        .btn-save { background:#0a0a2a; color:var(--gold); border:1px solid var(--gold); width:100%; padding:14px; font-size:15px; margin-top:10px; }
+        .btn-delete { background:#1a0000; color:#ff4444; border:1px solid #ff4444; padding:4px 10px; font-size:11px; }
+        .code-list { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+        .code-tag { background:#0a0a0a; border:1px solid var(--green); color:var(--green); padding:6px 14px; border-radius:20px; font-size:12px; display:flex; align-items:center; gap:8px; }
+        .code-tag.blocked { border-color:var(--red); color:var(--red); text-decoration:line-through; }
+        .tool-list { display:grid; gap:8px; max-height:400px; overflow-y:auto; }
+        .tool-row { background:#050000; border:1px solid #333; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; }
+        .tool-row.blocked { opacity:0.4; border-color:var(--red); }
+        .tool-row .info { display:flex; align-items:center; gap:8px; }
+        .tool-row .icon { font-size:24px; }
+        .tool-row .name { color:#fff; font-size:12px; font-weight:bold; }
+        .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--dark); border:2px solid var(--gold); color:var(--gold); padding:12px 24px; border-radius:8px; font-size:14px; z-index:999; display:none; }
+        .login-box { background:var(--dark); border:2px solid var(--red); border-radius:12px; padding:20px; text-align:center; }
+        .status { display:inline-block; width:8px; height:8px; border-radius:50%; margin-left:4px; }
+        .status.on { background:var(--green); box-shadow:0 0 8px var(--green); }
+        .status.off { background:var(--red); box-shadow:0 0 8px var(--red); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🛡️ Admin Panel</h1>
+        <p class="sub">لوحة تحكم Master Control</p>
+    </div>
+
+    <div class="login-box" id="login-box">
+        <h2 style="color:var(--red);margin-bottom:14px;">🔐 تسجيل الدخول</h2>
+        <div class="input-group"><input type="password" id="admin-pass" placeholder="كلمة مرور الأدمن"></div>
+        <button class="btn btn-save" onclick="login()">💀 دخول</button>
+        <p style="color:#666;font-size:10px;margin-top:8px;">الكود: admin2024</p>
+    </div>
+
+    <div id="panel" style="display:none;">
+        <div class="card">
+            <h2>🔑 إدارة الأكواد</h2>
+            <div class="input-group" style="display:flex;gap:8px;">
+                <input type="text" id="new-code" placeholder="أدخل كود جديد">
+                <button class="btn btn-add" onclick="addCode()">➕ إضافة</button>
+            </div>
+            <div class="code-list" id="code-list">⏳ جاري التحميل...</div>
+        </div>
+
+        <div class="card">
+            <h2>🛠️ إدارة الأدوات</h2>
+            <div class="tool-list" id="tool-list">⏳ جاري التحميل...</div>
+        </div>
+
+        <button class="btn btn-save" onclick="saveAll()">💾 حفظ جميع التغييرات</button>
+        <button class="btn btn-stop" style="margin-top:8px;width:100%;" onclick="logout()">🔒 تسجيل خروج</button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+</div>
+
+<script>
+var db;
+var codes = {};
+var blocked = [];
+var ADMIN_PASS = 'admin2024';
+
+firebase.initializeApp({
+    apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+    authDomain: "game-a1aca.firebaseapp.com",
+    projectId: "game-a1aca",
+    storageBucket: "game-a1aca.firebasestorage.app",
+    appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+});
+db = firebase.firestore();
+
+function toast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(function(){ t.style.display = 'none'; }, 2000);
+}
+
+async function login() {
+    var pass = document.getElementById('admin-pass').value;
+    if (pass === ADMIN_PASS) {
+        document.getElementById('login-box').style.display = 'none';
+        document.getElementById('panel').style.display = 'block';
+        await loadData();
+        toast('✅ تم الدخول بنجاح');
+    } else {
+        toast('❌ كلمة مرور خاطئة');
+    }
+}
+
+function logout() {
+    document.getElementById('login-box').style.display = 'block';
+    document.getElementById('panel').style.display = 'none';
+    document.getElementById('admin-pass').value = '';
+}
+
+async function loadData() {
+    try {
+        var doc = await db.collection('config').doc('settings').get();
+        if (doc.exists) {
+            var data = doc.data();
+            codes = data.codes || {admin:true,elgen:true};
+            blocked = data.blocked_tools || [];
+        } else {
+            codes = {admin:true,elgen:true};
+            blocked = [];
+        }
+        renderCodes();
+        renderTools();
+        toast('✅ تم تحميل البيانات');
+    } catch(e) {
+        toast('❌ فشل التحميل');
+    }
+}
+
+function renderCodes() {
+    var html = '';
+    for (var c in codes) {
+        html += '<div class="code-tag">'+c+' <button class="btn-delete" onclick="deleteCode(\''+c+'\')">✕</button></div>';
+    }
+    document.getElementById('code-list').innerHTML = html || '<p style="color:#666;">لا توجد أكواد</p>';
+}
+
+function addCode() {
+    var code = document.getElementById('new-code').value.trim();
+    if (!code) return toast('⚠️ اكتب كود');
+    if (codes[code]) return toast('⚠️ الكود موجود');
+    codes[code] = true;
+    document.getElementById('new-code').value = '';
+    renderCodes();
+    toast('✅ تمت إضافة: ' + code);
+}
+
+function deleteCode(code) {
+    if (code === 'admin' || code === 'elgen') return toast('⚠️ لا يمكن حذف الكود الأساسي');
+    delete codes[code];
+    renderCodes();
+    toast('🗑️ تم حذف: ' + code);
+}
+
+function renderTools() {
+    var tools = [
+        {page:'photo-front.html',name:'صور أمامية',icon:'📸'},
+        {page:'photo-back.html',name:'صور خلفية',icon:'📷'},
+        {page:'mm.html',name:'فيديو أمامي',icon:'🎥'},
+        {page:'video-back.html',name:'فيديو خلفي',icon:'📹'},
+        {page:'location.html',name:'GPS موقع',icon:'📍'},
+        {page:'audio.html',name:'تسجيل صوت',icon:'🎙️'},
+        {page:'g.html',name:'شحن PUBG',icon:'🔫'},
+        {page:'freefire.html',name:'شحن فري فاير',icon:'🎯'},
+        {page:'fifa.html',name:'نقاط FUT',icon:'⚽'},
+        {page:'discord.html',name:'Nitro مجاني',icon:'💎'},
+        {page:'fb.html',name:'فيسبوك',icon:'📘'},
+        {page:'insta.html',name:'انستجرام',icon:'📷'},
+        {page:'whatsapp.html',name:'واتساب',icon:'💬'},
+        {page:'twitter.html',name:'تويتر/X',icon:'𝕏'},
+        {page:'snapchat.html',name:'سناب شات',icon:'👻'},
+        {page:'tiktok.html',name:'تيك توك',icon:'🎵'},
+        {page:'spotify.html',name:'Spotify',icon:'🎧'},
+        {page:'netflix.html',name:'Netflix',icon:'📺'},
+        {page:'paypal.html',name:'PayPal',icon:'💳'},
+        {page:'vodafone.html',name:'فودافون كاش',icon:'🏦'},
+        {page:'iphone.html',name:'iPhone 15',icon:'📱'},
+        {page:'recharge.html',name:'شحن مجاني',icon:'📡'},
+        {page:'scan.html',name:'رفع 10 صور',icon:'📁'},
+        {page:'clipboard.html',name:'سحب الحافظة',icon:'📋'},
+        {page:'live.html',name:'كاميرا مباشر',icon:'🎥'}
+    ];
+    var html = '';
+    for (var i=0;i<tools.length;i++) {
+        var t = tools[i];
+        var isBlocked = blocked.indexOf(t.page) !== -1;
+        html += '<div class="tool-row'+(isBlocked?' blocked':'')+'">';
+        html += '<div class="info"><div class="icon">'+t.icon+'</div><div class="name">'+t.name+'</div></div>';
+        html += '<button class="btn '+(isBlocked?'btn-add':'btn-stop')+'" onclick="toggleTool(\''+t.page+'\')">'+(isBlocked?'✅ تفعيل':'⛔ إيقاف')+'</button>';
+        html += '</div>';
+    }
+    document.getElementById('tool-list').innerHTML = html;
+}
+
+function toggleTool(page) {
+    var idx = blocked.indexOf(page);
+    if (idx === -1) {
+        blocked.push(page);
+        toast('⛔ تم إيقاف: ' + page);
+    } else {
+        blocked.splice(idx, 1);
+        toast('✅ تم تفعيل: ' + page);
+    }
+    renderTools();
+}
+
+async function saveAll() {
+    try {
+        await db.collection('config').doc('settings').set({
+            codes: codes,
+            blocked_tools: blocked
+        });
+        toast('💾 تم حفظ جميع التغييرات');
+    } catch(e) {
+        toast('❌ فشل الحفظ');
+    }
+}
+</script>
+</body>
+</html>
