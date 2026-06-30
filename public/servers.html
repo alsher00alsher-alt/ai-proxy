@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Pro Servers - بيع سيرفرات</title>
+    <style>
+        :root {
+            --gold: #ffaa00;
+            --blue: #4a90d9;
+            --green: #00c853;
+            --dark: #0a0a14;
+            --card: #111122;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--dark);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header .logo { font-size: 55px; animation: float 3s infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        .header h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, var(--gold), #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+        }
+        .header p { color: #888; font-size: 14px; }
+        
+        .badge {
+            display: inline-block;
+            background: rgba(255,0,0,0.2);
+            color: #ff4444;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .feature-card {
+            background: var(--card);
+            border: 1px solid #222;
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+        .feature-card .icon { font-size: 35px; margin-bottom: 8px; }
+        .feature-card h3 { color: var(--gold); font-size: 14px; margin-bottom: 4px; }
+        .feature-card p { color: #777; font-size: 11px; }
+        
+        .plans {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .plan-card {
+            background: var(--card);
+            border: 2px solid #222;
+            border-radius: 18px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .plan-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255,170,0,0.15);
+        }
+        .plan-card.popular {
+            border-color: var(--gold);
+            box-shadow: 0 0 30px rgba(255,170,0,0.2);
+        }
+        .plan-card.popular::before {
+            content: '🔥 الأكثر مبيعاً';
+            position: absolute;
+            top: 15px;
+            left: -30px;
+            background: var(--gold);
+            color: #000;
+            padding: 4px 40px;
+            font-size: 11px;
+            font-weight: bold;
+            transform: rotate(-45deg);
+        }
+        .plan-card .plan-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        .plan-card .plan-desc {
+            color: #777;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        .plan-card .price {
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--gold);
+            margin: 15px 0;
+        }
+        .plan-card .price small { font-size: 16px; color: #888; }
+        .plan-card .price .old {
+            text-decoration: line-through;
+            color: #555;
+            font-size: 22px;
+            display: block;
+        }
+        .plan-card .discount {
+            display: inline-block;
+            background: rgba(255,0,0,0.2);
+            color: #ff4444;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .plan-card .specs {
+            text-align: right;
+            margin: 20px 0;
+        }
+        .plan-card .specs li {
+            list-style: none;
+            padding: 8px 0;
+            border-bottom: 1px solid #1a1a2e;
+            font-size: 13px;
+            color: #aaa;
+        }
+        .plan-card .specs li::before {
+            content: '✅ ';
+            color: var(--green);
+        }
+        .btn-buy {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), #ff8c00);
+            color: #000;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+        }
+        .btn-buy:active { transform: scale(0.95); }
+        
+        .info-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .info-item {
+            background: var(--card);
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        .info-item .num { color: var(--green); font-size: 24px; font-weight: bold; }
+        .info-item .txt { color: #777; font-size: 11px; margin-top: 4px; }
+        
+        .contact-section {
+            text-align: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: var(--card);
+            border-radius: 16px;
+            border: 1px solid #222;
+        }
+        .contact-section h2 { color: var(--gold); margin-bottom: 10px; }
+        .contact-section p { color: #888; font-size: 13px; margin-bottom: 15px; }
+        .telegram-btn {
+            display: inline-block;
+            background: #0088cc;
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #555;
+            font-size: 11px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #1a1a2e;
+        }
+        
+        @media (max-width: 600px) {
+            .plans { grid-template-columns: 1fr; }
+            .header h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    
+    <div class="header">
+        <div class="logo">⚡</div>
+        <h1>Pro Servers</h1>
+        <p>أفضل سيرفرات بأسعار تنافسية</p>
+        <div class="badge">🔥 خصم حتى 40%</div>
+    </div>
+    
+    <div class="info-bar">
+        <div class="info-item"><div class="num">99.9%</div><div class="txt">وقت تشغيل</div></div>
+        <div class="info-item"><div class="num">24/7</div><div class="txt">دعم فني</div></div>
+        <div class="info-item"><div class="num">1Gbps</div><div class="txt">سرعة إنترنت</div></div>
+        <div class="info-item"><div class="num">SSL</div><div class="txt">حماية مجانية</div></div>
+    </div>
+    
+    <div class="features">
+        <div class="feature-card">
+            <div class="icon">🚀</div>
+            <h3>سرعة فائقة</h3>
+            <p>معالجات حديثة وسرعة نقل بيانات عالية</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">🛡️</div>
+            <h3>حماية كاملة</h3>
+            <p>حماية DDoS وجدار ناري مجاني</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">💾</div>
+            <h3>نسخ احتياطي</h3>
+            <p>نسخ احتياطي أسبوعي تلقائي</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">📞</div>
+            <h3>دعم فوري</h3>
+            <p>فريق دعم متاح على مدار الساعة</p>
+        </div>
+    </div>
+    
+    <div class="plans">
+        <!-- خطة 1 -->
+        <div class="plan-card">
+            <div class="plan-name">⚡ الباقة الأساسية</div>
+            <div class="plan-desc">مناسبة للمواقع الصغيرة</div>
+            <div class="price">
+                <span class="old">1,500 ج</span>
+                1,000 ج
+                <small>/شهري</small>
+            </div>
+            <ul class="specs">
+                <li>سعة تخزين: 20 جيجا SSD</li>
+                <li>رام: 4 جيجا DDR4</li>
+                <li>معالج: 2 أنوية</li>
+                <li>باندويث: 1 تيرا</li>
+                <li>لوحة تحكم cPanel</li>
+                <li>شهادة SSL مجانية</li>
+            </ul>
+            <button class="btn-buy btn-outline">🛒 اطلب الآن</button>
+        </div>
+        
+        <!-- خطة 2 - الأكثر مبيعاً -->
+        <div class="plan-card popular">
+            <div class="plan-name">🔥 الباقة المتقدمة</div>
+            <div class="plan-desc">الأكثر طلباً للمشاريع المتوسطة</div>
+            <div class="discount">🏷️ خصم 40%</div>
+            <div class="price">
+                <span class="old">2,300 ج</span>
+                1,400 ج
+                <small>/شهري</small>
+            </div>
+            <ul class="specs">
+                <li>سعة تخزين: 70 جيجا NVMe</li>
+                <li>رام: 19 جيجا DDR4</li>
+                <li>معالج: 6 أنوية</li>
+                <li>باندويث: 5 تيرا</li>
+                <li>لوحة تحكم cPanel</li>
+                <li>شهادة SSL مجانية</li>
+                <li>حماية DDoS</li>
+                <li>نسخ احتياطي يومي</li>
+            </ul>
+            <button class="btn-buy btn-gold">🛒 اطلب الآن - وفر 40%</button>
+        </div>
+        
+        <!-- خطة 3 -->
+        <div class="plan-card">
+            <div class="plan-name">💎 الباقة الاحترافية</div>
+            <div class="plan-desc">للشركات والمشاريع الكبيرة</div>
+            <div class="discount">🏷️ خصم 25%</div>
+            <div class="price">
+                <span class="old">3,000 ج</span>
+                2,250 ج
+                <small>/شهري</small>
+            </div>
+            <ul class="specs">
+                <li>سعة تخزين: 150 جيجا NVMe</li>
+                <li>رام: 32 جيجا DDR5</li>
+                <li>معالج: 8 أنوية</li>
+                <li>باندويث: غير محدود</li>
+                <li>لوحة تحكم cPanel</li>
+                <li>شهادة SSL مجانية</li>
+                <li>حماية DDoS متقدمة</li>
+                <li>نسخ احتياطي كل 6 ساعات</li>
+                <li>IP مخصص</li>
+            </ul>
+            <button class="btn-buy btn-outline">🛒 اطلب الآن</button>
+        </div>
+        
+        <!-- خطة 4 -->
+        <div class="plan-card">
+            <div class="plan-name">🏆 الباقة النهائية</div>
+            <div class="plan-desc">أقصى أداء للمواقع الضخمة</div>
+            <div class="discount">🏷️ خصم 30%</div>
+            <div class="price">
+                <span class="old">5,000 ج</span>
+                3,500 ج
+                <small>/شهري</small>
+            </div>
+            <ul class="specs">
+                <li>سعة تخزين: 500 جيجا NVMe</li>
+                <li>رام: 64 جيجا DDR5</li>
+                <li>معالج: 16 أنوية</li>
+                <li>باندويث: غير محدود</li>
+                <li>لوحة تحكم cPanel</li>
+                <li>شهادة SSL مجانية</li>
+                <li>حماية DDoS متقدمة</li>
+                <li>نسخ احتياطي كل ساعة</li>
+                <li>IP مخصص</li>
+                <li>دعم فني VIP</li>
+            </ul>
+            <button class="btn-buy btn-outline">🛒 اطلب الآن</button>
+        </div>
+    </div>
+    
+    <div class="contact-section">
+        <h2>📞 تواصل معنا</h2>
+        <p>للطلب أو الاستفسار، تواصل معنا على تيليجرام</p>
+        <a href="https://t.me/yourusername" class="telegram-btn">💬 تواصل على تيليجرام</a>
+    </div>
+    
+    <div class="footer">
+        <p>© 2026 Pro Servers - جميع الحقوق محفوظة | سياسة الخصوصية | شروط الخدمة</p>
+    </div>
+</div>
+</body>
+</html>
