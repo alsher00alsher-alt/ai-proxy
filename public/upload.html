@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>📁 رفع الملفات</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            font-family:'Segoe UI',Tahoma,sans-serif;
+            background:#0a0a0f;color:#fff;
+            min-height:100vh;padding:20px;
+        }
+        .container{max-width:550px;margin:0 auto}
+        .header{text-align:center;margin-bottom:25px}
+        .header .icon{font-size:60px}
+        .header h1{color:#d4af37;font-size:24px;margin:10px 0}
+        .header p{color:#888;font-size:13px}
+        
+        .upload-zone{
+            background:#111118;border:2px dashed #333;
+            border-radius:16px;padding:40px 20px;
+            text-align:center;cursor:pointer;
+            transition:0.3s;margin-bottom:20px;
+        }
+        .upload-zone:hover,.upload-zone.drag{border-color:#d4af37;background:#1a1a22}
+        .upload-zone .icon{font-size:50px;margin-bottom:10px}
+        .upload-zone p{color:#888;font-size:14px}
+        .upload-zone span{color:#d4af37;font-weight:bold}
+        input[type=file]{display:none}
+        
+        .file-list{display:grid;gap:8px}
+        .file-item{
+            background:#111118;border:1px solid #333;
+            border-radius:10px;padding:12px;display:flex;
+            align-items:center;justify-content:space-between;
+            animation:fadeIn 0.3s;
+        }
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .file-item .info{display:flex;align-items:center;gap:10px;flex:1}
+        .file-item .f-icon{font-size:30px}
+        .file-item .f-name{color:#fff;font-size:13px;word-break:break-all}
+        .file-item .f-size{color:#888;font-size:10px}
+        .file-item .actions{display:flex;gap:6px}
+        .file-item .actions button{
+            background:rgba(0,0,0,0.5);color:#fff;
+            border:1px solid #444;border-radius:6px;
+            padding:6px 10px;font-size:11px;cursor:pointer;
+        }
+        .file-item .actions button:active{background:#333}
+        
+        .progress-bar{
+            width:100%;height:6px;background:#111;
+            border-radius:3px;margin-top:10px;overflow:hidden;
+        }
+        .progress-fill{
+            height:100%;width:0%;background:#d4af37;
+            transition:width 0.3s;
+        }
+        
+        .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+        .stat-card{
+            background:#111118;border:1px solid #333;
+            border-radius:10px;padding:14px;text-align:center;
+        }
+        .stat-card .num{color:#d4af37;font-size:24px;font-weight:bold}
+        .stat-card .txt{color:#888;font-size:10px;margin-top:4px}
+        
+        .btn{
+            width:100%;padding:14px;border-radius:10px;
+            font-size:16px;font-weight:bold;cursor:pointer;
+            border:none;transition:0.2s;margin-top:8px;
+        }
+        .btn-gold{background:#d4af37;color:#000}
+        .btn-red{background:#ff4757;color:#fff}
+        .btn:active{transform:scale(0.96)}
+        
+        .toast{
+            position:fixed;top:20px;left:50%;transform:translateX(-50%);
+            background:#111118;border:1px solid #d4af37;color:#d4af37;
+            padding:12px 24px;border-radius:8px;font-size:13px;
+            font-weight:bold;z-index:999;
+        }
+        .empty{text-align:center;color:#555;padding:40px;font-size:14px}
+        .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:998;justify-content:center;align-items:center}
+        .modal.show{display:flex}
+        .modal img{max-width:95%;max-height:85vh;border-radius:10px}
+        .modal .close{position:absolute;top:15px;right:15px;color:#fff;font-size:25px;cursor:pointer;background:#ff4757;width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="icon">📁</div>
+        <h1>رفع الملفات</h1>
+        <p>ارفع ملفاتك بسهولة — الصور، الفيديو، PDF، أي ملف</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card"><div class="num" id="sFiles">0</div><div class="txt">ملف</div></div>
+        <div class="stat-card"><div class="num" id="sSize">0 MB</div><div class="txt">المساحة</div></div>
+    </div>
+
+    <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="icon">📤</div>
+        <p>اسحب وأفلت الملفات هنا</p>
+        <p>أو <span>اضغط للاختيار</span></p>
+        <p style="font-size:11px;margin-top:8px;">الحد الأقصى: 10MB للملف</p>
+    </div>
+    <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)">
+
+    <button class="btn btn-gold" onclick="uploadAll()" id="uploadBtn" style="display:none;">📤 رفع جميع الملفات</button>
+
+    <div class="progress-bar" id="progressBar" style="display:none;">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="card" style="background:#111118;border:1px solid #333;border-radius:10px;padding:14px;margin-top:15px;">
+        <h2 style="color:#d4af37;font-size:14px;margin-bottom:10px;">📂 الملفات المختارة</h2>
+        <div class="file-list" id="fileList">
+            <div class="empty">لم تختر ملفات بعد</div>
+        </div>
+    </div>
+
+    <div class="card" style="background:#111118;border:1px solid #333;border-radius:10px;padding:14px;margin-top:15px;">
+        <h2 style="color:#d4af37;font-size:14px;margin-bottom:10px;">📂 الملفات المرفوعة</h2>
+        <div class="file-list" id="uploadedList">
+            <div class="empty">⏳ جاري التحميل...</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modal" onclick="closeModal()">
+    <span class="close">✕</span>
+    <img id="modalImg" src="">
+</div>
+
+<script>
+firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
+var db=firebase.firestore();
+var selectedFiles=[];
+var totalSize=0;
+
+function toast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove();},2000)}
+
+function handleFiles(files){
+    selectedFiles=[];
+    totalSize=0;
+    var html='';
+    for(var i=0;i<files.length;i++){
+        var f=files[i];
+        if(f.size>10*1024*1024){toast('⚠️ '+f.name+' أكبر من 10MB');continue}
+        selectedFiles.push(f);
+        totalSize+=f.size;
+        var icon=getIcon(f.type);
+        html+='<div class="file-item"><div class="info"><div class="f-icon">'+icon+'</div><div><div class="f-name">'+f.name+'</div><div class="f-size">'+formatSize(f.size)+'</div></div></div><div class="actions"><button onclick="removeFile('+i+')">✕</button></div></div>';
+    }
+    document.getElementById('fileList').innerHTML=html||'<div class="empty">لم تختر ملفات بعد</div>';
+    document.getElementById('sFiles').textContent=selectedFiles.length;
+    document.getElementById('sSize').textContent=formatSize(totalSize);
+    document.getElementById('uploadBtn').style.display=selectedFiles.length?'block':'none';
+}
+
+function getIcon(type){
+    if(type.startsWith('image/'))return '🖼️';
+    if(type.startsWith('video/'))return '🎬';
+    if(type.startsWith('audio/'))return '🎵';
+    if(type.includes('pdf'))return '📄';
+    if(type.includes('zip')||type.includes('rar'))return '📦';
+    return '📁';
+}
+
+function formatSize(bytes){
+    if(bytes<1024)return bytes+' B';
+    if(bytes<1048576)return (bytes/1024).toFixed(1)+' KB';
+    return (bytes/1048576).toFixed(1)+' MB';
+}
+
+function removeFile(i){selectedFiles.splice(i,1);handleFiles(selectedFiles);}
+
+async function uploadAll(){
+    if(!selectedFiles.length)return;
+    document.getElementById('progressBar').style.display='block';
+    for(var i=0;i<selectedFiles.length;i++){
+        var f=selectedFiles[i];
+        var reader=new FileReader();
+        reader.onload=async function(e){
+            await db.collection('uploads').add({
+                name:f.name,size:f.size,type:f.type,
+                url:e.target.result,timestamp:new Date().toISOString()
+            });
+        };
+        reader.readAsDataURL(f);
+        document.getElementById('progressFill').style.width=((i+1)/selectedFiles.length*100)+'%';
+    }
+    toast('✅ تم رفع '+selectedFiles.length+' ملف');
+    selectedFiles=[];
+    document.getElementById('fileInput').value='';
+    document.getElementById('fileList').innerHTML='<div class="empty">لم تختر ملفات بعد</div>';
+    document.getElementById('uploadBtn').style.display='none';
+    document.getElementById('progressBar').style.display='none';
+    loadUploads();
+}
+
+async function loadUploads(){
+    var snap=await db.collection('uploads').orderBy('timestamp','desc').limit(50).get();
+    var html='';
+    snap.forEach(function(doc){
+        var d=doc.data();
+        var icon=getIcon(d.type||'');
+        var isImage=d.type&&d.type.startsWith('image/');
+        html+='<div class="file-item"><div class="info"><div class="f-icon">'+icon+'</div><div><div class="f-name">'+(d.name||'ملف')+'</div><div class="f-size">'+formatSize(d.size||0)+'</div></div></div><div class="actions">';
+        if(isImage)html+='<button onclick="openImage(\''+d.url+'\')">👁️</button>';
+        html+='<button onclick="downloadFile(\''+d.url+'\',\''+(d.name||'file')+'\')">💾</button>';
+        html+='<button onclick="deleteFile(\''+doc.id+'\')">🗑️</button></div></div>';
+    });
+    document.getElementById('uploadedList').innerHTML=html||'<div class="empty">📭 لا توجد ملفات</div>';
+}
+
+function openImage(url){document.getElementById('modalImg').src=url;document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function downloadFile(url,name){var a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a)}
+async function deleteFile(id){if(!confirm('متأكد من الحذف؟'))return;await db.collection('uploads').doc(id).delete();loadUploads();toast('🗑️ تم الحذف')}
+
+// دراج آند دروب
+var drop=document.getElementById('dropZone');
+drop.addEventListener('dragover',function(e){e.preventDefault();drop.classList.add('drag')});
+drop.addEventListener('dragleave',function(){drop.classList.remove('drag')});
+drop.addEventListener('drop',function(e){e.preventDefault();drop.classList.remove('drag');handleFiles(e.dataTransfer.files)});
+
+loadUploads();
+</script>
+</body>
+</html>
