@@ -5,23 +5,20 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
 
     try {
-        // قراءة الجسم يدوياً
-        let body = '';
-        for await (const chunk of req) {
-            body += chunk;
-        }
-        const { message } = JSON.parse(body || '{}');
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        const raw = Buffer.concat(chunks).toString();
+        const { message } = JSON.parse(raw);
         
-        if (!message) return res.status(400).json({ error: 'اكتب رسالة' });
+        if (!message) return res.json({ error: 'اكتب رسالة' });
 
         const https = require('https');
-        
-        const result = await new Promise((resolve, reject) => {
-            const data = JSON.stringify({
-                model: 'agnes-2.0-flash',
-                messages: [{ role: 'user', content: message }]
-            });
+        const data = JSON.stringify({
+            model: 'agnes-2.0-flash',
+            messages: [{ role: 'user', content: message }]
+        });
 
+        const result = await new Promise((resolve, reject) => {
             const options = {
                 hostname: 'apihub.agnes-ai.com',
                 path: '/v1/chat/completions',
@@ -29,30 +26,29 @@ export default async function handler(req, res) {
                 headers: {
                     'Authorization': 'Bearer sk-SAwghndWW0bkWHuPwsUALep6iAOC8Oo5jZBVKCWCcYMlmHTJ',
                     'Content-Type': 'application/json',
-                    'Content-Length': data.length
+                    'Content-Length': Buffer.byteLength(data)
                 }
             };
 
             const req2 = https.request(options, (res2) => {
-                let responseBody = '';
-                res2.on('data', (chunk) => responseBody += chunk);
+                const chunks2 = [];
+                res2.on('data', (c) => chunks2.push(c));
                 res2.on('end', () => {
-                    try { resolve(JSON.parse(responseBody)); }
-                    catch(e) { resolve({ error: responseBody }); }
+                    const body = Buffer.concat(chunks2).toString();
+                    try { resolve(JSON.parse(body)); }
+                    catch(e) { resolve({ error: body }); }
                 });
             });
-            
-            req2.on('error', reject);
+            req2.on('error', (e) => resolve({ error: e.message }));
             req2.write(data);
             req2.end();
         });
 
-        if (result.choices && result.choices[0]) {
+        if (result.choices?.[0]?.message?.content) {
             return res.json({ success: true, message: result.choices[0].message.content });
-        } else {
-            return res.json({ success: false, error: result.error?.message || 'خطأ' });
         }
+        return res.json({ success: false, error: result.error?.message || result.error || 'خطأ' });
     } catch (error) {
-        return res.status(500).json({ success: false, error: error.message });
+        return res.json({ success: false, error: error.message });
     }
 }
