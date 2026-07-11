@@ -5,7 +5,10 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
 
     try {
-        const { prompt } = req.body;
+        let body = '';
+        for await (const chunk of req) { body += chunk; }
+        const { prompt } = JSON.parse(body || '{}');
+        
         if (!prompt) return res.status(400).json({ error: 'اكتب وصف' });
 
         const https = require('https');
@@ -30,10 +33,11 @@ export default async function handler(req, res) {
             };
 
             const req2 = https.request(options, (res2) => {
-                let body = '';
-                res2.on('data', (chunk) => body += chunk);
+                let responseBody = '';
+                res2.on('data', (chunk) => responseBody += chunk);
                 res2.on('end', () => {
-                    try { resolve(JSON.parse(body)); } catch(e) { resolve({ error: body }); }
+                    try { resolve(JSON.parse(responseBody)); }
+                    catch(e) { resolve({ error: responseBody }); }
                 });
             });
             

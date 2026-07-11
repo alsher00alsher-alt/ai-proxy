@@ -13,7 +13,8 @@ export default async function handler(req, res) {
                 let body = '';
                 res2.on('data', (chunk) => body += chunk);
                 res2.on('end', () => {
-                    try { resolve(JSON.parse(body)); } catch(e) { resolve({ error: body }); }
+                    try { resolve(JSON.parse(body)); }
+                    catch(e) { resolve({ error: body }); }
                 });
             });
             req2.on('error', reject);
@@ -23,8 +24,12 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { prompt, video_id } = req.body;
+        // قراءة الجسم
+        let body = '';
+        for await (const chunk of req) { body += chunk; }
+        const { prompt, video_id } = JSON.parse(body || '{}');
 
+        // إنشاء فيديو جديد
         if (prompt && !video_id) {
             const options = {
                 hostname: 'apihub.agnes-ai.com',
@@ -49,6 +54,7 @@ export default async function handler(req, res) {
             return res.json({ success: false, error: 'فشل' });
         }
 
+        // التحقق من فيديو
         if (video_id) {
             const options = {
                 hostname: 'apihub.agnes-ai.com',
@@ -62,7 +68,7 @@ export default async function handler(req, res) {
                 const url = result.metadata?.url || result.url;
                 return res.json({ success: true, status: 'completed', video_url: url, progress: 100 });
             }
-            return res.json({ success: true, status: result.status || 'in_progress', progress: result.progress || 0 });
+            return res.json({ success: true, status: result.status || 'queued', progress: result.progress || 0 });
         }
 
         res.json({ status: 'ok' });
