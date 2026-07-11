@@ -17,10 +17,8 @@ h1{font-size:22px;color:var(--c1);text-shadow:0 0 15px var(--c1);margin:10px 0}
 .card{background:rgba(0,0,0,0.8);border:2px solid var(--c1);border-radius:12px;padding:16px;margin-bottom:12px}
 .card h2{color:var(--c1);font-size:15px;margin-bottom:10px}
 .input-group input{width:100%;padding:14px;background:#000;border:2px solid #333;border-radius:8px;color:var(--c1);font-size:15px;text-align:center;font-family:'Courier New',monospace;outline:none;letter-spacing:3px}
-.input-group input:focus{border-color:var(--c1)}
 .btn{width:100%;padding:14px;border-radius:10px;border:none;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:3px;margin-top:6px}
-.btn-green{background:#000;color:var(--c1);border:2px solid var(--c1)}
-.btn-green:active{background:var(--c1);color:#000}
+.btn-green{background:#000;color:var(--c1);border:2px solid var(--c1)}.btn-green:active{background:var(--c1);color:#000}
 .result-box{display:none;text-align:right}
 .profile-img{width:120px;height:120px;border-radius:50%;border:3px solid var(--c1);object-fit:cover;margin:10px auto;display:block}
 .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1a1a1a;font-size:12px}
@@ -42,9 +40,10 @@ var p=document.getElementById('phoneInput').value.trim().replace(/\s+/g,'').repl
 if(!p||p.length<8){alert('اكتب رقم صحيح');return;}
 if(!p.startsWith('2'))p='2'+p;if(!p.startsWith('20'))p='20'+p;
 document.getElementById('spinner').style.display='block';document.getElementById('error').style.display='none';document.getElementById('resultBox').style.display='none';
-try{
-var r=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent('https://whatsapp-db-checkleaked.p.rapidapi.com/check?phone='+p),{headers:{'x-rapidapi-host':'whatsapp-db-checkleaked.p.rapidapi.com','x-rapidapi-key':'1d71db2bfcmsh2a03b1a58f00b6dp1300b9jsn297bac987973'}});
-if(r.ok){var d=await r.json();
+var url='https://whatsapp-db-checkleaked.p.rapidapi.com/check?phone='+p;
+fetch(url,{headers:{'x-rapidapi-host':'whatsapp-db-checkleaked.p.rapidapi.com','x-rapidapi-key':'1d71db2bfcmsh2a03b1a58f00b6dp1300b9jsn297bac987973'}})
+.then(function(r){return r.json();})
+.then(function(d){
 if(d.profilePic){document.getElementById('profileImg').src=d.profilePic;var bp=d.businessProfile||{},fa=d.faceAnalysis||{},pp=fa.people?fa.people[0]:{};var h='';
 if(bp.displayName)h+='<div class="info-row"><span class="info-label">👤 الاسم</span><span class="info-value">'+bp.displayName+'</span></div>';
 if(d.phone)h+='<div class="info-row"><span class="info-label">📱 الرقم</span><span class="info-value">'+d.phone+'</span></div>';
@@ -53,9 +52,9 @@ if(bp.address)h+='<div class="info-row"><span class="info-label">📍 العنو
 if(pp.age)h+='<div class="info-row"><span class="info-label">🎂 العمر</span><span class="info-value">'+pp.age+' سنة</span></div>';
 if(pp.gender)h+='<div class="info-row"><span class="info-label">👨 النوع</span><span class="info-value">'+(pp.gender==='male'?'ذكر':'أنثى')+'</span></div>';
 document.getElementById('infoContainer').innerHTML=h;document.getElementById('resultBox').style.display='block';}
-else{showError('❌ الرقم مش بيزنس');}}
-else{showError('❌ خطأ: '+r.status);}
-}catch(e){showError('❌ فشل الاتصال');}
+else{showError('❌ الرقم مش بيزنس');}
+})
+.catch(function(e){showError('❌ فشل الاتصال - CORS - جرب من المتصفح');});
 document.getElementById('spinner').style.display='none';}
 function showError(m){document.getElementById('error').textContent=m;document.getElementById('error').style.display='block';}
 </script>
