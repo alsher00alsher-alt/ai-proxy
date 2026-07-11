@@ -7,31 +7,31 @@ export default async function handler(req, res) {
     const API_KEY = 'sk-SAwghndWW0bkWHuPwsUALep6iAOC8Oo5jZBVKCWCcYMlmHTJ';
     const https = require('https');
 
-    function makeRequest(options, data) {
-        return new Promise((resolve, reject) => {
+    function request2(options, data) {
+        return new Promise((resolve) => {
             const req2 = https.request(options, (res2) => {
-                let body = '';
-                res2.on('data', (chunk) => body += chunk);
+                const chunks = [];
+                res2.on('data', (c) => chunks.push(c));
                 res2.on('end', () => {
+                    const body = Buffer.concat(chunks).toString();
                     try { resolve(JSON.parse(body)); }
                     catch(e) { resolve({ error: body }); }
                 });
             });
-            req2.on('error', reject);
+            req2.on('error', (e) => resolve({ error: e.message }));
             if (data) req2.write(JSON.stringify(data));
             req2.end();
         });
     }
 
     try {
-        // قراءة الجسم
-        let body = '';
-        for await (const chunk of req) { body += chunk; }
-        const { prompt, video_id } = JSON.parse(body || '{}');
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        const raw = Buffer.concat(chunks).toString();
+        const { prompt, video_id } = JSON.parse(raw);
 
-        // إنشاء فيديو جديد
         if (prompt && !video_id) {
-            const options = {
+            const result = await request2({
                 hostname: 'apihub.agnes-ai.com',
                 path: '/v1/videos',
                 method: 'POST',
@@ -39,31 +39,27 @@ export default async function handler(req, res) {
                     'Authorization': `Bearer ${API_KEY}`,
                     'Content-Type': 'application/json'
                 }
-            };
-            const data = {
+            }, {
                 model: 'agnes-video-v2.0',
                 prompt: prompt,
                 num_frames: 121,
                 frame_rate: 24
-            };
-            const result = await makeRequest(options, data);
-            
+            });
+
             if (result.video_id) {
                 return res.json({ success: true, video_id: result.video_id, status: 'queued' });
             }
             return res.json({ success: false, error: 'فشل' });
         }
 
-        // التحقق من فيديو
         if (video_id) {
-            const options = {
+            const result = await request2({
                 hostname: 'apihub.agnes-ai.com',
                 path: `/v1/videos/${video_id}`,
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${API_KEY}` }
-            };
-            const result = await makeRequest(options);
-            
+            });
+
             if (result.status === 'completed') {
                 const url = result.metadata?.url || result.url;
                 return res.json({ success: true, status: 'completed', video_url: url, progress: 100 });
@@ -73,6 +69,6 @@ export default async function handler(req, res) {
 
         res.json({ status: 'ok' });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.json({ success: false, error: error.message });
     }
 }
