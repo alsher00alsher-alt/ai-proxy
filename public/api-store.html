@@ -26,11 +26,15 @@
         .plan-price small{font-size:16px;color:var(--muted)}
         .plan-price .old{text-decoration:line-through;color:#555;font-size:20px;display:block}
         .plan-card.ultimate .plan-price{color:var(--red)}
-        .promo-box{background:rgba(255,71,87,0.1);border:2px dashed var(--red);border-radius:10px;padding:12px;margin:10px 0;text-align:center}
-        .promo-box .code{color:var(--red);font-size:18px;font-weight:900;display:block}
-        .promo-box .saving{color:var(--gold);font-size:12px;margin-top:4px}
-        .promo-box .final{color:var(--green);font-size:22px;font-weight:900;margin-top:6px}
-        .discount-badge{display:inline-block;background:var(--red);color:#fff;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:700;margin:5px 0}
+        .coupon-box{background:rgba(255,71,87,0.08);border:2px dashed var(--red);border-radius:10px;padding:10px;margin:10px 0;display:flex;gap:6px}
+        .coupon-box input{flex:1;padding:10px;background:var(--bg);border:1px solid var(--red);border-radius:6px;color:var(--red);font-size:16px;text-align:center;font-weight:700;outline:none;font-family:'Cairo',sans-serif;letter-spacing:2px}
+        .coupon-box button{background:var(--red);color:#fff;border:none;padding:10px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;font-size:14px}
+        .coupon-box button:active{transform:scale(0.95)}
+        .discount-info{display:none;background:rgba(46,213,115,0.1);border:2px solid var(--green);border-radius:10px;padding:10px;margin:8px 0;text-align:center;animation:fadeIn 0.5s}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+        .discount-info .d-price{color:var(--green);font-size:28px;font-weight:900}
+        .discount-info .d-save{color:var(--gold);font-size:12px}
+        .discount-info .d-badge{display:inline-block;background:var(--green);color:#000;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;margin:4px 0}
         .features{list-style:none;text-align:right;margin:15px 0}
         .features li{padding:6px 0;border-bottom:1px solid #111;font-size:13px;color:var(--muted)}
         .features li::before{content:"✅ ";color:var(--green)}
@@ -79,15 +83,18 @@
         <div class="plan-card ultimate">
             <div class="badge">🔥 عرض حصري</div>
             <div class="plan-name">👑 ULTIMATE</div>
-            <div class="plan-price"><span class="old">87,000 ج</span> <span style="color:var(--green)">3,800 ج</span> <small>/شهري</small></div>
-            <div class="discount-badge">🏷️ وفر 83,200 ج (خصم 96%)</div>
-            <div class="promo-box">
-                <span class="code">🎫 كود الخصم: <b style="font-size:22px;">UNLIMITED</b></span>
-                <div class="saving">💰 السعر الأصلي: 87,000 ج</div>
-                <div class="saving">🏷️ نسبة الخصم: <b>95.6%</b></div>
-                <div class="final">💎 السعر النهائي: 3,800 ج/شهري</div>
+            <div class="plan-price" id="ultimate-price"><span class="old">87,000 ج</span> 87,000 ج <small>مدى الحياة</small></div>
+            <div class="coupon-box">
+                <input type="text" id="coupon-input" placeholder="أدخل كود الخصم" maxlength="20">
+                <button onclick="applyCoupon()">تفعيل</button>
             </div>
-            <ul class="features">
+            <div class="discount-info" id="discount-info">
+                <span class="d-badge">✅ تم التفعيل</span>
+                <div class="d-price" id="final-price">3,800 ج</div>
+                <div class="d-save">💰 وفرت 83,200 ج (خصم 96%)</div>
+                <div class="d-save">♾️ مدى الحياة - دفعة واحدة</div>
+            </div>
+            <ul class="features" id="ultimate-features">
                 <li>🚀 طلبات <b>غير محدودة</b></li>
                 <li>⚡ سرعة <b>غير محدودة</b></li>
                 <li>🏭 صنع ملفات <b>غير محدودة</b> بسرعة عالية</li>
@@ -97,12 +104,13 @@
                 <li>🔒 حماية DDoS</li>
                 <li>📞 دعم خاص 24/7</li>
                 <li>🎯 تخصيص كامل</li>
+                <li>♾️ ترخيص دائم</li>
             </ul>
-            <button class="btn btn-green">⚡ اطلب الآن بـ 3,800 ج</button>
+            <button class="btn btn-red" id="ultimate-btn" onclick="buyUltimate()">⚡ اطلب الآن بـ 87,000 ج</button>
         </div>
     </div>
 
-    <div class="section-title">🎮 الألعاب المدعومة (50+ لعبة)</div>
+    <div class="section-title">🎮 جميع الألعاب المدعومة (50+)</div>
     <div class="game-grid">
         <div class="game-tag">PUBG Mobile</div><div class="game-tag">Free Fire</div><div class="game-tag">Call of Duty</div><div class="game-tag">Honor of Kings</div>
         <div class="game-tag">Fortnite</div><div class="game-tag">Apex Legends</div><div class="game-tag">Valorant</div><div class="game-tag">League of Legends</div>
@@ -119,7 +127,7 @@
         <div class="game-tag">Temple Run</div><div class="game-tag">Angry Birds</div><div class="game-tag">Cut the Rope</div><div class="game-tag">Plants vs Zombies</div>
     </div>
 
-    <div class="section-title">🤖 النماذج المتاحة (200+ نموذج)</div>
+    <div class="section-title">🤖 جميع النماذج المتاحة (200+ نموذج)</div>
     <div class="model-grid">
         <div class="model-tag">GPT-4 Turbo</div><div class="model-tag">GPT-4o</div><div class="model-tag">GPT-3.5</div><div class="model-tag">Claude 3 Opus</div>
         <div class="model-tag">Claude 3 Sonnet</div><div class="model-tag">Claude 3 Haiku</div><div class="model-tag">Gemini Ultra</div><div class="model-tag">Gemini Pro</div>
@@ -152,5 +160,28 @@
         <p>© 2026 AI API Store | جميع الحقوق محفوظة | للتواصل: @MasterControlBot</p>
     </div>
 </div>
+
+<script>
+function applyCoupon(){
+    var code=document.getElementById('coupon-input').value.trim().toUpperCase();
+    if(code==='UNLIMITED'){
+        document.getElementById('discount-info').style.display='block';
+        document.getElementById('ultimate-price').innerHTML='<span class="old">87,000 ج</span> <span style="color:var(--green);font-size:40px;">3,800 ج</span> <small>مدى الحياة</small>';
+        document.getElementById('ultimate-btn').textContent='⚡ اطلب الآن بـ 3,800 ج';
+        document.getElementById('ultimate-btn').className='btn btn-green';
+    }else{
+        alert('❌ كود خصم غير صحيح');
+        document.getElementById('discount-info').style.display='none';
+        document.getElementById('ultimate-price').innerHTML='<span class="old">87,000 ج</span> 87,000 ج <small>مدى الحياة</small>';
+        document.getElementById('ultimate-btn').textContent='⚡ اطلب الآن بـ 87,000 ج';
+        document.getElementById('ultimate-btn').className='btn btn-red';
+    }
+}
+function buyUltimate(){
+    var code=document.getElementById('coupon-input').value.trim().toUpperCase();
+    var price=code==='UNLIMITED'?'3,800 ج':'87,000 ج';
+    alert('✅ تم الطلب بنجاح!\n\nالسعر: '+price+'\nالمدة: مدى الحياة\n\nسيتم التواصل معك قريباً');
+}
+</script>
 </body>
 </html>
