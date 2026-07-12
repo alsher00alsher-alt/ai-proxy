@@ -26,13 +26,7 @@
             pointer-events: none;
             z-index: 0;
             opacity: 0.1;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0, 255, 0, 0.03) 2px,
-                rgba(0, 255, 0, 0.03) 4px
-            );
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,0,0.03) 2px, rgba(0,255,0,0.03) 4px);
         }
         
         .scanline {
@@ -41,16 +35,13 @@
             left: 0;
             width: 100%;
             height: 3px;
-            background: rgba(0, 255, 0, 0.1);
+            background: rgba(0,255,0,0.1);
             z-index: 1;
             pointer-events: none;
             animation: scan 4s linear infinite;
         }
         
-        @keyframes scan {
-            0% { top: -3px; }
-            100% { top: 100%; }
-        }
+        @keyframes scan { 0% { top: -3px; } 100% { top: 100%; } }
         
         .container {
             max-width: 500px;
@@ -67,27 +58,10 @@
             text-align: center;
             margin-bottom: 20px;
             box-shadow: 0 0 20px rgba(0,255,0,0.3), inset 0 0 20px rgba(0,255,0,0.1);
-            position: relative;
-        }
-        
-        .header::before {
-            content: "";
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            border: 2px solid #00ff00;
-            animation: borderGlow 1.5s infinite;
-        }
-        
-        @keyframes borderGlow {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
         }
         
         .header h1 {
-            font-size: 28px;
+            font-size: 24px;
             color: #00ff00;
             text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
             margin: 0;
@@ -96,30 +70,30 @@
         
         .header .subtitle {
             color: #00cc00;
-            font-size: 12px;
+            font-size: 11px;
             margin-top: 10px;
         }
         
         .content {
             background: rgba(0,0,0,0.9);
             border: 2px solid #00ff00;
-            padding: 25px;
+            padding: 20px;
             min-height: 400px;
             box-shadow: 0 0 20px rgba(0,255,0,0.2);
         }
         
         .step {
             text-align: center;
-            font-size: 16px;
+            font-size: 15px;
             color: #00ff00;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-shadow: 0 0 5px #00ff00;
             letter-spacing: 2px;
         }
         
         .list-item {
-            padding: 15px;
-            margin: 8px 0;
+            padding: 12px;
+            margin: 6px 0;
             background: rgba(0,255,0,0.05);
             border: 1px solid #00ff00;
             cursor: pointer;
@@ -128,7 +102,7 @@
             justify-content: space-between;
             align-items: center;
             color: #00ff00;
-            font-size: 14px;
+            font-size: 13px;
         }
         
         .list-item:hover {
@@ -140,12 +114,17 @@
         .number-box {
             background: #000;
             border: 2px solid #ff0000;
-            padding: 30px;
+            padding: 25px;
             text-align: center;
-            margin: 20px 0;
+            margin: 15px 0;
             box-shadow: 0 0 30px rgba(255,0,0,0.3), inset 0 0 30px rgba(255,0,0,0.1);
             animation: redPulse 2s infinite;
+            cursor: pointer;
+            transition: all 0.3s;
         }
+        
+        .number-box:hover { box-shadow: 0 0 50px rgba(255,0,0,0.6); }
+        .number-box:active { transform: scale(0.95); }
         
         @keyframes redPulse {
             0%, 100% { box-shadow: 0 0 30px rgba(255,0,0,0.3), inset 0 0 30px rgba(255,0,0,0.1); }
@@ -153,30 +132,31 @@
         }
         
         .number {
-            font-size: 42px;
+            font-size: 38px;
             font-weight: bold;
             letter-spacing: 5px;
-            margin: 15px 0;
+            margin: 10px 0;
             direction: ltr;
             color: #ff0000;
             text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
+            user-select: all;
         }
         
         .info {
             opacity: 0.9;
-            margin: 5px 0;
+            margin: 4px 0;
             color: #00ff00;
-            font-size: 13px;
+            font-size: 12px;
         }
         
         .btn {
             width: 100%;
-            padding: 15px;
-            margin: 10px 0;
+            padding: 14px;
+            margin: 8px 0;
             border: 2px solid #00ff00;
             background: #000;
             color: #00ff00;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
@@ -184,84 +164,71 @@
             font-family: 'Share Tech Mono', monospace;
         }
         
-        .btn-primary {
-            border-color: #00ff00;
-            color: #00ff00;
-        }
-        
-        .btn-primary:hover {
-            background: #00ff00;
-            color: #000;
-            box-shadow: 0 0 30px rgba(0,255,0,0.5);
-        }
-        
-        .btn-secondary {
-            border-color: #ffff00;
-            color: #ffff00;
-        }
-        
-        .btn-secondary:hover {
-            background: #ffff00;
-            color: #000;
-            box-shadow: 0 0 30px rgba(255,255,0,0.5);
-        }
-        
-        .btn-danger {
-            border-color: #ff0000;
-            color: #ff0000;
-        }
-        
-        .btn-danger:hover {
-            background: #ff0000;
-            color: #000;
-            box-shadow: 0 0 30px rgba(255,0,0,0.5);
-        }
+        .btn-primary { border-color: #00ff00; color: #00ff00; }
+        .btn-primary:hover { background: #00ff00; color: #000; box-shadow: 0 0 30px rgba(0,255,0,0.5); }
+        .btn-secondary { border-color: #ffff00; color: #ffff00; }
+        .btn-secondary:hover { background: #ffff00; color: #000; box-shadow: 0 0 30px rgba(255,255,0,0.5); }
+        .btn-danger { border-color: #ff0000; color: #ff0000; }
+        .btn-danger:hover { background: #ff0000; color: #000; box-shadow: 0 0 30px rgba(255,0,0,0.5); }
         
         .otp-box {
             background: #000;
             border: 2px solid #ffff00;
             padding: 20px;
             text-align: center;
-            font-size: 50px;
+            font-size: 45px;
             font-weight: bold;
             letter-spacing: 10px;
-            margin: 20px 0;
+            margin: 15px 0;
             direction: ltr;
             color: #ffff00;
             text-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00;
             animation: yellowPulse 1s infinite;
             box-shadow: 0 0 40px rgba(255,255,0,0.5);
+            cursor: pointer;
         }
+        
+        .otp-box:hover { box-shadow: 0 0 60px rgba(255,255,0,0.8); }
+        .otp-box:active { transform: scale(0.95); }
         
         @keyframes yellowPulse {
             0%, 100% { opacity: 0.8; }
             50% { opacity: 1; }
         }
         
+        .no-otp-box {
+            background: #000;
+            border: 2px solid #ff6600;
+            padding: 15px;
+            text-align: center;
+            font-size: 16px;
+            margin: 15px 0;
+            color: #ff6600;
+            text-shadow: 0 0 10px #ff6600;
+        }
+        
         .loader {
             border: 3px solid #000;
             border-top: 3px solid #00ff00;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             animation: spin 0.8s linear infinite;
-            margin: 20px auto;
+            margin: 15px auto;
             box-shadow: 0 0 20px rgba(0,255,0,0.5);
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .error {
             background: #000;
             border: 2px solid #ff0000;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
-            margin: 15px 0;
+            margin: 10px 0;
             color: #ff0000;
             text-shadow: 0 0 10px #ff0000;
+            font-size: 13px;
         }
         
         .back-btn {
@@ -269,20 +236,14 @@
             border: 1px solid #00ff00;
             color: #00ff00;
             cursor: pointer;
-            font-size: 14px;
-            padding: 10px 15px;
-            margin-bottom: 15px;
+            font-size: 13px;
+            padding: 8px 12px;
+            margin-bottom: 12px;
             font-family: 'Share Tech Mono', monospace;
         }
         
-        .list-container {
-            max-height: 350px;
-            overflow-y: auto;
-        }
-        
-        .blink {
-            animation: blink 0.8s infinite;
-        }
+        .list-container { max-height: 320px; overflow-y: auto; }
+        .blink { animation: blink 0.8s infinite; }
         
         @keyframes blink {
             0%, 100% { opacity: 1; }
@@ -292,15 +253,13 @@
         .status-bar {
             display: flex;
             justify-content: space-between;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #00ff00;
-            margin-bottom: 15px;
-            font-size: 11px;
+            margin-bottom: 12px;
+            font-size: 10px;
         }
         
-        .glitch {
-            animation: glitch 0.3s infinite;
-        }
+        .glitch { animation: glitch 0.3s infinite; }
         
         @keyframes glitch {
             0% { transform: translate(0); }
@@ -310,11 +269,32 @@
             80% { transform: translate(2px, 2px); }
             100% { transform: translate(0); }
         }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00ff00;
+            color: #000;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 13px;
+            z-index: 999;
+            opacity: 0;
+            transition: all 0.3s;
+            pointer-events: none;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        .toast.show { opacity: 1; bottom: 50px; }
+        .copy-hint { font-size: 10px; color: #ff6600; margin-top: 5px; animation: blink 1.5s infinite; }
     </style>
 </head>
 <body>
     <div class="matrix-bg"></div>
     <div class="scanline"></div>
+    <div class="toast" id="toast">📋 COPIED!</div>
     
     <div class="container">
         <div class="header">
@@ -329,22 +309,47 @@
         let state = { number: null, service: null, country: null, orderId: null };
         let otpInterval = null;
 
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            toast.textContent = text;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function copyToClipboard(text) {
+            const cleanText = text.replace(/[^0-9+]/g, '');
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(cleanText).then(() => showToast('📋 COPIED: ' + cleanText));
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = cleanText;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('📋 COPIED: ' + cleanText);
+            }
+        }
+
         async function api(path, method = 'GET', body = null) {
             const url = `${PROXY_URL}?path=${encodeURIComponent(path)}`;
             const options = { method, headers: { 'Content-Type': 'application/json' } };
             if (body) options.body = JSON.stringify(body);
-            const res = await fetch(url, options);
-            return await res.json();
+            try {
+                const res = await fetch(url, options);
+                return await res.json();
+            } catch(e) {
+                return { success: false, message: e.message };
+            }
         }
 
         function showServices() {
             clearInterval(otpInterval);
             const app = document.getElementById('app');
             app.innerHTML = `
-                <div class="status-bar">
-                    <span>STATUS: CONNECTED</span>
-                    <span>ENC: AES-256</span>
-                </div>
+                <div class="status-bar"><span>STATUS: CONNECTED</span><span>ENC: AES-256</span></div>
                 <div class="step">[ SELECT_TARGET ]</div>
                 <div class="loader"></div>
             `;
@@ -353,21 +358,17 @@
                 const services = data.services || [];
                 if (!services.length) {
                     app.innerHTML = `
-                        <div class="status-bar"><span>STATUS: ERROR</span></div>
                         <div class="error">[!] NO_SERVICES_FOUND</div>
                         <button class="btn btn-secondary" onclick="showServices()">[ RETRY ]</button>
                     `;
                     return;
                 }
                 let html = `
-                    <div class="status-bar">
-                        <span>STATUS: READY</span>
-                        <span>SERVICES: ${services.length}</span>
-                    </div>
+                    <div class="status-bar"><span>READY</span><span>TARGETS: ${services.length}</span></div>
                     <div class="step">[ SELECT_TARGET ]</div>
                     <div class="list-container">
                 `;
-                services.forEach((s, i) => {
+                services.forEach(s => {
                     html += `
                         <div class="list-item" onclick="showCountries('${s.name.replace(/'/g, "\\'")}')">
                             <span>${s.name}</span>
@@ -377,11 +378,6 @@
                 });
                 html += `</div><button class="btn btn-danger" onclick="exit()">[ EXIT_SYSTEM ]</button>`;
                 app.innerHTML = html;
-            }).catch(() => {
-                app.innerHTML = `
-                    <div class="error">[!] CONNECTION_LOST</div>
-                    <button class="btn btn-secondary" onclick="showServices()">[ RETRY ]</button>
-                `;
             });
         }
 
@@ -390,23 +386,22 @@
             const app = document.getElementById('app');
             app.innerHTML = `
                 <button class="back-btn" onclick="showServices()">◀ [ BACK ]</button>
-                <div class="status-bar"><span>TARGET: ${service}</span></div>
                 <div class="step">[ SELECT_COUNTRY ]</div>
                 <div class="loader"></div>
             `;
             
             api(`countries?service=${encodeURIComponent(service)}`).then(data => {
-                const countries = data.countries || data.countries || [];
+                const countries = data.countries || [];
                 if (!countries.length) {
                     app.innerHTML = `
                         <button class="back-btn" onclick="showServices()">◀ [ BACK ]</button>
-                        <div class="error">[!] NO_COUNTRIES_FOUND</div>
+                        <div class="error">[!] NO_COUNTRIES</div>
                     `;
                     return;
                 }
                 let html = `
                     <button class="back-btn" onclick="showServices()">◀ [ BACK ]</button>
-                    <div class="status-bar"><span>TARGET: ${service}</span><span>NODES: ${countries.length}</span></div>
+                    <div class="status-bar"><span>${service}</span><span>NODES: ${countries.length}</span></div>
                     <div class="step">[ SELECT_COUNTRY ]</div>
                     <div class="list-container">
                 `;
@@ -427,16 +422,15 @@
             state.country = country;
             const app = document.getElementById('app');
             app.innerHTML = `
-                <div class="status-bar"><span>REQUESTING...</span></div>
-                <div class="step">[ GENERATING_NUMBER ]</div>
+                <div class="step">[ GENERATING... ]</div>
                 <div class="loader"></div>
-                <p style="text-align:center;color:#00ff00;">establishing secure connection...</p>
+                <p style="text-align:center;color:#00ff00;font-size:12px;">secure connection...</p>
             `;
             
             api('request_number', 'POST', { service, country }).then(data => {
                 if (!data || !data.success) {
                     app.innerHTML = `
-                        <div class="error">[!] FAILED: ${data?.message || 'UNKNOWN_ERROR'}</div>
+                        <div class="error">[!] ${data?.message || 'FAILED'}</div>
                         <button class="btn btn-secondary" onclick="showCountries('${service.replace(/'/g, "\\'")}')">[ RETRY ]</button>
                     `;
                     return;
@@ -450,16 +444,13 @@
         function showNumber() {
             const app = document.getElementById('app');
             app.innerHTML = `
-                <div class="status-bar">
-                    <span>ACTIVE</span>
-                    <span class="blink">● LIVE</span>
-                </div>
+                <div class="status-bar"><span>ACTIVE</span><span class="blink">● LIVE</span></div>
                 <div class="step">[ NUMBER_ACQUIRED ]</div>
-                <div class="number-box">
-                    <div class="info">>> TARGET_NUMBER <<</div>
+                <div class="number-box" onclick="copyToClipboard('${state.number}')">
+                    <div class="info">>> اضغط للنسخ <<</div>
                     <div class="number">${state.number}</div>
-                    <div class="info">NODE: ${state.country}</div>
-                    <div class="info">SVC: ${state.service}</div>
+                    <div class="copy-hint blink">TAP TO COPY NUMBER</div>
+                    <div class="info">NODE: ${state.country} | SVC: ${state.service}</div>
                     ${state.orderId ? `<div class="info">TXID: ${state.orderId}</div>` : ''}
                 </div>
                 <button class="btn btn-secondary" onclick="changeNumber()">[ CHANGE_NUMBER ]</button>
@@ -480,95 +471,132 @@
                     state.number = data.number;
                     state.orderId = data.id || data.order_id;
                     app.innerHTML = `
-                        <div class="step">[ NUMBER_CHANGED ]</div>
-                        <div class="number-box">
+                        <div class="step">[ CHANGED ]</div>
+                        <div class="number-box" onclick="copyToClipboard('${state.number}')">
                             <div class="number">${state.number}</div>
+                            <div class="copy-hint blink">TAP TO COPY</div>
                         </div>
                     `;
                     setTimeout(showNumber, 1500);
                 } else {
                     app.innerHTML = `
-                        <div class="error">[!] CHANGE_FAILED</div>
+                        <div class="error">[!] FAILED</div>
                         <button class="btn btn-secondary" onclick="showNumber()">[ BACK ]</button>
                     `;
                 }
             });
         }
 
-        async function fetchOTP() {
+        function fetchOTP() {
             clearInterval(otpInterval);
             const app = document.getElementById('app');
             let count = 0;
+            let hasOtp = false;
             
             app.innerHTML = `
-                <div class="status-bar">
-                    <span>SNIFFING...</span>
-                    <span class="blink">● LISTENING</span>
-                </div>
+                <div class="status-bar"><span>SNIFFING...</span><span class="blink">● LISTENING</span></div>
                 <div class="step">[ INTERCEPTING_OTP ]</div>
                 <div class="number-box" style="border-color:#00ff00;box-shadow:0 0 30px rgba(0,255,0,0.3);">
-                    <div style="color:#00ff00;">TARGET: ${state.number}</div>
+                    <div style="color:#00ff00;font-size:14px;">TARGET: ${state.number}</div>
+                </div>
+                <div id="otpResult">
+                    <div class="no-otp-box">[!] لا يوجد كود بعد<br><span style="font-size:11px;">جاري انتظار الرسالة...</span></div>
                 </div>
                 <div class="loader"></div>
-                <p style="text-align:center;color:#00ff00;" id="status">initializing packet sniffer...</p>
-                <p style="text-align:center;color:#00ff00;" id="timer">[ 0s ]</p>
+                <p style="text-align:center;color:#00ff00;font-size:12px;" id="status">sniffing packets...</p>
+                <p style="text-align:center;color:#00ff00;font-size:12px;" id="timer">[ 0s ]</p>
                 <button class="btn btn-danger" onclick="stopOTP()">[ ABORT ]</button>
             `;
             
             const startTime = Date.now();
             
-            otpInterval = setInterval(async () => {
+            function checkOTP() {
+                if (hasOtp) return;
+                
                 count++;
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 
                 const statusEl = document.getElementById('status');
                 const timerEl = document.getElementById('timer');
+                const otpResult = document.getElementById('otpResult');
                 
                 if (statusEl) {
                     const chars = ['|', '/', '-', '\\'];
                     statusEl.textContent = `sniffing packets ${chars[count % 4]} [${count}]`;
                 }
-                if (timerEl) {
-                    timerEl.textContent = `[ ${elapsed}s ]`;
-                }
+                if (timerEl) timerEl.textContent = `[ ${elapsed}s ]`;
                 
-                try {
-                    const data = await api(`otp?number=${encodeURIComponent(state.number)}`);
+                api(`otp?number=${encodeURIComponent(state.number)}`).then(data => {
+                    if (hasOtp) return;
                     
-                    // التحقق من وجود OTP
-                    if (data && data.otp && data.otp.trim()) {
+                    // فحص لو فيه OTP
+                    let otpValue = null;
+                    
+                    if (data && data.otp && data.otp.trim() && data.otp !== '0' && data.otp !== 'null') {
+                        otpValue = data.otp.replace(/[^0-9]/g, '');
+                    }
+                    
+                    if (otpValue && otpValue.length > 0) {
+                        hasOtp = true;
                         clearInterval(otpInterval);
-                        const otp = data.otp.replace(/[^0-9]/g, '');
-                        if (otp) {
-                            app.innerHTML = `
-                                <div class="status-bar">
-                                    <span>EXTRACTED</span>
-                                    <span class="blink">● DONE</span>
-                                </div>
+                        
+                        if (otpResult) {
+                            otpResult.innerHTML = `
                                 <div class="step">[ OTP_CAPTURED ]</div>
-                                <div class="number-box" style="border-color:#ffff00;box-shadow:0 0 30px rgba(255,255,0,0.3);">
-                                    <div style="color:#ffff00;">>> EXTRACTED_CODE <<</div>
-                                </div>
-                                <div class="otp-box">${otp}</div>
-                                <div class="info" style="text-align:center">TARGET: ${state.number}</div>
-                                <div class="info" style="text-align:center">NODE: ${state.country} | SVC: ${state.service}</div>
+                                <div class="otp-box" onclick="copyToClipboard('${otpValue}')">${otpValue}</div>
+                                <div class="copy-hint blink" style="text-align:center;">اضغط على الكود لنسخه</div>
+                                <div class="info" style="text-align:center;">NODE: ${state.country} | SVC: ${state.service}</div>
+                            `;
+                            
+                            const loader = document.querySelector('.loader');
+                            if (loader) loader.style.display = 'none';
+                            if (statusEl) statusEl.textContent = '✅ OTP EXTRACTED!';
+                            
+                            const btnsDiv = document.createElement('div');
+                            btnsDiv.style.marginTop = '15px';
+                            btnsDiv.innerHTML = `
                                 <button class="btn btn-secondary" onclick="changeNumber()">[ NEW_TARGET ]</button>
                                 <button class="btn btn-primary" onclick="showServices()">[ MAIN_MENU ]</button>
                                 <button class="btn btn-danger" onclick="exit()">[ EXIT ]</button>
                             `;
+                            otpResult.appendChild(btnsDiv);
+                        }
+                    } else {
+                        // مفيش كود - رجع فاضي
+                        if (otpResult && !hasOtp) {
+                            const dots = '.'.repeat(count % 4);
+                            otpResult.innerHTML = `
+                                <div class="no-otp-box">[!] لا يوجد كود بعد${dots}<br><span style="font-size:11px;">لم يتم استلام SMS حتى الآن</span></div>
+                            `;
                         }
                     }
-                } catch(e) {}
+                }).catch(() => {
+                    if (otpResult && !hasOtp) {
+                        const dots = '.'.repeat(count % 4);
+                        otpResult.innerHTML = `
+                            <div class="no-otp-box">[!] لا يوجد كود بعد${dots}<br><span style="font-size:11px;">جاري المحاولة...</span></div>
+                        `;
+                    }
+                });
                 
-                if (count > 60) {
+                if (count >= 60 && !hasOtp) {
                     clearInterval(otpInterval);
-                    app.innerHTML = `
-                        <div class="error">[!] TIMEOUT: NO_OTP_RECEIVED</div>
-                        <button class="btn btn-secondary" onclick="changeNumber()">[ NEW_TARGET ]</button>
-                        <button class="btn btn-primary" onclick="showServices()">[ MAIN_MENU ]</button>
-                    `;
+                    if (otpResult) {
+                        otpResult.innerHTML = `
+                            <div class="error">[!] TIMEOUT: لم يتم استلام كود</div>
+                            <div style="text-align:center;color:#ff6600;margin:10px 0;">✗ لا يوجد أكواد</div>
+                            <button class="btn btn-secondary" onclick="changeNumber()">[ NEW_TARGET ]</button>
+                            <button class="btn btn-primary" onclick="showServices()">[ MAIN_MENU ]</button>
+                        `;
+                    }
+                    const loader = document.querySelector('.loader');
+                    if (loader) loader.style.display = 'none';
+                    if (statusEl) statusEl.textContent = '⏰ لا يوجد أكواد';
                 }
-            }, 3000);
+            }
+            
+            checkOTP();
+            otpInterval = setInterval(checkOTP, 3000);
         }
 
         function stopOTP() {
@@ -579,11 +607,11 @@
         function exit() {
             clearInterval(otpInterval);
             document.getElementById('app').innerHTML = `
-                <div style="text-align:center;padding:50px 20px">
-                    <div style="font-size:60px;">☠️</div>
-                    <div style="color:#ff0000;font-size:20px;margin:20px 0;" class="blink">SYSTEM TERMINATED</div>
-                    <div style="color:#00ff00;font-size:12px;">session encrypted & destroyed</div>
-                    <button class="btn btn-primary" onclick="showServices()" style="margin-top:30px;">[ REBOOT_SYSTEM ]</button>
+                <div style="text-align:center;padding:40px 20px">
+                    <div style="font-size:55px;">☠️</div>
+                    <div style="color:#ff0000;font-size:18px;margin:15px 0;" class="blink">SYSTEM TERMINATED</div>
+                    <div style="color:#00ff00;font-size:11px;">session encrypted & destroyed</div>
+                    <button class="btn btn-primary" onclick="showServices()" style="margin-top:25px;">[ REBOOT_SYSTEM ]</button>
                 </div>
             `;
         }
