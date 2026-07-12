@@ -145,10 +145,7 @@
         .otp-box:hover { box-shadow: 0 0 60px rgba(255,255,0,0.8); }
         .otp-box:active { transform: scale(0.95); }
         
-        @keyframes yellowPulse {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; }
-        }
+        @keyframes yellowPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
         
         .no-otp-box {
             background: #000;
@@ -175,6 +172,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .error { background: #000; border: 2px solid #ff0000; padding: 12px; text-align: center; margin: 10px 0; color: #ff0000; text-shadow: 0 0 10px #ff0000; font-size: 13px; }
+        .success { background: #000; border: 2px solid #00ff00; padding: 12px; text-align: center; margin: 10px 0; color: #00ff00; text-shadow: 0 0 10px #00ff00; font-size: 13px; }
         .back-btn { background: none; border: 1px solid #00ff00; color: #00ff00; cursor: pointer; font-size: 13px; padding: 8px 12px; margin-bottom: 12px; font-family: 'Share Tech Mono', monospace; }
         .list-container { max-height: 320px; overflow-y: auto; }
         .blink { animation: blink 0.8s infinite; }
@@ -389,7 +387,7 @@
             const app = document.getElementById('app');
             let count = 0;
             let hasOtp = false;
-            let lastOtpCode = '';
+            let lastOtpValue = '';
             
             app.innerHTML = `
                 <div class="status-bar"><span>SNIFFING...</span><span class="blink">● LISTENING</span></div>
@@ -407,6 +405,30 @@
             `;
             
             const startTime = Date.now();
+            const cleanNumber = state.number.replace(/[^0-9]/g, '');
+            
+            function extractOTPFromList(data) {
+                if (!data || !Array.isArray(data)) return null;
+                
+                for (const item of data) {
+                    if (!Array.isArray(item) || item.length < 4) continue;
+                    
+                    const service = item[0];
+                    const number = String(item[1]).replace(/[^0-9]/g, '');
+                    const message = item[2] || '';
+                    const timestamp = item[3];
+                    
+                    // فلترة حسب الرقم
+                    if (number.includes(cleanNumber) || cleanNumber.includes(number)) {
+                        // استخراج الكود من الرسالة
+                        const otpMatch = message.match(/\d{3}[-\s]?\d{3,4}|\d{4,8}/);
+                        if (otpMatch) {
+                            return otpMatch[0].replace(/[^0-9]/g, '');
+                        }
+                    }
+                }
+                return null;
+            }
             
             function checkOTP() {
                 if (hasOtp) return;
@@ -424,34 +446,34 @@
                 }
                 if (timerEl) timerEl.textContent = `[ ${elapsed}s ]`;
                 
-                // استخدام my_otps عشان نجيب كل الأكواد
-                api(`my_otps?number=${encodeURIComponent(state.number)}&limit=5`).then(data => {
+                // استخدام نفس API بتاع البوت: otp?count=200
+                api(`otp?count=200`).then(data => {
                     if (hasOtp) return;
                     
                     let otpValue = null;
                     
-                    // فحص my_otps
-                    if (data && data.otps && Array.isArray(data.otps) && data.otps.length > 0) {
-                        // جيب أحدث كود
-                        const latestOtp = data.otps[0];
-                        if (latestOtp.otp && latestOtp.otp.trim()) {
-                            otpValue = latestOtp.otp.replace(/[^0-9]/g, '');
-                        }
+                    // فحص البيانات كـ array
+                    if (Array.isArray(data)) {
+                        otpValue = extractOTPFromList(data);
                     }
-                    
-                    // لو مفيش في my_otps جرب otp العادي
-                    if (!otpValue && data && data.otp && data.otp.trim() && data.otp !== '0') {
+                    // لو رجع كـ object فيه otps
+                    else if (data && data.otps && Array.isArray(data.otps)) {
+                        otpValue = extractOTPFromList(data.otps);
+                    }
+                    // لو رجع OTP مباشر
+                    else if (data && data.otp && data.otp.trim() && data.otp !== '0') {
                         otpValue = data.otp.replace(/[^0-9]/g, '');
                     }
                     
-                    if (otpValue && otpValue.length > 0 && otpValue !== lastOtpCode) {
+                    if (otpValue && otpValue.length >= 3 && otpValue !== lastOtpValue) {
                         hasOtp = true;
-                        lastOtpCode = otpValue;
+                        lastOtpValue = otpValue;
                         clearInterval(otpInterval);
                         
                         if (otpResult) {
                             otpResult.innerHTML = `
                                 <div class="step">[ OTP_CAPTURED ]</div>
+                                <div class="success">✅ تم استخراج الكود بنجاح</div>
                                 <div class="otp-box" onclick="copyToClipboard('${otpValue}')">${otpValue}</div>
                                 <div class="copy-hint blink" style="text-align:center;">اضغط على الكود لنسخه</div>
                                 <div class="info" style="text-align:center;">NODE: ${state.country} | SVC: ${state.service}</div>
@@ -467,7 +489,7 @@
                             if (statusEl) statusEl.textContent = '✅ OTP EXTRACTED!';
                         }
                     } else {
-                        // مفيش كود
+                        // مفيش كود لسه
                         if (otpResult && !hasOtp) {
                             const dots = '.'.repeat(count % 4);
                             otpResult.innerHTML = `
