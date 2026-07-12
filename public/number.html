@@ -3,202 +3,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NumberPanel - أرقام وهمية</title>
+    <title>NumberPanel - H4CK3R MODE</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            font-family: 'Share Tech Mono', monospace;
+            background: #000;
             min-height: 100vh;
-            padding: 20px;
-            color: white;
+            color: #00ff00;
+            overflow-x: hidden;
         }
+        
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.1;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 0, 0.03) 2px,
+                rgba(0, 255, 0, 0.03) 4px
+            );
+        }
+        
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(0, 255, 0, 0.1);
+            z-index: 1;
+            pointer-events: none;
+            animation: scan 4s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { top: -3px; }
+            100% { top: 100%; }
+        }
+        
         .container {
             max-width: 500px;
             margin: 0 auto;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.2);
+            padding: 20px;
+            position: relative;
+            z-index: 2;
         }
+        
         .header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #000;
+            border: 2px solid #00ff00;
             padding: 25px;
             text-align: center;
-            font-size: 24px;
-            font-weight: bold;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0,255,0,0.3), inset 0 0 20px rgba(0,255,0,0.1);
+            position: relative;
         }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 2px solid #00ff00;
+            animation: borderGlow 1.5s infinite;
+        }
+        
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+            margin: 0;
+            letter-spacing: 3px;
+        }
+        
+        .header .subtitle {
+            color: #00cc00;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
         .content {
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #00ff00;
             padding: 25px;
             min-height: 400px;
+            box-shadow: 0 0 20px rgba(0,255,0,0.2);
         }
+        
         .step {
             text-align: center;
-            font-size: 18px;
+            font-size: 16px;
+            color: #00ff00;
             margin-bottom: 20px;
-            color: #a78bfa;
+            text-shadow: 0 0 5px #00ff00;
+            letter-spacing: 2px;
         }
+        
         .list-item {
             padding: 15px;
             margin: 8px 0;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 10px;
+            background: rgba(0,255,0,0.05);
+            border: 1px solid #00ff00;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: #00ff00;
+            font-size: 14px;
         }
+        
         .list-item:hover {
-            background: rgba(102,126,234,0.3);
-            border-color: #667eea;
+            background: rgba(0,255,0,0.15);
+            box-shadow: 0 0 15px rgba(0,255,0,0.3);
             transform: translateX(-5px);
         }
+        
         .number-box {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
+            background: #000;
+            border: 2px solid #ff0000;
             padding: 30px;
-            border-radius: 15px;
             text-align: center;
             margin: 20px 0;
-            box-shadow: 0 10px 30px rgba(245,87,108,0.3);
+            box-shadow: 0 0 30px rgba(255,0,0,0.3), inset 0 0 30px rgba(255,0,0,0.1);
+            animation: redPulse 2s infinite;
         }
+        
+        @keyframes redPulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255,0,0,0.3), inset 0 0 30px rgba(255,0,0,0.1); }
+            50% { box-shadow: 0 0 60px rgba(255,0,0,0.6), inset 0 0 60px rgba(255,0,0,0.2); }
+        }
+        
         .number {
-            font-size: 48px;
+            font-size: 42px;
             font-weight: bold;
             letter-spacing: 5px;
             margin: 15px 0;
+            direction: ltr;
+            color: #ff0000;
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
         }
-        .info { opacity: 0.9; margin: 5px 0; }
+        
+        .info {
+            opacity: 0.9;
+            margin: 5px 0;
+            color: #00ff00;
+            font-size: 13px;
+        }
+        
         .btn {
             width: 100%;
             padding: 15px;
             margin: 10px 0;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border: 2px solid #00ff00;
+            background: #000;
+            color: #00ff00;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            letter-spacing: 2px;
+            font-family: 'Share Tech Mono', monospace;
         }
+        
         .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+            border-color: #00ff00;
+            color: #00ff00;
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.3); }
+        
+        .btn-primary:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 30px rgba(0,255,0,0.5);
+        }
+        
         .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.3);
+            border-color: #ffff00;
+            color: #ffff00;
         }
-        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        
+        .btn-secondary:hover {
+            background: #ffff00;
+            color: #000;
+            box-shadow: 0 0 30px rgba(255,255,0,0.5);
+        }
+        
         .btn-danger {
-            background: #dc3545;
-            color: white;
+            border-color: #ff0000;
+            color: #ff0000;
         }
-        .btn-danger:hover { background: #c82333; }
+        
+        .btn-danger:hover {
+            background: #ff0000;
+            color: #000;
+            box-shadow: 0 0 30px rgba(255,0,0,0.5);
+        }
+        
         .otp-box {
-            background: #28a745;
+            background: #000;
+            border: 2px solid #ffff00;
             padding: 20px;
-            border-radius: 10px;
             text-align: center;
-            font-size: 40px;
+            font-size: 50px;
             font-weight: bold;
-            letter-spacing: 8px;
+            letter-spacing: 10px;
             margin: 20px 0;
-            animation: pulse 1.5s infinite;
+            direction: ltr;
+            color: #ffff00;
+            text-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00;
+            animation: yellowPulse 1s infinite;
+            box-shadow: 0 0 40px rgba(255,255,0,0.5);
         }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        
+        @keyframes yellowPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
         }
+        
         .loader {
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top: 3px solid #667eea;
+            border: 3px solid #000;
+            border-top: 3px solid #00ff00;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+            width: 50px;
+            height: 50px;
+            animation: spin 0.8s linear infinite;
             margin: 20px auto;
+            box-shadow: 0 0 20px rgba(0,255,0,0.5);
         }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
         .error {
-            background: #dc3545;
+            background: #000;
+            border: 2px solid #ff0000;
             padding: 15px;
-            border-radius: 10px;
             text-align: center;
             margin: 15px 0;
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000;
         }
+        
         .back-btn {
             background: none;
-            border: none;
-            color: #a78bfa;
+            border: 1px solid #00ff00;
+            color: #00ff00;
             cursor: pointer;
-            font-size: 16px;
-            padding: 10px;
+            font-size: 14px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-family: 'Share Tech Mono', monospace;
         }
-        .list-container { max-height: 400px; overflow-y: auto; }
+        
+        .list-container {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .blink {
+            animation: blink 0.8s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border: 1px solid #00ff00;
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+        
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
+        
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-2px, -2px); }
+            80% { transform: translate(2px, 2px); }
+            100% { transform: translate(0); }
+        }
     </style>
 </head>
 <body>
+    <div class="matrix-bg"></div>
+    <div class="scanline"></div>
+    
     <div class="container">
-        <div class="header">📱 NumberPanel</div>
+        <div class="header">
+            <h1 class="glitch">⚠️ H4CK3R_P4N3L ⚠️</h1>
+            <div class="subtitle blink">[ SYS::ROOT://NUMB3R_G3N ]</div>
+        </div>
         <div class="content" id="app"></div>
     </div>
 
     <script>
         const PROXY_URL = '/api/numberproxy';
         let state = { number: null, service: null, country: null, orderId: null };
+        let otpInterval = null;
 
         async function api(path, method = 'GET', body = null) {
             const url = `${PROXY_URL}?path=${encodeURIComponent(path)}`;
-            const options = {
-                method,
-                headers: { 'Content-Type': 'application/json' }
-            };
+            const options = { method, headers: { 'Content-Type': 'application/json' } };
             if (body) options.body = JSON.stringify(body);
             const res = await fetch(url, options);
             return await res.json();
         }
 
         function showServices() {
+            clearInterval(otpInterval);
             const app = document.getElementById('app');
-            app.innerHTML = `<div class="step">📱 الخطوة 1: اختيار الخدمة</div><div class="loader"></div>`;
+            app.innerHTML = `
+                <div class="status-bar">
+                    <span>STATUS: CONNECTED</span>
+                    <span>ENC: AES-256</span>
+                </div>
+                <div class="step">[ SELECT_TARGET ]</div>
+                <div class="loader"></div>
+            `;
             
             api('services').then(data => {
                 const services = data.services || [];
                 if (!services.length) {
-                    app.innerHTML = `<div class="step">📱 الخطوة 1: اختيار الخدمة</div><div class="error">❌ لا توجد خدمات</div><button class="btn btn-secondary" onclick="showServices()">🔄 إعادة</button>`;
+                    app.innerHTML = `
+                        <div class="status-bar"><span>STATUS: ERROR</span></div>
+                        <div class="error">[!] NO_SERVICES_FOUND</div>
+                        <button class="btn btn-secondary" onclick="showServices()">[ RETRY ]</button>
+                    `;
                     return;
                 }
-                let html = `<div class="step">📱 الخطوة 1: اختيار الخدمة</div><div class="list-container">`;
+                let html = `
+                    <div class="status-bar">
+                        <span>STATUS: READY</span>
+                        <span>SERVICES: ${services.length}</span>
+                    </div>
+                    <div class="step">[ SELECT_TARGET ]</div>
+                    <div class="list-container">
+                `;
                 services.forEach((s, i) => {
-                    html += `<div class="list-item" onclick="showCountries('${s.name}')"><span>${i+1}. ${s.name}</span><span>➡️</span></div>`;
+                    html += `
+                        <div class="list-item" onclick="showCountries('${s.name.replace(/'/g, "\\'")}')">
+                            <span>${s.name}</span>
+                            <span>[${s.count || 0}] ▶</span>
+                        </div>
+                    `;
                 });
-                html += `</div><button class="btn btn-danger" onclick="exit()">🚪 خروج</button>`;
+                html += `</div><button class="btn btn-danger" onclick="exit()">[ EXIT_SYSTEM ]</button>`;
                 app.innerHTML = html;
+            }).catch(() => {
+                app.innerHTML = `
+                    <div class="error">[!] CONNECTION_LOST</div>
+                    <button class="btn btn-secondary" onclick="showServices()">[ RETRY ]</button>
+                `;
             });
         }
 
         function showCountries(service) {
             state.service = service;
             const app = document.getElementById('app');
-            app.innerHTML = `<button class="back-btn" onclick="showServices()">⬅️ رجوع</button><div class="step">🌍 الخطوة 2: اختيار الدولة</div><div class="loader"></div>`;
+            app.innerHTML = `
+                <button class="back-btn" onclick="showServices()">◀ [ BACK ]</button>
+                <div class="status-bar"><span>TARGET: ${service}</span></div>
+                <div class="step">[ SELECT_COUNTRY ]</div>
+                <div class="loader"></div>
+            `;
             
             api(`countries?service=${encodeURIComponent(service)}`).then(data => {
-                const countries = data.countries || [];
+                const countries = data.countries || data.countries || [];
                 if (!countries.length) {
-                    app.innerHTML = `<button class="back-btn" onclick="showServices()">⬅️ رجوع</button><div class="step">🌍 الخطوة 2: اختيار الدولة</div><div class="error">❌ لا توجد دول</div>`;
+                    app.innerHTML = `
+                        <button class="back-btn" onclick="showServices()">◀ [ BACK ]</button>
+                        <div class="error">[!] NO_COUNTRIES_FOUND</div>
+                    `;
                     return;
                 }
-                let html = `<button class="back-btn" onclick="showServices()">⬅️ رجوع</button><div class="step">🌍 الخطوة 2: اختيار الدولة لـ ${service}</div><div class="list-container">`;
-                countries.forEach((c, i) => {
-                    html += `<div class="list-item" onclick="requestNumber('${service}', '${c.name}')"><span>${c.flag || '🏳️'} ${c.name} (${c.count || 0})</span><span>➡️</span></div>`;
+                let html = `
+                    <button class="back-btn" onclick="showServices()">◀ [ BACK ]</button>
+                    <div class="status-bar"><span>TARGET: ${service}</span><span>NODES: ${countries.length}</span></div>
+                    <div class="step">[ SELECT_COUNTRY ]</div>
+                    <div class="list-container">
+                `;
+                countries.forEach(c => {
+                    html += `
+                        <div class="list-item" onclick="requestNumber('${service.replace(/'/g, "\\'")}', '${c.name.replace(/'/g, "\\'")}')">
+                            <span>${c.flag || '🏴'} ${c.name}</span>
+                            <span>[${c.count || 0}] ▶</span>
+                        </div>
+                    `;
                 });
                 html += `</div>`;
                 app.innerHTML = html;
@@ -208,15 +426,23 @@
         function requestNumber(service, country) {
             state.country = country;
             const app = document.getElementById('app');
-            app.innerHTML = `<div class="step">📞 جاري طلب الرقم...</div><div class="loader"></div>`;
+            app.innerHTML = `
+                <div class="status-bar"><span>REQUESTING...</span></div>
+                <div class="step">[ GENERATING_NUMBER ]</div>
+                <div class="loader"></div>
+                <p style="text-align:center;color:#00ff00;">establishing secure connection...</p>
+            `;
             
             api('request_number', 'POST', { service, country }).then(data => {
                 if (!data || !data.success) {
-                    app.innerHTML = `<div class="error">❌ ${data?.message || 'فشل الطلب'}</div><button class="btn btn-secondary" onclick="showCountries('${service}')">🔙 رجوع</button>`;
+                    app.innerHTML = `
+                        <div class="error">[!] FAILED: ${data?.message || 'UNKNOWN_ERROR'}</div>
+                        <button class="btn btn-secondary" onclick="showCountries('${service.replace(/'/g, "\\'")}')">[ RETRY ]</button>
+                    `;
                     return;
                 }
                 state.number = data.number;
-                state.orderId = data.order_id;
+                state.orderId = data.id || data.order_id;
                 showNumber();
             });
         }
@@ -224,70 +450,140 @@
         function showNumber() {
             const app = document.getElementById('app');
             app.innerHTML = `
-                <div class="step">✅ تم الحصول على الرقم!</div>
-                <div class="number-box">
-                    <div class="info">📞 الرقم</div>
-                    <div class="number">${state.number}</div>
-                    <div class="info">🌍 ${state.country} | 📱 ${state.service}</div>
-                    ${state.orderId ? `<div class="info">🆔 ${state.orderId}</div>` : ''}
+                <div class="status-bar">
+                    <span>ACTIVE</span>
+                    <span class="blink">● LIVE</span>
                 </div>
-                <button class="btn btn-secondary" onclick="changeNumber()">🔄 تغيير الرقم</button>
-                <button class="btn btn-primary" onclick="fetchOTP()">🔑 جلب الكود</button>
-                <button class="btn btn-danger" onclick="showServices()">🔙 القائمة الرئيسية</button>
+                <div class="step">[ NUMBER_ACQUIRED ]</div>
+                <div class="number-box">
+                    <div class="info">>> TARGET_NUMBER <<</div>
+                    <div class="number">${state.number}</div>
+                    <div class="info">NODE: ${state.country}</div>
+                    <div class="info">SVC: ${state.service}</div>
+                    ${state.orderId ? `<div class="info">TXID: ${state.orderId}</div>` : ''}
+                </div>
+                <button class="btn btn-secondary" onclick="changeNumber()">[ CHANGE_NUMBER ]</button>
+                <button class="btn btn-primary" onclick="fetchOTP()">[ EXTRACT_OTP ]</button>
+                <button class="btn btn-danger" onclick="showServices()">[ MAIN_MENU ]</button>
             `;
         }
 
         function changeNumber() {
             const app = document.getElementById('app');
-            app.innerHTML = `<div class="step">🔄 جاري تغيير الرقم...</div><div class="loader"></div>`;
+            app.innerHTML = `
+                <div class="step">[ REGENERATING... ]</div>
+                <div class="loader"></div>
+            `;
             
             api('request_number', 'POST', { service: state.service, country: state.country }).then(data => {
                 if (data && data.success) {
                     state.number = data.number;
-                    state.orderId = data.order_id;
-                    app.innerHTML = `<div class="step">✅ تم التغيير!</div><div class="number-box"><div class="number">${state.number}</div></div>`;
+                    state.orderId = data.id || data.order_id;
+                    app.innerHTML = `
+                        <div class="step">[ NUMBER_CHANGED ]</div>
+                        <div class="number-box">
+                            <div class="number">${state.number}</div>
+                        </div>
+                    `;
                     setTimeout(showNumber, 1500);
                 } else {
-                    app.innerHTML = `<div class="error">❌ فشل التغيير</div><button class="btn btn-secondary" onclick="showNumber()">🔙 رجوع</button>`;
+                    app.innerHTML = `
+                        <div class="error">[!] CHANGE_FAILED</div>
+                        <button class="btn btn-secondary" onclick="showNumber()">[ BACK ]</button>
+                    `;
                 }
             });
         }
 
         async function fetchOTP() {
+            clearInterval(otpInterval);
             const app = document.getElementById('app');
-            let html = `<div class="step">🔑 جاري البحث عن الكود...</div><div class="number-box"><div>📞 ${state.number}</div></div><div class="loader"></div><p style="text-align:center" id="status">جاري البحث...</p><button class="btn btn-danger" onclick="showNumber()">❌ إلغاء</button>`;
-            app.innerHTML = html;
+            let count = 0;
             
-            for (let i = 0; i < 60; i++) {
+            app.innerHTML = `
+                <div class="status-bar">
+                    <span>SNIFFING...</span>
+                    <span class="blink">● LISTENING</span>
+                </div>
+                <div class="step">[ INTERCEPTING_OTP ]</div>
+                <div class="number-box" style="border-color:#00ff00;box-shadow:0 0 30px rgba(0,255,0,0.3);">
+                    <div style="color:#00ff00;">TARGET: ${state.number}</div>
+                </div>
+                <div class="loader"></div>
+                <p style="text-align:center;color:#00ff00;" id="status">initializing packet sniffer...</p>
+                <p style="text-align:center;color:#00ff00;" id="timer">[ 0s ]</p>
+                <button class="btn btn-danger" onclick="stopOTP()">[ ABORT ]</button>
+            `;
+            
+            const startTime = Date.now();
+            
+            otpInterval = setInterval(async () => {
+                count++;
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                
+                const statusEl = document.getElementById('status');
+                const timerEl = document.getElementById('timer');
+                
+                if (statusEl) {
+                    const chars = ['|', '/', '-', '\\'];
+                    statusEl.textContent = `sniffing packets ${chars[count % 4]} [${count}]`;
+                }
+                if (timerEl) {
+                    timerEl.textContent = `[ ${elapsed}s ]`;
+                }
+                
                 try {
-                    const data = await api(`latest_otp?number=${encodeURIComponent(state.number)}`);
-                    if (data && data.success && data.has_otp) {
-                        app.innerHTML = `
-                            <div class="step">✅ تم العثور على الكود!</div>
-                            <div class="number-box"><div>📞 ${state.number}</div></div>
-                            <div class="otp-box">${data.otp}</div>
-                            <div class="info" style="text-align:center">🌍 ${state.country} | 📱 ${state.service}</div>
-                            <button class="btn btn-secondary" onclick="changeNumber()">🔄 رقم جديد</button>
-                            <button class="btn btn-primary" onclick="showServices()">🔙 القائمة</button>
-                            <button class="btn btn-danger" onclick="exit()">🚪 خروج</button>
-                        `;
-                        return;
+                    const data = await api(`otp?number=${encodeURIComponent(state.number)}`);
+                    
+                    // التحقق من وجود OTP
+                    if (data && data.otp && data.otp.trim()) {
+                        clearInterval(otpInterval);
+                        const otp = data.otp.replace(/[^0-9]/g, '');
+                        if (otp) {
+                            app.innerHTML = `
+                                <div class="status-bar">
+                                    <span>EXTRACTED</span>
+                                    <span class="blink">● DONE</span>
+                                </div>
+                                <div class="step">[ OTP_CAPTURED ]</div>
+                                <div class="number-box" style="border-color:#ffff00;box-shadow:0 0 30px rgba(255,255,0,0.3);">
+                                    <div style="color:#ffff00;">>> EXTRACTED_CODE <<</div>
+                                </div>
+                                <div class="otp-box">${otp}</div>
+                                <div class="info" style="text-align:center">TARGET: ${state.number}</div>
+                                <div class="info" style="text-align:center">NODE: ${state.country} | SVC: ${state.service}</div>
+                                <button class="btn btn-secondary" onclick="changeNumber()">[ NEW_TARGET ]</button>
+                                <button class="btn btn-primary" onclick="showServices()">[ MAIN_MENU ]</button>
+                                <button class="btn btn-danger" onclick="exit()">[ EXIT ]</button>
+                            `;
+                        }
                     }
-                    document.getElementById('status').textContent = `جاري البحث${'.'.repeat(i % 4)} (${i+1}/60)`;
                 } catch(e) {}
-                await new Promise(r => setTimeout(r, 5000));
-                if (!document.getElementById('status')) return;
-            }
-            
-            app.innerHTML = `<div class="error">⏰ انتهى الوقت</div><button class="btn btn-secondary" onclick="changeNumber()">🔄 رقم جديد</button><button class="btn btn-primary" onclick="showServices()">🔙 القائمة</button>`;
+                
+                if (count > 60) {
+                    clearInterval(otpInterval);
+                    app.innerHTML = `
+                        <div class="error">[!] TIMEOUT: NO_OTP_RECEIVED</div>
+                        <button class="btn btn-secondary" onclick="changeNumber()">[ NEW_TARGET ]</button>
+                        <button class="btn btn-primary" onclick="showServices()">[ MAIN_MENU ]</button>
+                    `;
+                }
+            }, 3000);
+        }
+
+        function stopOTP() {
+            clearInterval(otpInterval);
+            showNumber();
         }
 
         function exit() {
+            clearInterval(otpInterval);
             document.getElementById('app').innerHTML = `
                 <div style="text-align:center;padding:50px 20px">
-                    <div style="font-size:64px">👋</div>
-                    <div style="font-size:24px;color:#a78bfa;margin:20px 0">شكراً لاستخدام NumberPanel</div>
-                    <button class="btn btn-primary" onclick="showServices()">🔄 البدء من جديد</button>
+                    <div style="font-size:60px;">☠️</div>
+                    <div style="color:#ff0000;font-size:20px;margin:20px 0;" class="blink">SYSTEM TERMINATED</div>
+                    <div style="color:#00ff00;font-size:12px;">session encrypted & destroyed</div>
+                    <button class="btn btn-primary" onclick="showServices()" style="margin-top:30px;">[ REBOOT_SYSTEM ]</button>
                 </div>
             `;
         }
