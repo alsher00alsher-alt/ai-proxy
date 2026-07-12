@@ -18,7 +18,7 @@
         .plan-card{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:25px;text-align:center;transition:0.3s;position:relative;overflow:hidden}
         .plan-card:hover{transform:translateY(-5px);box-shadow:0 10px 30px rgba(0,0,0,0.5)}
         .plan-card.premium{border-color:var(--gold);box-shadow:0 0 30px rgba(212,175,55,0.2)}
-        .plan-card.ultimate{border-color:var(--red);box-shadow:0 0 30px rgba(255,71,87,0.3);background:linear-gradient(180deg,#0a0a1a,#1a0a0a)}
+        .plan-card.ultimate{border-color:var(--red);box-shadow:0 0 40px rgba(255,71,87,0.4);background:linear-gradient(180deg,#0a0a1a,#1a0a0a)}
         .badge{position:absolute;top:15px;right:15px;background:var(--red);color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;animation:pulse 1.5s infinite}
         @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
         .plan-name{font-size:22px;font-weight:800;margin-bottom:5px;color:var(--text)}
@@ -26,6 +26,7 @@
         .plan-price small{font-size:16px;color:var(--muted)}
         .plan-price .old{text-decoration:line-through;color:#555;font-size:20px;display:block}
         .plan-card.ultimate .plan-price{color:var(--red)}
+        .promo-code{display:inline-block;background:rgba(255,71,87,0.15);border:1px dashed var(--red);color:var(--red);padding:4px 12px;border-radius:6px;font-size:12px;margin-top:8px;font-weight:700}
         .features{list-style:none;text-align:right;margin:15px 0}
         .features li{padding:6px 0;border-bottom:1px solid #111;font-size:13px;color:var(--muted)}
         .features li::before{content:"✅ ";color:var(--green)}
@@ -74,6 +75,7 @@
             <div class="badge">🔥 الأقوى</div>
             <div class="plan-name">👑 ULTIMATE</div>
             <div class="plan-price"><span class="old">120,000 ج</span>87,000 ج <small>/شهري</small></div>
+            <div class="promo-code">🏷️ بروموكود خصم: <b>ULTIMATE50</b></div>
             <ul class="features">
                 <li>🚀 طلبات <b>غير محدودة</b></li>
                 <li>⚡ سرعة <b>غير محدودة</b></li>
