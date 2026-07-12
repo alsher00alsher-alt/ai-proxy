@@ -43,13 +43,7 @@
         
         @keyframes scan { 0% { top: -3px; } 100% { top: 100%; } }
         
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-            position: relative;
-            z-index: 2;
-        }
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; position: relative; z-index: 2; }
         
         .header {
             background: #000;
@@ -60,19 +54,8 @@
             box-shadow: 0 0 20px rgba(0,255,0,0.3), inset 0 0 20px rgba(0,255,0,0.1);
         }
         
-        .header h1 {
-            font-size: 24px;
-            color: #00ff00;
-            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
-            margin: 0;
-            letter-spacing: 3px;
-        }
-        
-        .header .subtitle {
-            color: #00cc00;
-            font-size: 11px;
-            margin-top: 10px;
-        }
+        .header h1 { font-size: 24px; color: #00ff00; text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00; margin: 0; letter-spacing: 3px; }
+        .header .subtitle { color: #00cc00; font-size: 11px; margin-top: 10px; }
         
         .content {
             background: rgba(0,0,0,0.9);
@@ -82,18 +65,10 @@
             box-shadow: 0 0 20px rgba(0,255,0,0.2);
         }
         
-        .step {
-            text-align: center;
-            font-size: 15px;
-            color: #00ff00;
-            margin-bottom: 15px;
-            text-shadow: 0 0 5px #00ff00;
-            letter-spacing: 2px;
-        }
+        .step { text-align: center; font-size: 15px; color: #00ff00; margin-bottom: 15px; text-shadow: 0 0 5px #00ff00; letter-spacing: 2px; }
         
         .list-item {
-            padding: 12px;
-            margin: 6px 0;
+            padding: 12px; margin: 6px 0;
             background: rgba(0,255,0,0.05);
             border: 1px solid #00ff00;
             cursor: pointer;
@@ -105,11 +80,7 @@
             font-size: 13px;
         }
         
-        .list-item:hover {
-            background: rgba(0,255,0,0.15);
-            box-shadow: 0 0 15px rgba(0,255,0,0.3);
-            transform: translateX(-5px);
-        }
+        .list-item:hover { background: rgba(0,255,0,0.15); box-shadow: 0 0 15px rgba(0,255,0,0.3); transform: translateX(-5px); }
         
         .number-box {
             background: #000;
@@ -131,28 +102,11 @@
             50% { box-shadow: 0 0 60px rgba(255,0,0,0.6), inset 0 0 60px rgba(255,0,0,0.2); }
         }
         
-        .number {
-            font-size: 38px;
-            font-weight: bold;
-            letter-spacing: 5px;
-            margin: 10px 0;
-            direction: ltr;
-            color: #ff0000;
-            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
-            user-select: all;
-        }
-        
-        .info {
-            opacity: 0.9;
-            margin: 4px 0;
-            color: #00ff00;
-            font-size: 12px;
-        }
+        .number { font-size: 38px; font-weight: bold; letter-spacing: 5px; margin: 10px 0; direction: ltr; color: #ff0000; text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000; user-select: all; }
+        .info { opacity: 0.9; margin: 4px 0; color: #00ff00; font-size: 12px; }
         
         .btn {
-            width: 100%;
-            padding: 14px;
-            margin: 8px 0;
+            width: 100%; padding: 14px; margin: 8px 0;
             border: 2px solid #00ff00;
             background: #000;
             color: #00ff00;
@@ -220,45 +174,14 @@
         
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .error {
-            background: #000;
-            border: 2px solid #ff0000;
-            padding: 12px;
-            text-align: center;
-            margin: 10px 0;
-            color: #ff0000;
-            text-shadow: 0 0 10px #ff0000;
-            font-size: 13px;
-        }
-        
-        .back-btn {
-            background: none;
-            border: 1px solid #00ff00;
-            color: #00ff00;
-            cursor: pointer;
-            font-size: 13px;
-            padding: 8px 12px;
-            margin-bottom: 12px;
-            font-family: 'Share Tech Mono', monospace;
-        }
-        
+        .error { background: #000; border: 2px solid #ff0000; padding: 12px; text-align: center; margin: 10px 0; color: #ff0000; text-shadow: 0 0 10px #ff0000; font-size: 13px; }
+        .back-btn { background: none; border: 1px solid #00ff00; color: #00ff00; cursor: pointer; font-size: 13px; padding: 8px 12px; margin-bottom: 12px; font-family: 'Share Tech Mono', monospace; }
         .list-container { max-height: 320px; overflow-y: auto; }
         .blink { animation: blink 0.8s infinite; }
         
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border: 1px solid #00ff00;
-            margin-bottom: 12px;
-            font-size: 10px;
-        }
-        
+        .status-bar { display: flex; justify-content: space-between; padding: 8px; border: 1px solid #00ff00; margin-bottom: 12px; font-size: 10px; }
         .glitch { animation: glitch 0.3s infinite; }
         
         @keyframes glitch {
@@ -271,20 +194,10 @@
         }
         
         .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #00ff00;
-            color: #000;
-            padding: 12px 20px;
-            border-radius: 5px;
-            font-size: 13px;
-            z-index: 999;
-            opacity: 0;
-            transition: all 0.3s;
-            pointer-events: none;
-            font-family: 'Share Tech Mono', monospace;
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #00ff00; color: #000; padding: 12px 20px; border-radius: 5px;
+            font-size: 13px; z-index: 999; opacity: 0; transition: all 0.3s;
+            pointer-events: none; font-family: 'Share Tech Mono', monospace;
         }
         
         .toast.show { opacity: 1; bottom: 50px; }
@@ -393,10 +306,7 @@
             api(`countries?service=${encodeURIComponent(service)}`).then(data => {
                 const countries = data.countries || [];
                 if (!countries.length) {
-                    app.innerHTML = `
-                        <button class="back-btn" onclick="showServices()">◀ [ BACK ]</button>
-                        <div class="error">[!] NO_COUNTRIES</div>
-                    `;
+                    app.innerHTML = `<button class="back-btn" onclick="showServices()">◀ [ BACK ]</button><div class="error">[!] NO_COUNTRIES</div>`;
                     return;
                 }
                 let html = `
@@ -421,18 +331,11 @@
         function requestNumber(service, country) {
             state.country = country;
             const app = document.getElementById('app');
-            app.innerHTML = `
-                <div class="step">[ GENERATING... ]</div>
-                <div class="loader"></div>
-                <p style="text-align:center;color:#00ff00;font-size:12px;">secure connection...</p>
-            `;
+            app.innerHTML = `<div class="step">[ GENERATING... ]</div><div class="loader"></div>`;
             
             api('request_number', 'POST', { service, country }).then(data => {
                 if (!data || !data.success) {
-                    app.innerHTML = `
-                        <div class="error">[!] ${data?.message || 'FAILED'}</div>
-                        <button class="btn btn-secondary" onclick="showCountries('${service.replace(/'/g, "\\'")}')">[ RETRY ]</button>
-                    `;
+                    app.innerHTML = `<div class="error">[!] ${data?.message || 'FAILED'}</div><button class="btn btn-secondary" onclick="showCountries('${service.replace(/'/g, "\\'")}')">[ RETRY ]</button>`;
                     return;
                 }
                 state.number = data.number;
@@ -461,10 +364,7 @@
 
         function changeNumber() {
             const app = document.getElementById('app');
-            app.innerHTML = `
-                <div class="step">[ REGENERATING... ]</div>
-                <div class="loader"></div>
-            `;
+            app.innerHTML = `<div class="step">[ REGENERATING... ]</div><div class="loader"></div>`;
             
             api('request_number', 'POST', { service: state.service, country: state.country }).then(data => {
                 if (data && data.success) {
@@ -479,10 +379,7 @@
                     `;
                     setTimeout(showNumber, 1500);
                 } else {
-                    app.innerHTML = `
-                        <div class="error">[!] FAILED</div>
-                        <button class="btn btn-secondary" onclick="showNumber()">[ BACK ]</button>
-                    `;
+                    app.innerHTML = `<div class="error">[!] FAILED</div><button class="btn btn-secondary" onclick="showNumber()">[ BACK ]</button>`;
                 }
             });
         }
@@ -492,6 +389,7 @@
             const app = document.getElementById('app');
             let count = 0;
             let hasOtp = false;
+            let lastOtpCode = '';
             
             app.innerHTML = `
                 <div class="status-bar"><span>SNIFFING...</span><span class="blink">● LISTENING</span></div>
@@ -526,18 +424,29 @@
                 }
                 if (timerEl) timerEl.textContent = `[ ${elapsed}s ]`;
                 
-                api(`otp?number=${encodeURIComponent(state.number)}`).then(data => {
+                // استخدام my_otps عشان نجيب كل الأكواد
+                api(`my_otps?number=${encodeURIComponent(state.number)}&limit=5`).then(data => {
                     if (hasOtp) return;
                     
-                    // فحص لو فيه OTP
                     let otpValue = null;
                     
-                    if (data && data.otp && data.otp.trim() && data.otp !== '0' && data.otp !== 'null') {
+                    // فحص my_otps
+                    if (data && data.otps && Array.isArray(data.otps) && data.otps.length > 0) {
+                        // جيب أحدث كود
+                        const latestOtp = data.otps[0];
+                        if (latestOtp.otp && latestOtp.otp.trim()) {
+                            otpValue = latestOtp.otp.replace(/[^0-9]/g, '');
+                        }
+                    }
+                    
+                    // لو مفيش في my_otps جرب otp العادي
+                    if (!otpValue && data && data.otp && data.otp.trim() && data.otp !== '0') {
                         otpValue = data.otp.replace(/[^0-9]/g, '');
                     }
                     
-                    if (otpValue && otpValue.length > 0) {
+                    if (otpValue && otpValue.length > 0 && otpValue !== lastOtpCode) {
                         hasOtp = true;
+                        lastOtpCode = otpValue;
                         clearInterval(otpInterval);
                         
                         if (otpResult) {
@@ -546,23 +455,19 @@
                                 <div class="otp-box" onclick="copyToClipboard('${otpValue}')">${otpValue}</div>
                                 <div class="copy-hint blink" style="text-align:center;">اضغط على الكود لنسخه</div>
                                 <div class="info" style="text-align:center;">NODE: ${state.country} | SVC: ${state.service}</div>
+                                <div style="margin-top:15px;">
+                                    <button class="btn btn-secondary" onclick="changeNumber()">[ NEW_TARGET ]</button>
+                                    <button class="btn btn-primary" onclick="showServices()">[ MAIN_MENU ]</button>
+                                    <button class="btn btn-danger" onclick="exit()">[ EXIT ]</button>
+                                </div>
                             `;
                             
                             const loader = document.querySelector('.loader');
                             if (loader) loader.style.display = 'none';
                             if (statusEl) statusEl.textContent = '✅ OTP EXTRACTED!';
-                            
-                            const btnsDiv = document.createElement('div');
-                            btnsDiv.style.marginTop = '15px';
-                            btnsDiv.innerHTML = `
-                                <button class="btn btn-secondary" onclick="changeNumber()">[ NEW_TARGET ]</button>
-                                <button class="btn btn-primary" onclick="showServices()">[ MAIN_MENU ]</button>
-                                <button class="btn btn-danger" onclick="exit()">[ EXIT ]</button>
-                            `;
-                            otpResult.appendChild(btnsDiv);
                         }
                     } else {
-                        // مفيش كود - رجع فاضي
+                        // مفيش كود
                         if (otpResult && !hasOtp) {
                             const dots = '.'.repeat(count % 4);
                             otpResult.innerHTML = `
