@@ -26,13 +26,18 @@
         .plan-price small{font-size:16px;color:var(--muted)}
         .plan-price .old{text-decoration:line-through;color:#555;font-size:20px;display:block}
         .plan-card.ultimate .plan-price{color:var(--red)}
-        .promo-code{display:inline-block;background:rgba(255,71,87,0.15);border:1px dashed var(--red);color:var(--red);padding:4px 12px;border-radius:6px;font-size:12px;margin-top:8px;font-weight:700}
+        .promo-box{background:rgba(255,71,87,0.1);border:2px dashed var(--red);border-radius:10px;padding:12px;margin:10px 0;text-align:center}
+        .promo-box .code{color:var(--red);font-size:18px;font-weight:900;display:block}
+        .promo-box .saving{color:var(--gold);font-size:12px;margin-top:4px}
+        .promo-box .final{color:var(--green);font-size:22px;font-weight:900;margin-top:6px}
+        .discount-badge{display:inline-block;background:var(--red);color:#fff;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:700;margin:5px 0}
         .features{list-style:none;text-align:right;margin:15px 0}
         .features li{padding:6px 0;border-bottom:1px solid #111;font-size:13px;color:var(--muted)}
         .features li::before{content:"✅ ";color:var(--green)}
         .btn{display:block;width:100%;padding:14px;border-radius:10px;border:none;font-size:16px;font-weight:700;cursor:pointer;margin-top:10px;transition:0.2s}
         .btn-gold{background:linear-gradient(135deg,#d4af37,#b8960f);color:#000}
         .btn-red{background:var(--red);color:#fff;font-size:18px}
+        .btn-green{background:var(--green);color:#000;font-size:18px;animation:pulse 1.5s infinite}
         .btn-outline{background:transparent;border:2px solid var(--gold);color:var(--gold)}
         .btn:active{transform:scale(0.95)}
         .section-title{text-align:center;color:var(--gold);font-size:20px;margin:30px 0 20px;font-weight:800}
@@ -72,10 +77,16 @@
             <button class="btn btn-gold">🛒 اطلب الآن</button>
         </div>
         <div class="plan-card ultimate">
-            <div class="badge">🔥 الأقوى</div>
+            <div class="badge">🔥 عرض حصري</div>
             <div class="plan-name">👑 ULTIMATE</div>
-            <div class="plan-price"><span class="old">120,000 ج</span>87,000 ج <small>/شهري</small></div>
-            <div class="promo-code">🏷️ بروموكود خصم: <b>ULTIMATE50</b></div>
+            <div class="plan-price"><span class="old">87,000 ج</span> <span style="color:var(--green)">3,800 ج</span> <small>/شهري</small></div>
+            <div class="discount-badge">🏷️ وفر 83,200 ج (خصم 96%)</div>
+            <div class="promo-box">
+                <span class="code">🎫 كود الخصم: <b style="font-size:22px;">UNLIMITED</b></span>
+                <div class="saving">💰 السعر الأصلي: 87,000 ج</div>
+                <div class="saving">🏷️ نسبة الخصم: <b>95.6%</b></div>
+                <div class="final">💎 السعر النهائي: 3,800 ج/شهري</div>
+            </div>
             <ul class="features">
                 <li>🚀 طلبات <b>غير محدودة</b></li>
                 <li>⚡ سرعة <b>غير محدودة</b></li>
@@ -87,7 +98,7 @@
                 <li>📞 دعم خاص 24/7</li>
                 <li>🎯 تخصيص كامل</li>
             </ul>
-            <button class="btn btn-red">⚡ اطلب الآن</button>
+            <button class="btn btn-green">⚡ اطلب الآن بـ 3,800 ج</button>
         </div>
     </div>
 
