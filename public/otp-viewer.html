@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>📱 OTP Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#050510;--surface:#0a0a1a;--gold:#d4af37;--green:#2ed573;--red:#ff4757;--blue:#1e90ff;--text:#fff;--muted:#aaa;--border:#1a1a2e}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:15px}
+        .container{max-width:500px;margin:0 auto}
+        .header{text-align:center;margin-bottom:20px}
+        .header .icon{font-size:50px;margin-bottom:5px}
+        h1{font-size:24px;background:linear-gradient(135deg,var(--gold),#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:5px}
+        .header p{color:var(--muted);font-size:12px}
+        
+        .toolbar{display:flex;gap:8px;margin-bottom:15px}
+        .toolbar button{flex:1;padding:12px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;transition:0.2s}
+        .btn-refresh{background:var(--blue);color:#fff}
+        .btn-random{background:var(--gold);color:#000}
+        .btn-clear{background:var(--red);color:#fff}
+        .btn:active{transform:scale(0.95)}
+        
+        .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:15px}
+        .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+        .stat .num{font-size:22px;font-weight:800;color:var(--gold)}
+        .stat .txt{font-size:10px;color:var(--muted)}
+        
+        .filter-bar{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:5px}
+        .filter-chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:11px;white-space:nowrap;cursor:pointer;color:var(--muted);font-family:'Cairo',sans-serif}
+        .filter-chip.active{border-color:var(--gold);color:var(--gold);background:rgba(212,175,55,0.1)}
+        
+        .otp-list{display:grid;gap:8px}
+        .otp-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;animation:slideIn 0.3s;position:relative;overflow:hidden}
+        @keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+        .otp-card.whatsapp{border-left:3px solid #25d366}
+        .otp-card.telegram{border-left:3px solid #0088cc}
+        .otp-card.facebook{border-left:3px solid #1877f2}
+        .otp-card.instagram{border-left:3px solid #e1306c}
+        .otp-card.tiktok{border-left:3px solid #ff0050}
+        .otp-card.google{border-left:3px solid #4285f4}
+        .otp-card.new{animation:glow 1s infinite}
+        @keyframes glow{0%,100%{box-shadow:0 0 5px rgba(46,213,115,0.3)}50%{box-shadow:0 0 20px rgba(46,213,115,0.6)}}
+        .otp-flag{font-size:30px;flex-shrink:0}
+        .otp-info{flex:1;min-width:0}
+        .otp-service{font-size:13px;font-weight:700;color:var(--text)}
+        .otp-number{font-size:14px;color:var(--muted);direction:ltr;text-align:right;font-weight:600;letter-spacing:1px}
+        .otp-code{background:rgba(46,213,115,0.15);border:1px solid var(--green);border-radius:8px;padding:8px 14px;font-size:18px;font-weight:900;color:var(--green);letter-spacing:3px;text-align:center;flex-shrink:0;cursor:pointer;min-width:80px}
+        .otp-code:active{background:var(--green);color:#000}
+        .otp-time{font-size:9px;color:var(--muted);margin-top:2px}
+        .new-badge{position:absolute;top:8px;left:8px;background:var(--green);color:#000;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700}
+        
+        .empty{text-align:center;padding:40px;color:var(--muted)}
+        .empty .icon{font-size:60px;margin-bottom:10px}
+        
+        .loading{text-align:center;padding:20px}
+        .spinner{width:35px;height:35px;border:3px solid var(--border);border-top:3px solid var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:10px auto}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        
+        .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--green);color:var(--green);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:999}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="icon">📱</div>
+        <h1>OTP Viewer</h1>
+        <p>أرقام ورموز تحقق مباشر</p>
+    </div>
+
+    <div class="toolbar">
+        <button class="btn btn-refresh" onclick="fetchOTPs()">🔄 تحديث</button>
+        <button class="btn btn-random" onclick="randomNumber()">🎲 رقم عشوائي</button>
+        <button class="btn btn-clear" onclick="clearAll()">🗑️ مسح الكل</button>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><div class="num" id="stat-total">0</div><div class="txt">إجمالي</div></div>
+        <div class="stat"><div class="num" id="stat-new">0</div><div class="txt">جديد</div></div>
+        <div class="stat"><div class="num" id="stat-countries">0</div><div class="txt">دول</div></div>
+    </div>
+
+    <div class="filter-bar" id="filter-bar">
+        <div class="filter-chip active" onclick="filterOTPs('all')">الكل</div>
+    </div>
+
+    <div class="otp-list" id="otp-list">
+        <div class="empty">
+            <div class="icon">📭</div>
+            <p>اضغط تحديث لجلب الأرقام</p>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_URL='https://numberpanel.tech/api/otp?count=200';
+let allOTPs=[], seenIDs=new Set(), currentFilter='all';
+
+const COUNTRIES={
+    '1':'🇺🇸','20':'🇪🇬','44':'🇬🇧','91':'🇮🇳','7':'🇷🇺','33':'🇫🇷','49':'🇩🇪','39':'🇮🇹','34':'🇪🇸','55':'🇧🇷','92':'🇵🇰','90':'🇹🇷','52':'🇲🇽','62':'🇮🇩','81':'🇯🇵','86':'🇨🇳','61':'🇦🇺','31':'🇳🇱','46':'🇸🇪','41':'🇨🇭','48':'🇵🇱','32':'🇧🇪','43':'🇦🇹','30':'🇬🇷','40':'🇷🇴','36':'🇭🇺','380':'🇺🇦','212':'🇲🇦','966':'🇸🇦','971':'🇦🇪','965':'🇰🇼','974':'🇶🇦','973':'🇧🇭','968':'🇴🇲'
+};
+
+function getFlag(num){
+    let n=num.replace('+','');
+    for(let k of Object.keys(COUNTRIES).sort((a,b)=>b.length-a.length)){
+        if(n.startsWith(k))return COUNTRIES[k];
+    }
+    return '🏳️';
+}
+
+function getServiceClass(service){
+    let s=service.toLowerCase();
+    if(s.includes('whatsapp'))return'whatsapp';
+    if(s.includes('telegram'))return'telegram';
+    if(s.includes('facebook'))return'facebook';
+    if(s.includes('instagram'))return'instagram';
+    if(s.includes('tiktok'))return'tiktok';
+    if(s.includes('google'))return'google';
+    return'';
+}
+
+function extractOTP(msg){
+    let m=msg.match(/\d{3}[-\s]?\d{3,4}|\d{4,8}/);
+    return m?m[0]:'---';
+}
+
+function maskNumber(num){
+    num=num.replace('+','');
+    if(num.length<=6)return num;
+    return num.slice(0,3)+'x'.repeat(num.length-6)+num.slice(-3);
+}
+
+function timeAgo(date){
+    let now=new Date(),diff=Math.floor((now-new Date(date))/1000);
+    if(diff<60)return'الآن';
+    if(diff<3600)return Math.floor(diff/60)+'د';
+    return Math.floor(diff/3600)+'س';
+}
+
+async function fetchOTPs(){
+    showLoading();
+    try{
+        let r=await fetch(API_URL);
+        let data=await r.json();
+        let newCount=0,countries=new Set();
+        
+        allOTPs=data.reverse().map(item=>({
+            service:item[0],number:item[1],message:item[2],timestamp:item[3]||new Date().toISOString(),
+            id:item[0]+'_'+item[1]+'_'+item[3]
+        }));
+        
+        allOTPs.forEach(o=>{
+            countries.add(getFlag(o.number));
+            if(!seenIDs.has(o.id)){seenIDs.add(o.id);newCount++;}
+        });
+        
+        document.getElementById('stat-total').textContent=allOTPs.length;
+        document.getElementById('stat-new').textContent=newCount;
+        document.getElementById('stat-countries').textContent=countries.size;
+        
+        updateFilters();
+        renderOTPs();
+    }catch(e){showError('❌ فشل الاتصال');}
+}
+
+function updateFilters(){
+    let services=new Set();
+    allOTPs.forEach(o=>services.add(o.service));
+    let html='<div class="filter-chip active" onclick="filterOTPs(\'all\')">الكل</div>';
+    services.forEach(s=>{html+=`<div class="filter-chip" onclick="filterOTPs('${s}')">${s}</div>`;});
+    document.getElementById('filter-bar').innerHTML=html;
+}
+
+function filterOTPs(filter){
+    currentFilter=filter;
+    document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+    event.target.classList.add('active');
+    renderOTPs();
+}
+
+function renderOTPs(){
+    let list=document.getElementById('otp-list');
+    let filtered=currentFilter==='all'?allOTPs:allOTPs.filter(o=>o.service===currentFilter);
+    
+    if(filtered.length===0){
+        list.innerHTML='<div class="empty"><div class="icon">📭</div><p>لا توجد نتائج</p></div>';
+        return;
+    }
+    
+    list.innerHTML=filtered.map((o,i)=>{
+        let flag=getFlag(o.number);
+        let otp=extractOTP(o.message);
+        let masked=maskNumber(o.number);
+        let serviceClass=getServiceClass(o.service);
+        let isNew=!seenIDs.has(o.id+'_rendered');
+        if(isNew){seenIDs.add(o.id+'_rendered');}
+        return`<div class="otp-card ${serviceClass} ${isNew?'new':''}" onclick="copyOTP('${otp}')">
+            ${isNew?'<div class="new-badge">جديد</div>':''}
+            <div class="otp-flag">${flag}</div>
+            <div class="otp-info">
+                <div class="otp-service">${o.service}</div>
+                <div class="otp-number">${masked}</div>
+                <div class="otp-time">🕐 ${timeAgo(o.timestamp)}</div>
+            </div>
+            <div class="otp-code">${otp}</div>
+        </div>`;
+    }).join('');
+}
+
+function copyOTP(code){
+    navigator.clipboard.writeText(code).then(()=>{
+        let t=document.createElement('div');t.className='toast';t.textContent='✅ تم نسخ: '+code;
+        document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+    });
+}
+
+function randomNumber(){
+    let idx=Math.floor(Math.random()*allOTPs.length);
+    if(allOTPs[idx]){
+        let o=allOTPs[idx];
+        let t=document.createElement('div');t.className='toast';
+        t.innerHTML=`🎲 ${getFlag(o.number)} ${o.service}: <b>${extractOTP(o.message)}</b>`;
+        document.body.appendChild(t);setTimeout(()=>t.remove(),3000);
+    }
+}
+
+function clearAll(){seenIDs.clear();allOTPs=[];document.getElementById('otp-list').innerHTML='<div class="empty"><div class="icon">📭</div><p>تم المسح</p></div>';document.getElementById('stat-total').textContent='0';document.getElementById('stat-new').textContent='0';document.getElementById('stat-countries').textContent='0';}
+function showLoading(){document.getElementById('otp-list').innerHTML='<div class="loading"><div class="spinner"></div><p>جاري التحميل...</p></div>';}
+function showError(msg){document.getElementById('otp-list').innerHTML='<div class="empty"><div class="icon">❌</div><p>'+msg+'</p></div>';}
+
+fetchOTPs();
+setInterval(fetchOTPs,30000);
+</script>
+</body>
+</html>
