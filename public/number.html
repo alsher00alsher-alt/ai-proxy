@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NumberPanel - أرقام وهمية</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 25px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .content {
+            padding: 25px;
+            min-height: 400px;
+        }
+        .step {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #a78bfa;
+        }
+        .list-item {
+            padding: 15px;
+            margin: 8px 0;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .list-item:hover {
+            background: rgba(102,126,234,0.3);
+            border-color: #667eea;
+            transform: translateX(-5px);
+        }
+        .number-box {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(245,87,108,0.3);
+        }
+        .number {
+            font-size: 48px;
+            font-weight: bold;
+            letter-spacing: 5px;
+            margin: 15px 0;
+        }
+        .info { opacity: 0.9; margin: 5px 0; }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.3); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover { background: #c82333; }
+        .otp-box {
+            background: #28a745;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 40px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            margin: 20px 0;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .loader {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            background: #dc3545;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: #a78bfa;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 10px;
+        }
+        .list-container { max-height: 400px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">📱 NumberPanel</div>
+        <div class="content" id="app"></div>
+    </div>
+
+    <script>
+        const PROXY_URL = '/api/numberproxy';
+        let state = { number: null, service: null, country: null, orderId: null };
+
+        async function api(path, method = 'GET', body = null) {
+            const url = `${PROXY_URL}?path=${encodeURIComponent(path)}`;
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' }
+            };
+            if (body) options.body = JSON.stringify(body);
+            const res = await fetch(url, options);
+            return await res.json();
+        }
+
+        function showServices() {
+            const app = document.getElementById('app');
+            app.innerHTML = `<div class="step">📱 الخطوة 1: اختيار الخدمة</div><div class="loader"></div>`;
+            
+            api('services').then(data => {
+                const services = data.services || [];
+                if (!services.length) {
+                    app.innerHTML = `<div class="step">📱 الخطوة 1: اختيار الخدمة</div><div class="error">❌ لا توجد خدمات</div><button class="btn btn-secondary" onclick="showServices()">🔄 إعادة</button>`;
+                    return;
+                }
+                let html = `<div class="step">📱 الخطوة 1: اختيار الخدمة</div><div class="list-container">`;
+                services.forEach((s, i) => {
+                    html += `<div class="list-item" onclick="showCountries('${s.name}')"><span>${i+1}. ${s.name}</span><span>➡️</span></div>`;
+                });
+                html += `</div><button class="btn btn-danger" onclick="exit()">🚪 خروج</button>`;
+                app.innerHTML = html;
+            });
+        }
+
+        function showCountries(service) {
+            state.service = service;
+            const app = document.getElementById('app');
+            app.innerHTML = `<button class="back-btn" onclick="showServices()">⬅️ رجوع</button><div class="step">🌍 الخطوة 2: اختيار الدولة</div><div class="loader"></div>`;
+            
+            api(`countries?service=${encodeURIComponent(service)}`).then(data => {
+                const countries = data.countries || [];
+                if (!countries.length) {
+                    app.innerHTML = `<button class="back-btn" onclick="showServices()">⬅️ رجوع</button><div class="step">🌍 الخطوة 2: اختيار الدولة</div><div class="error">❌ لا توجد دول</div>`;
+                    return;
+                }
+                let html = `<button class="back-btn" onclick="showServices()">⬅️ رجوع</button><div class="step">🌍 الخطوة 2: اختيار الدولة لـ ${service}</div><div class="list-container">`;
+                countries.forEach((c, i) => {
+                    html += `<div class="list-item" onclick="requestNumber('${service}', '${c.name}')"><span>${c.flag || '🏳️'} ${c.name} (${c.count || 0})</span><span>➡️</span></div>`;
+                });
+                html += `</div>`;
+                app.innerHTML = html;
+            });
+        }
+
+        function requestNumber(service, country) {
+            state.country = country;
+            const app = document.getElementById('app');
+            app.innerHTML = `<div class="step">📞 جاري طلب الرقم...</div><div class="loader"></div>`;
+            
+            api('request_number', 'POST', { service, country }).then(data => {
+                if (!data || !data.success) {
+                    app.innerHTML = `<div class="error">❌ ${data?.message || 'فشل الطلب'}</div><button class="btn btn-secondary" onclick="showCountries('${service}')">🔙 رجوع</button>`;
+                    return;
+                }
+                state.number = data.number;
+                state.orderId = data.order_id;
+                showNumber();
+            });
+        }
+
+        function showNumber() {
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <div class="step">✅ تم الحصول على الرقم!</div>
+                <div class="number-box">
+                    <div class="info">📞 الرقم</div>
+                    <div class="number">${state.number}</div>
+                    <div class="info">🌍 ${state.country} | 📱 ${state.service}</div>
+                    ${state.orderId ? `<div class="info">🆔 ${state.orderId}</div>` : ''}
+                </div>
+                <button class="btn btn-secondary" onclick="changeNumber()">🔄 تغيير الرقم</button>
+                <button class="btn btn-primary" onclick="fetchOTP()">🔑 جلب الكود</button>
+                <button class="btn btn-danger" onclick="showServices()">🔙 القائمة الرئيسية</button>
+            `;
+        }
+
+        function changeNumber() {
+            const app = document.getElementById('app');
+            app.innerHTML = `<div class="step">🔄 جاري تغيير الرقم...</div><div class="loader"></div>`;
+            
+            api('request_number', 'POST', { service: state.service, country: state.country }).then(data => {
+                if (data && data.success) {
+                    state.number = data.number;
+                    state.orderId = data.order_id;
+                    app.innerHTML = `<div class="step">✅ تم التغيير!</div><div class="number-box"><div class="number">${state.number}</div></div>`;
+                    setTimeout(showNumber, 1500);
+                } else {
+                    app.innerHTML = `<div class="error">❌ فشل التغيير</div><button class="btn btn-secondary" onclick="showNumber()">🔙 رجوع</button>`;
+                }
+            });
+        }
+
+        async function fetchOTP() {
+            const app = document.getElementById('app');
+            let html = `<div class="step">🔑 جاري البحث عن الكود...</div><div class="number-box"><div>📞 ${state.number}</div></div><div class="loader"></div><p style="text-align:center" id="status">جاري البحث...</p><button class="btn btn-danger" onclick="showNumber()">❌ إلغاء</button>`;
+            app.innerHTML = html;
+            
+            for (let i = 0; i < 60; i++) {
+                try {
+                    const data = await api(`latest_otp?number=${encodeURIComponent(state.number)}`);
+                    if (data && data.success && data.has_otp) {
+                        app.innerHTML = `
+                            <div class="step">✅ تم العثور على الكود!</div>
+                            <div class="number-box"><div>📞 ${state.number}</div></div>
+                            <div class="otp-box">${data.otp}</div>
+                            <div class="info" style="text-align:center">🌍 ${state.country} | 📱 ${state.service}</div>
+                            <button class="btn btn-secondary" onclick="changeNumber()">🔄 رقم جديد</button>
+                            <button class="btn btn-primary" onclick="showServices()">🔙 القائمة</button>
+                            <button class="btn btn-danger" onclick="exit()">🚪 خروج</button>
+                        `;
+                        return;
+                    }
+                    document.getElementById('status').textContent = `جاري البحث${'.'.repeat(i % 4)} (${i+1}/60)`;
+                } catch(e) {}
+                await new Promise(r => setTimeout(r, 5000));
+                if (!document.getElementById('status')) return;
+            }
+            
+            app.innerHTML = `<div class="error">⏰ انتهى الوقت</div><button class="btn btn-secondary" onclick="changeNumber()">🔄 رقم جديد</button><button class="btn btn-primary" onclick="showServices()">🔙 القائمة</button>`;
+        }
+
+        function exit() {
+            document.getElementById('app').innerHTML = `
+                <div style="text-align:center;padding:50px 20px">
+                    <div style="font-size:64px">👋</div>
+                    <div style="font-size:24px;color:#a78bfa;margin:20px 0">شكراً لاستخدام NumberPanel</div>
+                    <button class="btn btn-primary" onclick="showServices()">🔄 البدء من جديد</button>
+                </div>
+            `;
+        }
+
+        showServices();
+    </script>
+</body>
+</html>
