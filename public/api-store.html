@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI API Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#050510;--surface:#0a0a1a;--gold:#d4af37;--red:#ff4757;--blue:#1e90ff;--green:#2ed573;--text:#fff;--muted:#aaa;--border:#1a1a2e}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px}
+        .container{max-width:900px;margin:0 auto}
+        .header{text-align:center;margin-bottom:30px}
+        .header .icon{font-size:60px;margin-bottom:10px}
+        h1{font-size:32px;background:linear-gradient(135deg,var(--gold),#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:5px}
+        .header p{color:var(--muted);font-size:14px}
+        .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:40px}
+        .plan-card{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:25px;text-align:center;transition:0.3s;position:relative;overflow:hidden}
+        .plan-card:hover{transform:translateY(-5px);box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+        .plan-card.premium{border-color:var(--gold);box-shadow:0 0 30px rgba(212,175,55,0.2)}
+        .plan-card.ultimate{border-color:var(--red);box-shadow:0 0 30px rgba(255,71,87,0.3);background:linear-gradient(180deg,#0a0a1a,#1a0a0a)}
+        .badge{position:absolute;top:15px;right:15px;background:var(--red);color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;animation:pulse 1.5s infinite}
+        @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+        .plan-name{font-size:22px;font-weight:800;margin-bottom:5px;color:var(--text)}
+        .plan-price{font-size:40px;font-weight:900;color:var(--gold);margin:15px 0}
+        .plan-price small{font-size:16px;color:var(--muted)}
+        .plan-price .old{text-decoration:line-through;color:#555;font-size:20px;display:block}
+        .plan-card.ultimate .plan-price{color:var(--red)}
+        .features{list-style:none;text-align:right;margin:15px 0}
+        .features li{padding:6px 0;border-bottom:1px solid #111;font-size:13px;color:var(--muted)}
+        .features li::before{content:"✅ ";color:var(--green)}
+        .btn{display:block;width:100%;padding:14px;border-radius:10px;border:none;font-size:16px;font-weight:700;cursor:pointer;margin-top:10px;transition:0.2s}
+        .btn-gold{background:linear-gradient(135deg,#d4af37,#b8960f);color:#000}
+        .btn-red{background:var(--red);color:#fff;font-size:18px}
+        .btn-outline{background:transparent;border:2px solid var(--gold);color:var(--gold)}
+        .btn:active{transform:scale(0.95)}
+        .section-title{text-align:center;color:var(--gold);font-size:20px;margin:30px 0 20px;font-weight:800}
+        .game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:30px}
+        .game-tag{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center;font-size:11px;color:var(--muted)}
+        .model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:30px}
+        .model-tag{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;font-size:11px;color:var(--muted);transition:0.2s}
+        .model-tag:hover{border-color:var(--gold);color:var(--gold)}
+        .footer{text-align:center;color:#555;font-size:11px;margin-top:30px;padding-top:20px;border-top:1px solid var(--border)}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="icon">🤖</div>
+        <h1>AI API Store</h1>
+        <p>أقوى APIs للذكاء الاصطناعي - شات، صور، فيديو، صوت</p>
+    </div>
+
+    <div class="plans">
+        <div class="plan-card">
+            <div class="plan-name">🥉 BASIC</div>
+            <div class="plan-price">3,200 ج <small>/شهري</small></div>
+            <ul class="features"><li>100,000 طلب/شهر</li><li>سرعة 100 Mbps</li><li>5 نماذج AI</li><li>دعم فني 12/5</li><li>لوحة تحكم</li></ul>
+            <button class="btn btn-outline">🛒 اطلب الآن</button>
+        </div>
+        <div class="plan-card">
+            <div class="plan-name">🥈 PRO</div>
+            <div class="plan-price">8,500 ج <small>/شهري</small></div>
+            <ul class="features"><li>500,000 طلب/شهر</li><li>سرعة 500 Mbps</li><li>25 نموذج AI</li><li>دعم فني 24/7</li><li>لوحة تحكم متقدمة</li></ul>
+            <button class="btn btn-outline">🛒 اطلب الآن</button>
+        </div>
+        <div class="plan-card premium">
+            <div class="plan-name">🥇 PREMIUM</div>
+            <div class="plan-price">22,000 ج <small>/شهري</small></div>
+            <ul class="features"><li>2,000,000 طلب/شهر</li><li>سرعة 1 Gbps</li><li>100 نموذج AI</li><li>دعم VIP فوري</li><li>تخصيص النماذج</li></ul>
+            <button class="btn btn-gold">🛒 اطلب الآن</button>
+        </div>
+        <div class="plan-card ultimate">
+            <div class="badge">🔥 الأقوى</div>
+            <div class="plan-name">👑 ULTIMATE</div>
+            <div class="plan-price"><span class="old">120,000 ج</span>87,000 ج <small>/شهري</small></div>
+            <ul class="features">
+                <li>🚀 طلبات <b>غير محدودة</b></li>
+                <li>⚡ سرعة <b>غير محدودة</b></li>
+                <li>🏭 صنع ملفات <b>غير محدودة</b> بسرعة عالية</li>
+                <li>🎮 جميع الألعاب المدعومة</li>
+                <li>🤖 200+ نموذج AI</li>
+                <li>💾 تخزين غير محدود</li>
+                <li>🔒 حماية DDoS</li>
+                <li>📞 دعم خاص 24/7</li>
+                <li>🎯 تخصيص كامل</li>
+            </ul>
+            <button class="btn btn-red">⚡ اطلب الآن</button>
+        </div>
+    </div>
+
+    <div class="section-title">🎮 الألعاب المدعومة (50+ لعبة)</div>
+    <div class="game-grid">
+        <div class="game-tag">PUBG Mobile</div><div class="game-tag">Free Fire</div><div class="game-tag">Call of Duty</div><div class="game-tag">Honor of Kings</div>
+        <div class="game-tag">Fortnite</div><div class="game-tag">Apex Legends</div><div class="game-tag">Valorant</div><div class="game-tag">League of Legends</div>
+        <div class="game-tag">Minecraft</div><div class="game-tag">Roblox</div><div class="game-tag">Genshin Impact</div><div class="game-tag">Clash of Clans</div>
+        <div class="game-tag">Clash Royale</div><div class="game-tag">Brawl Stars</div><div class="game-tag">Among Us</div><div class="game-tag">Fall Guys</div>
+        <div class="game-tag">Rocket League</div><div class="game-tag">CS:GO</div><div class="game-tag">Dota 2</div><div class="game-tag">Overwatch</div>
+        <div class="game-tag">FIFA Mobile</div><div class="game-tag">eFootball</div><div class="game-tag">NBA 2K</div><div class="game-tag">GTA V</div>
+        <div class="game-tag">Red Dead 2</div><div class="game-tag">Cyberpunk</div><div class="game-tag">Elden Ring</div><div class="game-tag">God of War</div>
+        <div class="game-tag">Spider-Man</div><div class="game-tag">The Witcher</div><div class="game-tag">Assassin's Creed</div><div class="game-tag">Far Cry</div>
+        <div class="game-tag">Watch Dogs</div><div class="game-tag">Rainbow Six</div><div class="game-tag">Forza Horizon</div><div class="game-tag">Need for Speed</div>
+        <div class="game-tag">Tekken</div><div class="game-tag">Street Fighter</div><div class="game-tag">Mortal Kombat</div><div class="game-tag">Resident Evil</div>
+        <div class="game-tag">Silent Hill</div><div class="game-tag">Final Fantasy</div><div class="game-tag">Kingdom Hearts</div><div class="game-tag">Zelda</div>
+        <div class="game-tag">Super Mario</div><div class="game-tag">Pokemon GO</div><div class="game-tag">Candy Crush</div><div class="game-tag">Subway Surfers</div>
+        <div class="game-tag">Temple Run</div><div class="game-tag">Angry Birds</div><div class="game-tag">Cut the Rope</div><div class="game-tag">Plants vs Zombies</div>
+    </div>
+
+    <div class="section-title">🤖 النماذج المتاحة (200+ نموذج)</div>
+    <div class="model-grid">
+        <div class="model-tag">GPT-4 Turbo</div><div class="model-tag">GPT-4o</div><div class="model-tag">GPT-3.5</div><div class="model-tag">Claude 3 Opus</div>
+        <div class="model-tag">Claude 3 Sonnet</div><div class="model-tag">Claude 3 Haiku</div><div class="model-tag">Gemini Ultra</div><div class="model-tag">Gemini Pro</div>
+        <div class="model-tag">Gemini Flash</div><div class="model-tag">Gemma 2</div><div class="model-tag">Llama 3</div><div class="model-tag">Llama 2</div>
+        <div class="model-tag">Mistral Large</div><div class="model-tag">Mistral Medium</div><div class="model-tag">Mixtral 8x7B</div><div class="model-tag">DeepSeek V3</div>
+        <div class="model-tag">DeepSeek R1</div><div class="model-tag">Qwen 2.5</div><div class="model-tag">Qwen VL</div><div class="model-tag">Yi 34B</div>
+        <div class="model-tag">Falcon 40B</div><div class="model-tag">MPT 30B</div><div class="model-tag">Command R+</div><div class="model-tag">DBRX</div>
+        <div class="model-tag">Stable Diffusion XL</div><div class="model-tag">SD 3.0</div><div class="model-tag">SD Turbo</div><div class="model-tag">DALL-E 3</div>
+        <div class="model-tag">Midjourney API</div><div class="model-tag">Leonardo AI</div><div class="model-tag">Flux Pro</div><div class="model-tag">Flux Dev</div>
+        <div class="model-tag">Sora</div><div class="model-tag">Runway Gen-3</div><div class="model-tag">Pika 2.0</div><div class="model-tag">Kling</div>
+        <div class="model-tag">Hunyuan Video</div><div class="model-tag">CogVideoX</div><div class="model-tag">AnimateDiff</div><div class="model-tag">SVD</div>
+        <div class="model-tag">Whisper Large</div><div class="model-tag">Bark</div><div class="model-tag">MusicGen</div><div class="model-tag">AudioCraft</div>
+        <div class="model-tag">Suno AI</div><div class="model-tag">Riffusion</div><div class="model-tag">CodeLlama</div><div class="model-tag">StarCoder</div>
+        <div class="model-tag">Copilot</div><div class="model-tag">Devin</div><div class="model-tag">Devin 2.0</div><div class="model-tag">Cursor</div>
+        <div class="model-tag">BLOOM 176B</div><div class="model-tag">OPT 175B</div><div class="model-tag">GLM-4</div><div class="model-tag">Baichuan</div>
+        <div class="model-tag">Ernie 4.0</div><div class="model-tag">ChatGLM</div><div class="model-tag">Jamba</div><div class="model-tag">Reka</div>
+        <div class="model-tag">Cohere Command</div><div class="model-tag">AI21 Jurassic</div><div class="model-tag">Anthropic Opus</div><div class="model-tag">NovelAI</div>
+        <div class="model-tag">Granite 3.0</div><div class="model-tag">Phi-3</div><div class="model-tag">Orca 2</div><div class="model-tag">WizardLM</div>
+        <div class="model-tag">Vicuna</div><div class="model-tag">Alpaca</div><div class="model-tag">Gorilla</div><div class="model-tag">Toolformer</div>
+        <div class="model-tag">T5</div><div class="model-tag">PALM</div><div class="model-tag">UL2</div><div class="model-tag">Gopher</div>
+        <div class="model-tag">Chinchilla</div><div class="model-tag">Sparrow</div><div class="model-tag">Claude 2</div><div class="model-tag">Groq</div>
+        <div class="model-tag">Cerebras</div><div class="model-tag">SambaNova</div><div class="model-tag">Graphcore</div><div class="model-tag">Tenstorrent</div>
+        <div class="model-tag">OpenChat</div><div class="model-tag">Zephyr</div><div class="model-tag">Nous Hermes</div><div class="model-tag">Platypus</div>
+        <div class="model-tag">Synthia</div><div class="model-tag">MythoMax</div><div class="model-tag">Goliath</div><div class="model-tag">Tulu</div>
+        <div class="model-tag">XGen</div><div class="model-tag">Pythia</div><div class="model-tag">RedPajama</div><div class="model-tag">Cerebras GPT</div>
+        <div class="model-tag">OpenLLaMA</div><div class="model-tag">LitGPT</div><div class="model-tag">Nomic GPT</div><div class="model-tag">H2O GPT</div>
+    </div>
+
+    <div class="footer">
+        <p>© 2026 AI API Store | جميع الحقوق محفوظة | للتواصل: @MasterControlBot</p>
+    </div>
+</div>
+</body>
+</html>
