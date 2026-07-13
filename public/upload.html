@@ -3,296 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Center - Server Storage</title>
+    <title>Upload Center - Firebase</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Courier New', monospace;
-            background: #000;
-            color: #00ff00;
-            min-height: 100vh;
-            padding: 20px;
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            font-family:'Courier New',monospace;
+            background:#000;
+            color:#00ff00;
+            min-height:100vh;
+            padding:20px;
         }
-        .container { max-width: 500px; margin: 0 auto; }
-        .header {
-            background: #111;
-            border: 2px solid #00ff00;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
+        .container{max-width:500px;margin:0 auto}
+        .header{
+            background:#111;
+            border:2px solid #00ff00;
+            padding:20px;
+            text-align:center;
+            margin-bottom:20px;
+            border-radius:10px;
         }
-        .header h1 { color: #00ff00; font-size: 18px; }
-        .header .info { color: #888; font-size: 10px; margin-top: 5px; }
-        .box {
-            background: #111;
-            border: 1px solid #00ff00;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 5px;
+        .header h1{color:#00ff00;font-size:18px}
+        .header .info{color:#888;font-size:10px;margin-top:5px}
+        .box{
+            background:#111;
+            border:1px solid #00ff00;
+            padding:20px;
+            margin:15px 0;
+            border-radius:10px;
         }
-        .box h3 { color: #ffff00; margin-bottom: 15px; font-size: 13px; }
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            background: #000;
-            border: 1px dashed #00ff00;
-            color: #00ff00;
-            margin: 10px 0;
+        .box h3{color:#ffff00;margin-bottom:15px;font-size:13px}
+        input[type="file"]{
+            width:100%;
+            padding:15px;
+            background:#000;
+            border:2px dashed #00ff00;
+            color:#00ff00;
+            margin:10px 0;
+            cursor:pointer;
+            font-family:'Courier New',monospace;
+            font-size:12px;
+            border-radius:8px;
         }
-        .btn {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #00ff00;
-            background: #000;
-            color: #00ff00;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            transition: all 0.3s;
+        input[type="text"],input[type="password"]{
+            width:100%;
+            padding:14px;
+            background:#000;
+            border:2px solid #00ff00;
+            color:#00ff00;
+            font-size:16px;
+            text-align:center;
+            font-family:'Courier New',monospace;
+            border-radius:8px;
+            letter-spacing:3px;
+            outline:none;
         }
-        .btn:hover { background: #00ff00; color: #000; }
-        .btn-danger { border-color: #ff0000; color: #ff0000; }
-        .btn-danger:hover { background: #ff0000; color: #000; }
-        .status {
-            text-align: center;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 11px;
-            display: none;
-            border-radius: 3px;
+        .preview{
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            margin:10px 0;
         }
-        .success { background: rgba(0,255,0,0.1); color: #00ff00; border: 1px solid #00ff00; }
-        .error { background: rgba(255,0,0,0.1); color: #ff0000; border: 1px solid #ff0000; }
-        .file-list { margin-top: 15px; }
-        .file-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border: 1px solid #333;
-            margin: 5px 0;
-            font-size: 10px;
-            border-radius: 3px;
-            background: rgba(0,255,0,0.02);
+        .preview-item{
+            position:relative;
+            width:80px;
+            height:80px;
+            border:1px solid #00ff00;
+            border-radius:8px;
+            overflow:hidden;
         }
-        .file-item:hover { border-color: #00ff00; }
-        .file-item .name { flex: 1; word-break: break-all; }
-        .file-item .size { color: #888; margin: 0 10px; }
-        .file-item button {
-            background: none;
-            border: 1px solid #ff0000;
-            color: #ff0000;
-            cursor: pointer;
-            padding: 5px 10px;
-            font-size: 10px;
-            font-family: 'Courier New', monospace;
+        .preview-item img,.preview-item video{
+            width:100%;
+            height:100%;
+            object-fit:cover;
         }
-        .file-item button:hover { background: #ff0000; color: #000; }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            display: none;
+        .preview-item .remove{
+            position:absolute;
+            top:3px;
+            right:3px;
+            background:#ff0000;
+            color:#fff;
+            border:none;
+            width:20px;
+            height:20px;
+            border-radius:50%;
+            cursor:pointer;
+            font-size:10px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
         }
-        .spinner {
-            border: 2px solid #000;
-            border-top: 2px solid #00ff00;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 0.8s linear infinite;
-            margin: 10px auto;
+        .btn{
+            width:100%;
+            padding:14px;
+            margin:8px 0;
+            border:2px solid #00ff00;
+            background:#000;
+            color:#00ff00;
+            font-size:14px;
+            font-weight:bold;
+            cursor:pointer;
+            font-family:'Courier New',monospace;
+            border-radius:8px;
+            transition:all 0.3s;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .stats {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
+        .btn:hover,.btn:active{background:#00ff00;color:#000}
+        .btn-danger{border-color:#ff0000;color:#ff0000}
+        .btn-danger:hover,.btn-danger:active{background:#ff0000;color:#000}
+        .btn:disabled{opacity:0.3;cursor:not-allowed}
+        .status{
+            text-align:center;
+            padding:10px;
+            margin:10px 0;
+            font-size:12px;
+            display:none;
+            border-radius:8px;
         }
-        .stat {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            font-size: 10px;
+        .success{background:rgba(0,255,0,0.1);color:#00ff00;border:1px solid #00ff00}
+        .error{background:rgba(255,0,0,0.1);color:#ff0000;border:1px solid #ff0000}
+        .loading{text-align:center;padding:20px;display:none}
+        .spinner{
+            border:3px solid #000;
+            border-top:3px solid #00ff00;
+            border-radius:50%;
+            width:40px;
+            height:40px;
+            animation:spin 0.8s linear infinite;
+            margin:10px auto;
         }
-        .stat .num { color: #ffff00; font-size: 18px; }
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>📤 UPLOAD CENTER</h1>
-            <div class="info">Server Storage | Vercel Blob</div>
-        </div>
-
-        <div class="stats">
-            <div class="stat">
-                <div class="num" id="photoCount">0</div>
-                <div>📸 Photos</div>
-            </div>
-            <div class="stat">
-                <div class="num" id="videoCount">0</div>
-                <div>🎬 Videos</div>
-            </div>
+            <div class="info">Firebase Storage | 5GB Free</div>
         </div>
         
         <div class="box">
-            <h3>📸 Upload Photos</h3>
-            <input type="file" id="photoInput" accept="image/*" multiple capture="environment">
-            <button class="btn" onclick="uploadFiles('photos')">[ UPLOAD TO SERVER ]</button>
-            <div class="status" id="photoStatus"></div>
+            <h3>🔐 ACCESS CODE</h3>
+            <input type="password" id="accessCode" placeholder="أدخل كود الرفع" maxlength="10">
+            <button class="btn" onclick="checkUploadAccess()">[ UNLOCK ]</button>
+            <div class="status" id="accessStatus"></div>
         </div>
         
-        <div class="box">
-            <h3>🎬 Upload Videos</h3>
-            <input type="file" id="videoInput" accept="video/*" multiple capture="environment">
-            <button class="btn" onclick="uploadFiles('videos')">[ UPLOAD TO SERVER ]</button>
-            <div class="status" id="videoStatus"></div>
-        </div>
-        
-        <div class="box">
-            <h3>📁 Files on Server</h3>
-            <div class="file-list" id="fileList">
-                <div class="loading" id="fileLoading">
-                    <div class="spinner"></div>
-                </div>
+        <div id="uploadSection" style="display:none;">
+            <div class="box">
+                <h3>📸 Upload Photos (Gallery)</h3>
+                <input type="file" id="photoInput" accept="image/*" multiple>
+                <div class="preview" id="photoPreview"></div>
+                <button class="btn" id="photoBtn" onclick="uploadToFirebase('photos')" disabled>
+                    [ UPLOAD PHOTOS ]
+                </button>
+                <div class="status" id="photoStatus"></div>
             </div>
-            <button class="btn btn-danger" onclick="clearServer()">[ DELETE ALL ]</button>
-            <div class="status" id="deleteStatus"></div>
+            
+            <div class="box">
+                <h3>🎬 Upload Videos (Gallery)</h3>
+                <input type="file" id="videoInput" accept="video/*" multiple>
+                <div class="preview" id="videoPreview"></div>
+                <button class="btn" id="videoBtn" onclick="uploadToFirebase('videos')" disabled>
+                    [ UPLOAD VIDEOS ]
+                </button>
+                <div class="status" id="videoStatus"></div>
+            </div>
+            
+            <div class="loading" id="mainLoading">
+                <div class="spinner"></div>
+                <p style="color:#00ff00;margin-top:10px;">Uploading to Firebase...</p>
+            </div>
         </div>
     </div>
 
     <script>
-        const API = '/api/upload_file';
-
-        async function uploadFiles(type) {
-            const input = document.getElementById(type === 'photos' ? 'photoInput' : 'videoInput');
+        // Firebase Config
+        firebase.initializeApp({
+            apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+            projectId: "game-a1aca",
+            storageBucket: "game-a1aca.firebasestorage.app",
+            appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+        });
+        
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const UPLOAD_CODE = "مصطفي";
+        
+        let selectedPhotos = [];
+        let selectedVideos = [];
+        
+        function checkUploadAccess() {
+            const code = document.getElementById('accessCode').value.trim();
+            const status = document.getElementById('accessStatus');
+            
+            if (code === UPLOAD_CODE) {
+                document.getElementById('uploadSection').style.display = 'block';
+                document.getElementById('accessStatus').style.display = 'none';
+                showStatus(status, '[✓] Access Granted!', 'success');
+                setTimeout(() => status.style.display = 'none', 1500);
+            } else {
+                showStatus(status, '[!] Wrong Code!', 'error');
+            }
+        }
+        
+        document.getElementById('photoInput').addEventListener('change', function() {
+            selectedPhotos = Array.from(this.files);
+            showPreview('photoPreview', selectedPhotos, 'image');
+            document.getElementById('photoBtn').disabled = selectedPhotos.length === 0;
+        });
+        
+        document.getElementById('videoInput').addEventListener('change', function() {
+            selectedVideos = Array.from(this.files);
+            showPreview('videoPreview', selectedVideos, 'video');
+            document.getElementById('videoBtn').disabled = selectedVideos.length === 0;
+        });
+        
+        function showPreview(containerId, files, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (files.length === 0) {
+                container.innerHTML = '<div style="color:#555;font-size:11px;width:100%;text-align:center;padding:10px;">No files selected</div>';
+                return;
+            }
+            
+            files.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'preview-item';
+                
+                const media = document.createElement(type === 'image' ? 'img' : 'video');
+                media.src = URL.createObjectURL(file);
+                if (type === 'video') media.muted = true;
+                div.appendChild(media);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove';
+                removeBtn.textContent = '✕';
+                removeBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    files.splice(index, 1);
+                    showPreview(containerId, files, type);
+                };
+                
+                div.appendChild(removeBtn);
+                container.appendChild(div);
+            });
+        }
+        
+        async function uploadToFirebase(type) {
+            const files = type === 'photos' ? selectedPhotos : selectedVideos;
             const status = document.getElementById(type === 'photos' ? 'photoStatus' : 'videoStatus');
-            const files = input.files;
+            const btn = document.getElementById(type === 'photos' ? 'photoBtn' : 'videoBtn');
+            const loading = document.getElementById('mainLoading');
             
             if (!files.length) {
                 showStatus(status, '[!] Select files first!', 'error');
                 return;
             }
             
+            btn.disabled = true;
+            loading.style.display = 'block';
             showStatus(status, `[↑] Uploading ${files.length} files...`, 'success');
+            
             let uploaded = 0;
             
             for (const file of files) {
-                const reader = new FileReader();
+                const fileName = Date.now() + '_' + file.name;
+                const storageRef = storage.ref('uploads/' + fileName);
                 
-                await new Promise((resolve) => {
-                    reader.onload = async function(e) {
-                        try {
-                            const res = await fetch(API, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    name: file.name,
-                                    data: e.target.result,
-                                    type: type
-                                })
-                            });
-                            
-                            const data = await res.json();
-                            if (data.success) {
-                                uploaded++;
-                                showStatus(status, `[↑] ${uploaded}/${files.length} uploaded`, 'success');
-                            }
-                        } catch(err) {
-                            showStatus(status, `[!] Error: ${file.name}`, 'error');
-                        }
-                        resolve();
-                    };
-                    reader.readAsDataURL(file);
-                });
-            }
-            
-            showStatus(status, `[✓] ${uploaded} files uploaded!`, 'success');
-            input.value = '';
-            setTimeout(() => status.style.display = 'none', 3000);
-            loadFileList();
-        }
-        
-        async function loadFileList() {
-            const list = document.getElementById('fileList');
-            const loading = document.getElementById('fileLoading');
-            loading.style.display = 'block';
-            
-            try {
-                const res = await fetch(API);
-                const data = await res.json();
-                
-                let photos = 0, videos = 0;
-                
-                if (data.files && data.files.length > 0) {
-                    list.innerHTML = data.files.map((f, i) => {
-                        const isVideo = f.pathname.includes('/videos/');
-                        if (isVideo) videos++; else photos++;
-                        const name = f.pathname.split('/').pop().replace(/^\d+_/, '');
-                        const size = (f.size / 1024).toFixed(1) + ' KB';
-                        
-                        return `
-                            <div class="file-item">
-                                <span>${isVideo ? '🎬' : '📸'}</span>
-                                <span class="name">${name}</span>
-                                <span class="size">${size}</span>
-                                <button onclick="deleteFile('${f.url}')">DEL</button>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    list.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">No files on server</div>';
+                try {
+                    const snapshot = await storageRef.put(file);
+                    const url = await snapshot.ref.getDownloadURL();
+                    
+                    // Save to Firestore
+                    await db.collection('gallery').add({
+                        url: url,
+                        type: type === 'photos' ? '📸 صورة' : '🎬 فيديو',
+                        name: file.name,
+                        size: file.size,
+                        timestamp: Date.now()
+                    });
+                    
+                    uploaded++;
+                    showStatus(status, `[↑] ${uploaded}/${files.length} uploaded`, 'success');
+                } catch(err) {
+                    showStatus(status, `[!] Failed: ${file.name}`, 'error');
                 }
-                
-                document.getElementById('photoCount').textContent = photos;
-                document.getElementById('videoCount').textContent = videos;
-            } catch(e) {
-                list.innerHTML = '<div style="color:#ff0000;">Failed to load</div>';
             }
             
             loading.style.display = 'none';
-        }
-        
-        async function deleteFile(url) {
-            await fetch(API, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url })
-            });
-            loadFileList();
-        }
-        
-        async function clearServer() {
-            if (!confirm('Delete ALL files from server?')) return;
+            showStatus(status, `[✓] ${uploaded} files uploaded to Firebase!`, 'success');
             
-            const status = document.getElementById('deleteStatus');
-            showStatus(status, '[↑] Deleting...', 'success');
-            
-            try {
-                const res = await fetch(API);
-                const data = await res.json();
-                
-                if (data.files) {
-                    for (const file of data.files) {
-                        await fetch(API, {
-                            method: 'DELETE',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ url: file.url })
-                        });
-                    }
-                }
-                
-                showStatus(status, '[✓] All files deleted!', 'success');
-            } catch(e) {
-                showStatus(status, '[!] Error', 'error');
+            // Clear selections
+            if (type === 'photos') {
+                selectedPhotos = [];
+                document.getElementById('photoInput').value = '';
+                document.getElementById('photoPreview').innerHTML = '';
+            } else {
+                selectedVideos = [];
+                document.getElementById('videoInput').value = '';
+                document.getElementById('videoPreview').innerHTML = '';
             }
             
-            setTimeout(() => status.style.display = 'none', 2000);
-            loadFileList();
+            setTimeout(() => status.style.display = 'none', 3000);
+            btn.disabled = true;
         }
         
         function showStatus(el, msg, cls) {
@@ -301,7 +317,10 @@
             el.style.display = 'block';
         }
         
-        loadFileList();
+        // Enter key for code input
+        document.getElementById('accessCode').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') checkUploadAccess();
+        });
     </script>
 </body>
 </html>
