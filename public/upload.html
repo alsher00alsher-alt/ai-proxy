@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Links</title>
+    <title>Upload Center</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
@@ -15,6 +15,7 @@
         .box{background:#111;border:1px solid #0f0;padding:15px;margin:10px 0;border-radius:10px}
         .box h3{color:#ff0;margin-bottom:8px;font-size:13px}
         textarea{width:100%;height:100px;background:#000;border:1px solid #0f0;color:#0f0;padding:10px;font-size:10px;border-radius:8px;font-family:monospace;resize:vertical}
+        input{width:100%;padding:12px;background:#000;border:1px solid #0f0;color:#0f0;font-size:12px;border-radius:8px;font-family:monospace;margin:5px 0}
         .btn{width:100%;padding:14px;margin:5px 0;border:2px solid #0f0;background:#000;color:#0f0;font-size:13px;font-weight:bold;cursor:pointer;border-radius:8px}
         .btn:active{background:#0f0;color:#000}
         .btn-red{border-color:#f00;color:#f00}
@@ -30,25 +31,28 @@
 </head>
 <body>
     <div class="c">
-        <div class="h"><h1>☠️ UPLOAD LINKS ☠️</h1></div>
+        <div class="h"><h1>☠️ UPLOAD CENTER ☠️</h1></div>
         
+        <!-- صور -->
         <div class="box">
-            <h3>📸 PHOTOS (ImgBB links)</h3>
-            <div class="hint">ارفع على imgbb.com وحط الروابط هنا - رابط في كل سطر</div>
+            <h3>📸 PHOTOS</h3>
+            <div class="hint">ارفع على imgbb.com وحط الروابط (رابط في كل سطر)</div>
             <textarea id="photosInput" placeholder="https://i.ibb.co/xxxx/photo1.jpg
 https://i.ibb.co/xxxx/photo2.jpg"></textarea>
-            <button class="btn" onclick="saveLinks('photos')">[ SAVE PHOTOS ]</button>
+            <button class="btn" onclick="savePhotos()">[ SAVE PHOTOS ]</button>
             <button class="btn btn-yellow" onclick="deleteAll('photos')">[ 🗑️ DELETE PHOTOS ]</button>
             <div class="msg" id="photoMsg"></div>
             <div class="count" id="photoCount"></div>
         </div>
         
+        <!-- فيديوهات -->
         <div class="box">
             <h3>🎬 VIDEOS</h3>
-            <div class="hint">ارفع على YouTube (غير مدرج) وحط رابط embed - رابط في كل سطر</div>
-            <textarea id="videosInput" placeholder="https://www.youtube.com/embed/xxxx
-https://drive.google.com/file/d/xxxx/preview"></textarea>
-            <button class="btn" onclick="saveLinks('videos')">[ SAVE VIDEOS ]</button>
+            <div class="hint">ارفع على gofile.io أو أي موقع (رابط فيديو مباشر في كل سطر)</div>
+            <textarea id="videosInput" placeholder="https://gofile.io/d/WHQagk
+https://youtu.be/xxxx
+https://streamable.com/xxxx"></textarea>
+            <button class="btn" onclick="saveVideos()">[ SAVE VIDEOS ]</button>
             <button class="btn btn-yellow" onclick="deleteAll('videos')">[ 🗑️ DELETE VIDEOS ]</button>
             <div class="msg" id="videoMsg"></div>
             <div class="count" id="videoCount"></div>
@@ -69,22 +73,104 @@ https://drive.google.com/file/d/xxxx/preview"></textarea>
         
         loadCounts();
         
-        async function saveLinks(type){
-            const input=document.getElementById(type==='photos'?'photosInput':'videosInput');
-            const msg=document.getElementById(type==='photos'?'photoMsg':'videoMsg');
+        function convertVideoUrl(url){
+            // GoFile folder -> نحولها لروابط مباشرة
+            if(url.includes('gofile.io/d/')){
+                const id=url.split('gofile.io/d/')[1]?.split(/[?#]/)[0];
+                if(id)return'https://gofile.io/api/download/'+id;
+            }
+            // YouTube
+            if(url.includes('youtu.be/')){
+                const id=url.split('youtu.be/')[1]?.split(/[?#]/)[0];
+                if(id)return'https://www.youtube.com/embed/'+id;
+            }
+            if(url.includes('youtube.com/watch')){
+                const id=url.split('v=')[1]?.split('&')[0];
+                if(id)return'https://www.youtube.com/embed/'+id;
+            }
+            if(url.includes('youtube.com/shorts/')){
+                const id=url.split('shorts/')[1]?.split(/[?#]/)[0];
+                if(id)return'https://www.youtube.com/embed/'+id;
+            }
+            // Streamable
+            if(url.includes('streamable.com/')){
+                const id=url.split('streamable.com/')[1]?.split(/[?#]/)[0];
+                if(id)return'https://streamable.com/e/'+id;
+            }
+            // Google Drive
+            if(url.includes('drive.google.com/file/d/')){
+                const id=url.split('/d/')[1]?.split('/')[0];
+                if(id)return'https://drive.google.com/file/d/'+id+'/preview';
+            }
+            return url;
+        }
+        
+        async function fetchGoFileFolder(folderId){
+            try{
+                const res=await fetch('https://api.gofile.io/contents/'+folderId+'?wt=4fd6sg89d7s6');
+                const data=await res.json();
+                if(data.status==='ok'&&data.data.children){
+                    return Object.values(data.data.children).map(f=>f.link);
+                }
+            }catch(e){}
+            return[];
+        }
+        
+        async function savePhotos(){
+            const input=document.getElementById('photosInput');
+            const msg=document.getElementById('photoMsg');
             const links=input.value.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
             
             if(!links.length){showMsg(msg,'[!] حط روابط!','err');return;}
             showMsg(msg,'⏳ جاري الحفظ...','ok');
             
-            for(const link of links){
-                await db.collection('mylinks').add({
+            for(let link of links){
+                await db.collection('media').add({
                     url:link,
-                    type:type==='photos'?'📸':'🎬',
+                    type:'📸',
                     timestamp:Date.now()
                 });
             }
-            showMsg(msg,'✅ تم حفظ '+links.length+' رابط!','ok');
+            
+            showMsg(msg,'✅ تم حفظ '+links.length+' صورة!','ok');
+            input.value='';
+            loadCounts();
+        }
+        
+        async function saveVideos(){
+            const input=document.getElementById('videosInput');
+            const msg=document.getElementById('videoMsg');
+            const links=input.value.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+            
+            if(!links.length){showMsg(msg,'[!] حط روابط!','err');return;}
+            showMsg(msg,'⏳ جاري معالجة الفيديوهات...','ok');
+            
+            let allVideos=[];
+            
+            for(let link of links){
+                // لو رابط فولدر GoFile - نجيب كل الفيديوهات
+                if(link.includes('gofile.io/d/')){
+                    const folderId=link.split('gofile.io/d/')[1]?.split(/[?#]/)[0];
+                    if(folderId){
+                        const files=await fetchGoFileFolder(folderId);
+                        allVideos=allVideos.concat(files);
+                    }
+                }else{
+                    allVideos.push(convertVideoUrl(link));
+                }
+            }
+            
+            if(!allVideos.length){showMsg(msg,'[!] مفيش فيديوهات!','err');return;}
+            
+            for(let url of allVideos){
+                await db.collection('media').add({
+                    url:url,
+                    type:'🎬',
+                    timestamp:Date.now()
+                });
+            }
+            
+            showMsg(msg,'✅ تم حفظ '+allVideos.length+' فيديو!','ok');
             input.value='';
             loadCounts();
         }
@@ -94,7 +180,7 @@ https://drive.google.com/file/d/xxxx/preview"></textarea>
             if(!confirm('متأكد؟'))return;
             showMsg(msg,'⏳ جاري المسح...','ok');
             
-            const snap=await db.collection('mylinks').get();
+            const snap=await db.collection('media').get();
             const batch=db.batch();
             
             snap.forEach(doc=>{
@@ -110,7 +196,7 @@ https://drive.google.com/file/d/xxxx/preview"></textarea>
         }
         
         async function loadCounts(){
-            const snap=await db.collection('mylinks').get();
+            const snap=await db.collection('media').get();
             let p=0,v=0;
             snap.forEach(d=>{d.data().type==='🎬'?v++:p++;});
             document.getElementById('photoCount').textContent='📸 '+p+' photos';
