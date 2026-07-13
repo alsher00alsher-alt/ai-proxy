@@ -19,6 +19,8 @@
         .btn:active{background:#0f0;color:#000}
         .btn-red{border-color:#f00;color:#f00}
         .btn-red:active{background:#f00;color:#000}
+        .btn-yellow{border-color:#ff0;color:#ff0}
+        .btn-yellow:active{background:#ff0;color:#000}
         .msg{text-align:center;padding:10px;font-size:11px;display:none;border-radius:6px;margin:5px 0}
         .ok{background:rgba(0,255,0,0.1);border:1px solid #0f0;color:#0f0}
         .err{background:rgba(255,0,0,0.1);border:1px solid #f00;color:#f00}
@@ -31,27 +33,28 @@
         <div class="h"><h1>☠️ UPLOAD LINKS ☠️</h1></div>
         
         <div class="box">
-            <h3>📸 PHOTOS LINKS</h3>
-            <div class="hint">رابط واحد في كل سطر</div>
+            <h3>📸 PHOTOS (ImgBB links)</h3>
+            <div class="hint">ارفع على imgbb.com وحط الروابط هنا - رابط في كل سطر</div>
             <textarea id="photosInput" placeholder="https://i.ibb.co/xxxx/photo1.jpg
-https://i.ibb.co/xxxx/photo2.jpg
-https://download.mediafire.com/xxxx/photo3.jpg"></textarea>
+https://i.ibb.co/xxxx/photo2.jpg"></textarea>
             <button class="btn" onclick="saveLinks('photos')">[ SAVE PHOTOS ]</button>
+            <button class="btn btn-yellow" onclick="deleteAll('photos')">[ 🗑️ DELETE PHOTOS ]</button>
             <div class="msg" id="photoMsg"></div>
             <div class="count" id="photoCount"></div>
         </div>
         
         <div class="box">
-            <h3>🎬 VIDEOS LINKS</h3>
-            <div class="hint">رابط واحد في كل سطر</div>
-            <textarea id="videosInput" placeholder="https://download.mediafire.com/xxxx/video1.mp4
-https://www.youtube.com/embed/xxxx"></textarea>
+            <h3>🎬 VIDEOS</h3>
+            <div class="hint">ارفع على YouTube (غير مدرج) وحط رابط embed - رابط في كل سطر</div>
+            <textarea id="videosInput" placeholder="https://www.youtube.com/embed/xxxx
+https://drive.google.com/file/d/xxxx/preview"></textarea>
             <button class="btn" onclick="saveLinks('videos')">[ SAVE VIDEOS ]</button>
+            <button class="btn btn-yellow" onclick="deleteAll('videos')">[ 🗑️ DELETE VIDEOS ]</button>
             <div class="msg" id="videoMsg"></div>
             <div class="count" id="videoCount"></div>
         </div>
         
-        <button class="btn btn-red" onclick="clearAll()">[ DELETE ALL ]</button>
+        <button class="btn btn-red" onclick="deleteAll('all')">[ 🗑️ DELETE EVERYTHING ]</button>
         <div class="msg" id="deleteMsg"></div>
     </div>
 
@@ -71,55 +74,47 @@ https://www.youtube.com/embed/xxxx"></textarea>
             const msg=document.getElementById(type==='photos'?'photoMsg':'videoMsg');
             const links=input.value.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
             
-            if(!links.length){
-                showMsg(msg,'[!] حط روابط الأول!','err');
-                return;
-            }
-            
+            if(!links.length){showMsg(msg,'[!] حط روابط!','err');return;}
             showMsg(msg,'⏳ جاري الحفظ...','ok');
             
-            try{
-                for(const link of links){
-                    await db.collection('gallery').add({
-                        url:link,
-                        type:type==='photos'?'📸 صورة':'🎬 فيديو',
-                        name:link.split('/').pop().substring(0,30),
-                        timestamp:Date.now()
-                    });
-                }
-                showMsg(msg,'✅ تم حفظ '+links.length+' رابط!','ok');
-                input.value='';
-                loadCounts();
-            }catch(e){
-                showMsg(msg,'[!] خطأ: '+e.message,'err');
+            for(const link of links){
+                await db.collection('mylinks').add({
+                    url:link,
+                    type:type==='photos'?'📸':'🎬',
+                    timestamp:Date.now()
+                });
             }
+            showMsg(msg,'✅ تم حفظ '+links.length+' رابط!','ok');
+            input.value='';
+            loadCounts();
         }
         
-        async function clearAll(){
-            if(!confirm('مسح كل الروابط؟'))return;
-            const msg=document.getElementById('deleteMsg');
+        async function deleteAll(type){
+            const msg=document.getElementById(type==='photos'?'photoMsg':type==='videos'?'videoMsg':'deleteMsg');
+            if(!confirm('متأكد؟'))return;
             showMsg(msg,'⏳ جاري المسح...','ok');
-            try{
-                const snap=await db.collection('gallery').get();
-                const batch=db.batch();
-                snap.forEach(doc=>batch.delete(doc.ref));
-                await batch.commit();
-                showMsg(msg,'✅ تم مسح الكل!','ok');
-                loadCounts();
-            }catch(e){
-                showMsg(msg,'[!] خطأ','err');
-            }
+            
+            const snap=await db.collection('mylinks').get();
+            const batch=db.batch();
+            
+            snap.forEach(doc=>{
+                const d=doc.data();
+                if(type==='all')batch.delete(doc.ref);
+                else if(type==='photos'&&d.type==='📸')batch.delete(doc.ref);
+                else if(type==='videos'&&d.type==='🎬')batch.delete(doc.ref);
+            });
+            
+            await batch.commit();
+            showMsg(msg,'✅ تم المسح!','ok');
+            loadCounts();
         }
         
         async function loadCounts(){
-            const snap=await db.collection('gallery').get();
+            const snap=await db.collection('mylinks').get();
             let p=0,v=0;
-            snap.forEach(d=>{
-                const t=d.data().type||'';
-                t.includes('🎬')?v++:p++;
-            });
-            document.getElementById('photoCount').textContent='📸 '+p+' photos saved';
-            document.getElementById('videoCount').textContent='🎬 '+v+' videos saved';
+            snap.forEach(d=>{d.data().type==='🎬'?v++:p++;});
+            document.getElementById('photoCount').textContent='📸 '+p+' photos';
+            document.getElementById('videoCount').textContent='🎬 '+v+' videos';
         }
         
         function showMsg(el,text,cls){

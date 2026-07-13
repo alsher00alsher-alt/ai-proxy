@@ -21,13 +21,14 @@
         .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px}
         .item{border:1px solid #0f0;border-radius:8px;overflow:hidden;background:#111;cursor:pointer}
         .item img{width:100%;height:180px;object-fit:cover}
-        .item video{width:100%;height:180px;object-fit:cover}
+        .item iframe{width:100%;height:180px;border:0}
         .item .t{padding:6px;font-size:9px;color:#0f0;text-align:center}
         .loading{text-align:center;padding:30px;display:none}
         .spinner{border:3px solid #000;border-top:3px solid #f00;border-radius:50%;width:40px;height:40px;animation:spin 0.8s linear infinite;margin:15px auto}
         @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
         .full{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999;display:none;justify-content:center;align-items:center}
-        .full img,.full video{max-width:95%;max-height:95%}
+        .full img{max-width:95%;max-height:95%}
+        .full iframe{width:100%;height:100%;border:0}
         .full .close{position:absolute;top:15px;right:15px;color:#f00;font-size:28px;cursor:pointer}
         .count{text-align:center;color:#888;font-size:10px;margin:5px 0}
         .sec{color:#f60;text-align:center;font-size:12px;margin:15px 0 8px;border-bottom:1px solid #333;padding-bottom:8px}
@@ -62,7 +63,7 @@
     <div class="full" id="full" onclick="this.style.display='none'">
         <span class="close">✕</span>
         <img id="fimg" src="" style="display:none;">
-        <video id="fvid" src="" controls style="display:none;"></video>
+        <iframe id="fvid" src="" style="display:none;" allowfullscreen></iframe>
     </div>
 
     <script>
@@ -88,21 +89,20 @@
         }
         
         async function loadFiles(){
-            const snap=await db.collection('gallery').orderBy('timestamp','desc').get();
+            const snap=await db.collection('mylinks').orderBy('timestamp','desc').get();
             let p=[],v=[];
             snap.forEach(d=>{
                 const x=d.data();
-                if(!x.url)return;
-                (x.type&&x.type.includes('🎬')?v:p).push(x);
+                (x.type==='🎬'?v:p).push(x);
             });
             document.getElementById('cnt').textContent='📸 '+p.length+' | 🎬 '+v.length;
             document.getElementById('pg').innerHTML=p.length?p.map(x=>`
                 <div class="item" onclick="openFull('${x.url}','img')">
-                    <img src="${x.url}" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=color:#f00;text-align:center;padding:20px>❌</div>'"><div class="t">📸</div>
+                    <img src="${x.url}" loading="lazy"><div class="t">📸</div>
                 </div>`).join(''):'<div style="color:#555;text-align:center;padding:20px;grid-column:1/-1;">No photos</div>';
             document.getElementById('vg').innerHTML=v.length?v.map(x=>`
                 <div class="item" onclick="openFull('${x.url}','vid')">
-                    <video src="${x.url}" preload="metadata"></video><div class="t">🎬</div>
+                    <iframe src="${x.url}" allowfullscreen></iframe><div class="t">🎬</div>
                 </div>`).join(''):'<div style="color:#555;text-align:center;padding:20px;grid-column:1/-1;">No videos</div>';
         }
         
