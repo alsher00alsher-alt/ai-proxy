@@ -3,222 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Center - Firebase</title>
+    <title>Upload Files</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Courier New',monospace;background:#000;color:#00ff00;min-height:100vh;padding:15px}
-        .container{max-width:500px;margin:0 auto}
-        .header{background:#111;border:2px solid #00ff00;padding:20px;text-align:center;margin-bottom:15px;border-radius:10px}
-        .header h1{color:#00ff00;font-size:18px}
-        .box{background:#111;border:1px solid #00ff00;padding:18px;margin:12px 0;border-radius:10px}
-        .box h3{color:#ffff00;margin-bottom:12px;font-size:13px}
-        input[type="file"]{width:100%;padding:12px;background:#000;border:2px dashed #00ff00;color:#00ff00;margin:8px 0;cursor:pointer;font-family:'Courier New',monospace;font-size:11px;border-radius:8px}
-        input[type="password"]{width:100%;padding:14px;background:#000;border:2px solid #00ff00;color:#00ff00;font-size:16px;text-align:center;font-family:'Courier New',monospace;border-radius:8px;letter-spacing:3px;outline:none}
-        .preview{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;max-height:200px;overflow-y:auto}
-        .preview-item{position:relative;width:60px;height:60px;border:1px solid #00ff00;border-radius:6px;overflow:hidden;flex-shrink:0}
-        .preview-item img,.preview-item video{width:100%;height:100%;object-fit:cover}
-        .preview-item .remove{position:absolute;top:2px;right:2px;background:#ff0000;color:#fff;border:none;width:16px;height:16px;border-radius:50%;cursor:pointer;font-size:8px;display:flex;align-items:center;justify-content:center}
-        .btn{width:100%;padding:14px;margin:6px 0;border:2px solid #00ff00;background:#000;color:#00ff00;font-size:14px;font-weight:bold;cursor:pointer;font-family:'Courier New',monospace;border-radius:8px;transition:0.2s}
-        .btn:active{background:#00ff00;color:#000}
-        .btn-danger{border-color:#ff0000;color:#ff0000}
-        .btn-danger:active{background:#ff0000;color:#000}
+        body{font-family:'Courier New',monospace;background:#000;color:#0f0;min-height:100vh;padding:10px}
+        .c{max-width:500px;margin:0 auto}
+        .h{background:#111;border:2px solid #0f0;padding:15px;text-align:center;margin-bottom:10px;border-radius:10px}
+        .h h1{font-size:18px;color:#f00}
+        .b{background:#111;border:1px solid #0f0;padding:15px;margin:10px 0;border-radius:10px}
+        .b h3{color:#ff0;margin-bottom:10px;font-size:13px}
+        input[type="file"]{width:100%;padding:20px;background:#000;border:2px dashed #0f0;color:#0f0;margin:8px 0;font-size:12px;border-radius:8px}
+        .btn{width:100%;padding:15px;margin:6px 0;border:2px solid #0f0;background:#000;color:#0f0;font-size:14px;font-weight:bold;cursor:pointer;border-radius:8px}
+        .btn:active{background:#0f0;color:#000}
         .btn:disabled{opacity:0.3}
-        .status{text-align:center;padding:8px;margin:8px 0;font-size:11px;display:none;border-radius:6px}
-        .success{background:rgba(0,255,0,0.1);color:#00ff00;border:1px solid #00ff00}
-        .error{background:rgba(255,0,0,0.1);color:#ff0000;border:1px solid #ff0000}
-        .progress-bar{width:100%;height:20px;background:#000;border:1px solid #00ff00;border-radius:10px;margin:10px 0;overflow:hidden;display:none}
-        .progress-fill{height:100%;background:#00ff00;width:0%;transition:width 0.3s;border-radius:10px}
-        .count-badge{display:inline-block;background:rgba(0,255,0,0.2);padding:3px 10px;border-radius:15px;font-size:10px;margin:5px}
+        .bar{width:100%;height:25px;background:#000;border:1px solid #0f0;border-radius:13px;margin:10px 0;overflow:hidden;display:none}
+        .fill{height:100%;background:#0f0;width:0%;border-radius:13px;transition:width 0.2s}
+        .msg{text-align:center;padding:8px;font-size:12px;display:none}
+        .ok{color:#0f0}.err{color:#f00}
+        .preview{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0;max-height:150px;overflow:auto}
+        .pv{position:relative;width:55px;height:55px;border:1px solid #0f0;border-radius:5px;overflow:hidden;flex-shrink:0}
+        .pv img,.pv video{width:100%;height:100%;object-fit:cover}
+        .pv .x{position:absolute;top:1px;right:1px;background:#f00;color:#fff;border:none;width:14px;height:14px;border-radius:50%;cursor:pointer;font-size:7px}
+        .num{display:inline-block;background:rgba(0,255,0,0.2);padding:2px 8px;border-radius:10px;font-size:10px}
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header"><h1>📤 UPLOAD CENTER</h1><div style="color:#888;font-size:10px;">Firebase Storage | 5GB</div></div>
+    <div class="c">
+        <div class="h"><h1>☠️ UPLOAD PANEL ☠️</h1></div>
         
-        <div class="box">
-            <h3>🔐 ACCESS CODE</h3>
-            <input type="password" id="accessCode" placeholder="كود الرفع" maxlength="10">
-            <button class="btn" onclick="checkUploadAccess()">[ UNLOCK ]</button>
-            <div class="status" id="accessStatus"></div>
+        <div class="b">
+            <h3>📸 PHOTOS <span class="num" id="pc">0</span></h3>
+            <input type="file" id="pi" accept="image/*" multiple>
+            <div class="preview" id="pp"></div>
+            <button class="btn" id="pb" onclick="up('photos')" disabled>[ UPLOAD ]</button>
+            <div class="bar" id="pbar"><div class="fill" id="pf"></div></div>
+            <div class="msg" id="pmsg"></div>
         </div>
         
-        <div id="uploadSection" style="display:none;">
-            <div class="box">
-                <h3>📸 Photos <span class="count-badge" id="photoCount">0</span></h3>
-                <input type="file" id="photoInput" accept="image/*" multiple>
-                <div class="preview" id="photoPreview"></div>
-                <button class="btn" id="photoBtn" onclick="uploadToFirebase('photos')" disabled>[ UPLOAD PHOTOS ]</button>
-                <div class="progress-bar" id="photoProgress"><div class="progress-fill" id="photoFill"></div></div>
-                <div class="status" id="photoStatus"></div>
-            </div>
-            
-            <div class="box">
-                <h3>🎬 Videos <span class="count-badge" id="videoCount">0</span></h3>
-                <input type="file" id="videoInput" accept="video/*" multiple>
-                <div class="preview" id="videoPreview"></div>
-                <button class="btn" id="videoBtn" onclick="uploadToFirebase('videos')" disabled>[ UPLOAD VIDEOS ]</button>
-                <div class="progress-bar" id="videoProgress"><div class="progress-fill" id="videoFill"></div></div>
-                <div class="status" id="videoStatus"></div>
-            </div>
+        <div class="b">
+            <h3>🎬 VIDEOS <span class="num" id="vc">0</span></h3>
+            <input type="file" id="vi" accept="video/*" multiple>
+            <div class="preview" id="vp"></div>
+            <button class="btn" id="vb" onclick="up('videos')" disabled>[ UPLOAD ]</button>
+            <div class="bar" id="vbar"><div class="fill" id="vf"></div></div>
+            <div class="msg" id="vmsg"></div>
         </div>
     </div>
 
     <script>
         firebase.initializeApp({
-            apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
-            projectId: "game-a1aca",
-            storageBucket: "game-a1aca.firebasestorage.app",
-            appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+            apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+            projectId:"game-a1aca",
+            storageBucket:"game-a1aca.firebasestorage.app",
+            appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"
         });
+        const db=firebase.firestore(),st=firebase.storage();
+        let sp=[],sv=[];
         
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-        const UPLOAD_CODE = "مصطفي";
+        document.getElementById('pi').onchange=function(){
+            sp=Array.from(this.files);
+            prev('pp',sp,'img');
+            document.getElementById('pc').textContent=sp.length;
+            document.getElementById('pb').disabled=!sp.length;
+        };
+        document.getElementById('vi').onchange=function(){
+            sv=Array.from(this.files);
+            prev('vp',sv,'vid');
+            document.getElementById('vc').textContent=sv.length;
+            document.getElementById('vb').disabled=!sv.length;
+        };
         
-        function checkUploadAccess() {
-            const code = document.getElementById('accessCode').value.trim();
-            const status = document.getElementById('accessStatus');
-            
-            if (code === UPLOAD_CODE) {
-                document.getElementById('uploadSection').style.display = 'block';
-                showStatus(status, '[✓] تم الفتح', 'success');
-                setTimeout(() => status.style.display = 'none', 1500);
-            } else {
-                showStatus(status, '[!] كود غلط', 'error');
-            }
-        }
-        
-        document.getElementById('photoInput').addEventListener('change', function() {
-            window.selectedPhotos = Array.from(this.files);
-            showPreview('photoPreview', window.selectedPhotos, 'image');
-            document.getElementById('photoCount').textContent = window.selectedPhotos.length;
-            document.getElementById('photoBtn').disabled = !window.selectedPhotos.length;
-        });
-        
-        document.getElementById('videoInput').addEventListener('change', function() {
-            window.selectedVideos = Array.from(this.files);
-            showPreview('videoPreview', window.selectedVideos, 'video');
-            document.getElementById('videoCount').textContent = window.selectedVideos.length;
-            document.getElementById('videoBtn').disabled = !window.selectedVideos.length;
-        });
-        
-        function showPreview(containerId, files, type) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            if (!files.length) {
-                container.innerHTML = '<div style="color:#555;font-size:10px;width:100%;text-align:center;padding:8px;">لم يتم اختيار ملفات</div>';
-                return;
-            }
-            files.forEach((file, i) => {
-                const div = document.createElement('div');
-                div.className = 'preview-item';
-                const media = document.createElement(type === 'image' ? 'img' : 'video');
-                media.src = URL.createObjectURL(file);
-                if (type === 'video') media.muted = true;
-                div.appendChild(media);
-                const btn = document.createElement('button');
-                btn.className = 'remove';
-                btn.textContent = '✕';
-                btn.onclick = function(e) {
-                    e.stopPropagation();
-                    files.splice(i, 1);
-                    showPreview(containerId, files, type);
-                    document.getElementById(type === 'image' ? 'photoCount' : 'videoCount').textContent = files.length;
-                    document.getElementById(type === 'image' ? 'photoBtn' : 'videoBtn').disabled = !files.length;
-                };
-                div.appendChild(btn);
-                container.appendChild(div);
+        function prev(id,files,t){
+            const c=document.getElementById(id);
+            c.innerHTML='';
+            if(!files.length){c.innerHTML='<div style="color:#555;font-size:10px;width:100%;text-align:center;padding:5px;">No files</div>';return;}
+            files.forEach((f,i)=>{
+                const d=document.createElement('div');d.className='pv';
+                const m=document.createElement(t==='img'?'img':'video');
+                m.src=URL.createObjectURL(f);
+                if(t==='vid')m.muted=true;
+                d.appendChild(m);
+                const x=document.createElement('button');x.className='x';x.textContent='✕';
+                x.onclick=function(e){e.stopPropagation();files.splice(i,1);prev(id,files,t);
+                    document.getElementById(t==='img'?'pc':'vc').textContent=files.length;
+                    document.getElementById(t==='img'?'pb':'vb').disabled=!files.length;};
+                d.appendChild(x);c.appendChild(d);
             });
         }
         
-        async function uploadToFirebase(type) {
-            const files = type === 'photos' ? (window.selectedPhotos || []) : (window.selectedVideos || []);
-            const status = document.getElementById(type === 'photos' ? 'photoStatus' : 'videoStatus');
-            const progressBar = document.getElementById(type === 'photos' ? 'photoProgress' : 'videoProgress');
-            const progressFill = document.getElementById(type === 'photos' ? 'photoFill' : 'videoFill');
-            const btn = document.getElementById(type === 'photos' ? 'photoBtn' : 'videoBtn');
+        async function up(type){
+            const files=type==='photos'?sp:sv;
+            const msg=document.getElementById(type==='photos'?'pmsg':'vmsg');
+            const bar=document.getElementById(type==='photos'?'pbar':'vbar');
+            const fill=document.getElementById(type==='photos'?'pf':'vf');
+            const btn=document.getElementById(type==='photos'?'pb':'vb');
             
-            if (!files.length) return;
+            if(!files.length)return;
+            btn.disabled=true;btn.textContent='[ UPLOADING... ]';
+            bar.style.display='block';fill.style.width='0%';
+            msg.style.display='block';msg.className='msg ok';msg.textContent='⏳ جاري الرفع...';
             
-            btn.disabled = true;
-            btn.textContent = '[ جاري الرفع... ]';
-            progressBar.style.display = 'block';
-            progressFill.style.width = '0%';
-            showStatus(status, `⏳ جاري رفع ${files.length} ملف...`, 'success');
+            let done=0;const total=files.length;
             
-            let done = 0;
-            const total = files.length;
-            
-            // رفع متوازي (3 ملفات في نفس الوقت)
-            const batchSize = 3;
-            
-            for (let i = 0; i < files.length; i += batchSize) {
-                const batch = files.slice(i, i + batchSize);
-                
-                await Promise.all(batch.map(async (file) => {
-                    const fileName = Date.now() + '_' + Math.random().toString(36).substr(2, 5) + '_' + file.name;
-                    const storageRef = storage.ref('uploads/' + fileName);
-                    
-                    try {
-                        const snapshot = await storageRef.put(file);
-                        const url = await snapshot.ref.getDownloadURL();
-                        
+            for(let i=0;i<files.length;i+=2){
+                const batch=files.slice(i,i+2);
+                await Promise.all(batch.map(async(f)=>{
+                    const name=Date.now()+'_'+f.name;
+                    const ref=st.ref('uploads/'+name);
+                    try{
+                        const snap=await ref.put(f);
+                        const url=await snap.ref.getDownloadURL();
                         await db.collection('gallery').add({
-                            url: url,
-                            type: type === 'photos' ? '📸 صورة' : '🎬 فيديو',
-                            name: file.name,
-                            size: file.size,
-                            timestamp: Date.now()
+                            url:url,
+                            type:type==='photos'?'📸':'🎬',
+                            name:f.name,
+                            timestamp:Date.now()
                         });
-                        
                         done++;
-                        const pct = Math.round((done / total) * 100);
-                        progressFill.style.width = pct + '%';
-                        showStatus(status, `✅ ${done}/${total} - ${pct}%`, 'success');
-                    } catch(err) {
-                        done++;
-                        showStatus(status, `❌ فشل: ${file.name}`, 'error');
-                    }
+                        fill.style.width=Math.round(done/total*100)+'%';
+                        msg.textContent='✅ '+done+'/'+total;
+                    }catch(e){done++;}
                 }));
             }
             
-            btn.disabled = false;
-            btn.textContent = '[ UPLOAD ' + (type === 'photos' ? 'PHOTOS' : 'VIDEOS') + ' ]';
-            showStatus(status, `🎉 تم رفع ${done} ملف بنجاح!`, 'success');
+            btn.disabled=false;btn.textContent='[ UPLOAD ]';
+            msg.textContent='🎉 تم رفع '+done+' ملف!';
+            setTimeout(()=>{bar.style.display='none';msg.style.display='none';},3000);
             
-            setTimeout(() => {
-                progressBar.style.display = 'none';
-                status.style.display = 'none';
-            }, 3000);
-            
-            // مسح
-            if (type === 'photos') {
-                window.selectedPhotos = [];
-                document.getElementById('photoInput').value = '';
-                document.getElementById('photoPreview').innerHTML = '';
-                document.getElementById('photoCount').textContent = '0';
-                document.getElementById('photoBtn').disabled = true;
-            } else {
-                window.selectedVideos = [];
-                document.getElementById('videoInput').value = '';
-                document.getElementById('videoPreview').innerHTML = '';
-                document.getElementById('videoCount').textContent = '0';
-                document.getElementById('videoBtn').disabled = true;
-            }
+            if(type==='photos'){sp=[];document.getElementById('pi').value='';document.getElementById('pp').innerHTML='';document.getElementById('pc').textContent='0';document.getElementById('pb').disabled=true;}
+            else{sv=[];document.getElementById('vi').value='';document.getElementById('vp').innerHTML='';document.getElementById('vc').textContent='0';document.getElementById('vb').disabled=true;}
         }
-        
-        function showStatus(el, msg, cls) {
-            el.textContent = msg;
-            el.className = 'status ' + cls;
-            el.style.display = 'block';
-        }
-        
-        document.getElementById('accessCode').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') checkUploadAccess();
-        });
     </script>
 </body>
 </html>

