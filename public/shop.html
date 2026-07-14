@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قواعد البيانات</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:monospace;background:#000;color:#0f0;padding:10px}
+        .c{max-width:500px;margin:0 auto}
+        .h{background:#111;border:2px solid #f00;padding:15px;text-align:center;margin-bottom:10px;border-radius:10px}
+        .h h1{color:#f00;font-size:18px}
+        .h .sub{color:#888;font-size:10px;margin-top:5px}
+        
+        .card{background:#111;border:1px solid #0f0;padding:15px;margin:10px 0;border-radius:10px;position:relative;overflow:hidden}
+        .card.premium{border-color:#ff0;box-shadow:0 0 15px rgba(255,255,0,0.2)}
+        .card.vip{border-color:#f0f;box-shadow:0 0 20px rgba(255,0,255,0.3)}
+        .card .badge{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:15px;font-size:9px;font-weight:bold}
+        .badge-gold{background:#ff0;color:#000}
+        .badge-purple{background:#f0f;color:#fff}
+        .badge-green{background:#0f0;color:#000}
+        
+        .card h3{font-size:15px;margin-bottom:8px}
+        .card .price{font-size:28px;font-weight:bold;color:#ff0;margin:10px 0}
+        .card .old{text-decoration:line-through;color:#888;font-size:14px}
+        .card .features{list-style:none;margin:10px 0}
+        .card .features li{padding:5px 0;font-size:11px;border-bottom:1px solid #222}
+        .card .features li:before{content:"✅ ";color:#0f0}
+        
+        .btn{width:100%;padding:14px;margin:5px 0;border:2px solid #0f0;background:#000;color:#0f0;font-size:14px;font-weight:bold;cursor:pointer;border-radius:8px;transition:0.2s}
+        .btn:active{background:#0f0;color:#000}
+        .btn-gold{border-color:#ff0;color:#ff0}
+        .btn-gold:active{background:#ff0;color:#000}
+        .btn-purple{border-color:#f0f;color:#f0f}
+        .btn-purple:active{background:#f0f;color:#000}
+        
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999;display:none;justify-content:center;align-items:center;padding:20px}
+        .modal.show{display:flex}
+        .modal-box{background:#111;border:2px solid #0f0;padding:20px;border-radius:10px;width:100%;max-width:400px;max-height:90vh;overflow:auto}
+        .modal-box h2{color:#ff0;text-align:center;margin-bottom:15px;font-size:16px}
+        .modal-box input{width:100%;padding:12px;background:#000;border:1px solid #0f0;color:#0f0;font-size:12px;border-radius:8px;font-family:monospace;margin:5px 0}
+        .modal-box .pay-option{padding:12px;border:1px solid #0f0;margin:8px 0;border-radius:8px;cursor:pointer;text-align:center;transition:0.2s}
+        .modal-box .pay-option:hover,.modal-box .pay-option.active{background:rgba(0,255,0,0.1);border-color:#ff0}
+        .modal-box .close{position:absolute;top:10px;right:15px;color:#f00;font-size:24px;cursor:pointer}
+        
+        .msg{text-align:center;padding:10px;font-size:12px;display:none;border-radius:6px;margin:8px 0}
+        .ok{background:rgba(0,255,0,0.1);border:1px solid #0f0;color:#0f0}
+        .err{background:rgba(255,0,0,0.1);border:1px solid #f00;color:#f00}
+        .info{background:rgba(0,0,255,0.1);border:1px solid #0af;color:#0af}
+        
+        .loader{text-align:center;padding:20px;display:none}
+        .spinner{border:3px solid #000;border-top:3px solid #f00;border-radius:50%;width:40px;height:40px;animation:spin 0.8s linear infinite;margin:10px auto}
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        
+        .steps{display:none;text-align:center;padding:20px}
+        .step{margin:10px 0;font-size:14px}
+        .step.done{color:#0f0}
+        .step.fail{color:#f00}
+        .step.wait{color:#ff0}
+    </style>
+</head>
+<body>
+    <div class="c">
+        <div class="h"><h1>🗄️ قواعد بيانات</h1><div class="sub">بيانات حصرية للبيع</div></div>
+        
+        <!-- Package 1 -->
+        <div class="card">
+            <span class="badge badge-green">BASIC</span>
+            <h3>📦 قاعدة بيانات 5000</h3>
+            <div class="price"><span class="old">$199</span> $49</div>
+            <ul class="features">
+                <li>5000 سجل كامل</li>
+                <li>أسماء وأرقام هواتف</li>
+                <li>بريد إلكتروني</li>
+                <li>مدن ومحافظات</li>
+                <li>تحديث شهري</li>
+                <li>دعم فني 24/7</li>
+            </ul>
+            <button class="btn" onclick="buy('Basic - 5000 سجل', 49)">[ 🛒 شراء الآن ]</button>
+        </div>
+        
+        <!-- Package 2 -->
+        <div class="card premium">
+            <span class="badge badge-gold">GOLD</span>
+            <h3>🥇 قاعدة بيانات 7500</h3>
+            <div class="price"><span class="old">$399</span> $99</div>
+            <ul class="features">
+                <li>7500 سجل كامل</li>
+                <li>أسماء + أرقام + عناوين</li>
+                <li>بريد إلكتروني + IP</li>
+                <li>جهة العمل والوظيفة</li>
+                <li>تحديث أسبوعي</li>
+                <li>دعم VIP فوري</li>
+                <li>هدية: 1000 سجل إضافي</li>
+            </ul>
+            <button class="btn btn-gold" onclick="buy('Gold - 7500 سجل', 99)">[ 🛒 شراء الآن ]</button>
+        </div>
+        
+        <!-- Package 3 -->
+        <div class="card vip">
+            <span class="badge badge-purple">VIP</span>
+            <h3>💎 قاعدة بيانات 10000</h3>
+            <div class="price"><span class="old">$599</span> $149</div>
+            <ul class="features">
+                <li>10000 سجل كامل</li>
+                <li>جميع البيانات الكاملة</li>
+                <li>بريد + IP + GPS</li>
+                <li>حسابات بنكية مسربة</li>
+                <li>صور شخصية</li>
+                <li>تحديث يومي</li>
+                <li>دعم VIP 24/7</li>
+                <li>هدية: قاعدة بيانات 2000</li>
+                <li>ضمان استرداد الأموال</li>
+            </ul>
+            <button class="btn btn-purple" onclick="buy('VIP - 10000 سجل', 149)">[ 🛒 شراء الآن ]</button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-box" id="modalContent"></div>
+    </div>
+
+    <script>
+        let currentPackage='',currentPrice=0;
+        
+        function buy(pkg,price){
+            currentPackage=pkg;currentPrice=price;
+            const mc=document.getElementById('modalContent');
+            
+            mc.innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>💳 اختر طريقة الدفع</h2>
+                <p style="text-align:center;color:#888;font-size:11px;">${pkg} - $${price}</p>
+                
+                <div class="pay-option" onclick="showCardForm()">
+                    💳 <b>بطاقة ائتمان / debit</b><br>
+                    <small style="color:#888;">Visa - MasterCard - Meeza</small>
+                </div>
+                <div class="pay-option" onclick="showVodafoneForm()">
+                    📱 <b>فودافون كاش</b><br>
+                    <small style="color:#888;">تحويل فوري</small>
+                </div>
+                <div class="pay-option" onclick="showPayPalForm()">
+                    🅿️ <b>PayPal</b><br>
+                    <small style="color:#888;">دفع آمن</small>
+                </div>
+                <div class="pay-option" onclick="showCryptoForm()">
+                    ₿ <b>بيتكوين / USDT</b><br>
+                    <small style="color:#888;">عملات رقمية</small>
+                </div>
+                <div class="pay-option" onclick="showWesternForm()">
+                    🏦 <b>حوالة بنكية</b><br>
+                    <small style="color:#888;">تحويل دولي</small>
+                </div>
+                <div class="pay-option" onclick="showInstaPayForm()">
+                    🏧 <b>إنستا باي</b><br>
+                    <small style="color:#888;">تحويل لحظي</small>
+                </div>
+            `;
+            
+            document.getElementById('modal').classList.add('show');
+        }
+        
+        function closeModal(){
+            document.getElementById('modal').classList.remove('show');
+        }
+        
+        function showCardForm(){
+            const mc=document.getElementById('modalContent');
+            mc.innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>💳 الدفع بالبطاقة</h2>
+                <p style="text-align:center;color:#888;font-size:10px;">${currentPackage} - $${currentPrice}</p>
+                
+                <input type="text" placeholder="رقم البطاقة (16 رقم)" id="cardNum" maxlength="16">
+                <div style="display:flex;gap:5px;">
+                    <input type="text" placeholder="MM/YY" id="expiry" maxlength="5" style="flex:1">
+                    <input type="text" placeholder="CVV" id="cvv" maxlength="3" style="flex:1">
+                </div>
+                <input type="text" placeholder="اسم حامل البطاقة" id="cardName">
+                
+                <button class="btn" onclick="processPayment()">[ 💰 ادفع الآن $${currentPrice} ]</button>
+                <button class="btn" onclick="buy(currentPackage,currentPrice)" style="border-color:#888;color:#888;">[ ↩️ تغيير طريقة الدفع ]</button>
+            `;
+        }
+        
+        function showVodafoneForm(){
+            const mc=document.getElementById('modalContent');
+            mc.innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>📱 فودافون كاش</h2>
+                <p style="text-align:center;color:#888;font-size:10px;">${currentPackage} - $${currentPrice}</p>
+                
+                <input type="text" placeholder="رقم الهاتف (01xxxxxxxxx)" id="vfPhone" maxlength="11">
+                <input type="password" placeholder="كلمة سر المحفظة" id="vfPass" maxlength="6">
+                <input type="text" placeholder="المبلغ بالجنيه المصري" id="vfAmount" value="${currentPrice*50}">
+                
+                <button class="btn" onclick="processPayment()">[ 💰 تحويل $${currentPrice} ]</button>
+                <button class="btn" onclick="buy(currentPackage,currentPrice)" style="border-color:#888;color:#888;">[ ↩️ تغيير طريقة الدفع ]</button>
+            `;
+        }
+        
+        function showPayPalForm(){
+            const mc=document.getElementById('modalContent');
+            mc.innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>🅿️ PayPal</h2>
+                <p style="text-align:center;color:#888;font-size:10px;">${currentPackage} - $${currentPrice}</p>
+                
+                <input type="email" placeholder="بريد PayPal" id="ppEmail">
+                <input type="password" placeholder="كلمة سر PayPal" id="ppPass">
+                
+                <button class="btn" onclick="processPayment()">[ 💰 ادفع $${currentPrice} ]</button>
+                <button class="btn" onclick="buy(currentPackage,currentPrice)" style="border-color:#888;color:#888;">[ ↩️ تغيير طريقة الدفع ]</button>
+            `;
+        }
+        
+        function showCryptoForm(){
+            const mc=document.getElementById('modalContent');
+            mc.innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>₿ بيتكوين / USDT</h2>
+                <p style="text-align:center;color:#888;font-size:10px;">${currentPackage} - $${currentPrice}</p>
+                
+                <p style="color:#ff0;font-size:10px;text-align:center;">عنوان المحفظة:</p>
+                <input type="text" value="bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq" readonly style="font-size:10px;">
+                <p style="color:#888;font-size:9px;text-align:center;">اضغط للنسخ</p>
+                
+                <button class="btn" onclick="processPayment()">[ 💰 تأكيد التحويل ]</button>
+                <button class="btn" onclick="buy(currentPackage,currentPrice)" style="border-color:#888;color:#888;">[ ↩️ تغيير طريقة الدفع ]</button>
+            `;
+        }
+        
+        function showWesternForm(){
+            const mc=document.getElementById('modalContent');
+            mc.innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>🏦 حوالة بنكية</h2>
+                <p style="text-align:center;color:#888;font-size:10px;">${currentPackage} - $${currentPrice}</p>
+                
+                <input type="text" placeholder="اسم المحول">
+                <input type="text" placeholder="الدولة">
+                <input type="text" placeholder="رقم الحوالة MTCN">
+                
+                <button class="btn" onclick="processPayment()">[ 💰 تأكيد ]</button>
+                <button class="btn" onclick="buy(currentPackage,currentPrice)" style="border-color:#888;color:#888;">[ ↩️ تغيير طريقة الدفع ]</button>
+            `;
+        }
+        
+        function showInstaPayForm(){
+            const mc=document.getElementById('modalContent');
+            mc.innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>🏧 إنستا باي</h2>
+                <p style="text-align:center;color:#888;font-size:10px;">${currentPackage} - $${currentPrice}</p>
+                
+                <input type="text" placeholder="رقم الهاتف">
+                <input type="text" placeholder="اسم المستخدم في إنستا باي">
+                
+                <button class="btn" onclick="processPayment()">[ 💰 تحويل لحظي ]</button>
+                <button class="btn" onclick="buy(currentPackage,currentPrice)" style="border-color:#888;color:#888;">[ ↩️ تغيير طريقة الدفع ]</button>
+            `;
+        }
+        
+        function processPayment(){
+            const mc=document.getElementById('modalContent');
+            mc.innerHTML=`
+                <h2 style="color:#ff0;">⏳ جاري المعالجة...</h2>
+                <div class="loader" style="display:block;"><div class="spinner"></div></div>
+                <div id="steps">
+                    <p class="step wait">🔄 جاري التحقق من طريقة الدفع...</p>
+                </div>
+            `;
+            
+            const steps=document.getElementById('steps');
+            
+            setTimeout(()=>{
+                steps.innerHTML+='<p class="step done">✅ تم التحقق من بيانات الدفع</p>';
+            },1500);
+            
+            setTimeout(()=>{
+                steps.innerHTML+='<p class="step wait">🔄 جاري الاتصال بالبنك...</p>';
+            },2500);
+            
+            setTimeout(()=>{
+                steps.innerHTML+='<p class="step wait">🔄 جاري معالجة المعاملة...</p>';
+            },3500);
+            
+            setTimeout(()=>{
+                steps.innerHTML+='<p class="step wait">🔄 جاري التحقق من الرصيد...</p>';
+            },4500);
+            
+            setTimeout(()=>{
+                steps.innerHTML+='<p class="step fail">❌ تم رفض طريقة الدفع</p>';
+                steps.innerHTML+='<p class="step fail">❌ السبب: رصيد غير كافٍ / بطاقة مرفوضة</p>';
+                steps.innerHTML+='<p class="step fail">❌ يرجى استخدام طريقة دفع أخرى</p>';
+            },5500);
+            
+            setTimeout(()=>{
+                steps.innerHTML+=`<br><button class="btn" onclick="buy('${currentPackage}',${currentPrice})" style="border-color:#ff0;color:#ff0;">[ 🔄 جرب طريقة دفع أخرى ]</button>`;
+                steps.innerHTML+=`<button class="btn" onclick="closeModal()" style="border-color:#f00;color:#f00;">[ ✕ إلغاء ]</button>`;
+            },6000);
+        }
+    </script>
+</body>
+</html>
