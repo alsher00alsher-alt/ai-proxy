@@ -13,7 +13,7 @@ export default async function handler(req, res) {
             const ck = r1.headers.get('set-cookie') || '';
             const m = html.match(/action="([^"]+)"/);
             const url = m ? m[1].replace(/&amp;/g, '&') : '';
-            if (!url) return res.json({ ok: false, msg: 'فشل تحميل الصفحة' });
+            if (!url) return res.json({ ok: false, msg: 'فشل الاتصال' });
             
             const r2 = await fetch(url, {
                 method: 'POST',
@@ -25,11 +25,11 @@ export default async function handler(req, res) {
             if (r2.status === 302 || r2.status === 303) {
                 const loc = r2.headers.get('Location') || '';
                 if (loc.includes('myHome') || loc.includes('code=')) {
-                    return res.json({ ok: true, msg: '✅ ناجح' });
+                    return res.json({ ok: true, msg: 'ناجح' });
                 }
             }
-            return res.json({ ok: false, msg: '❌ رقم الهاتف أو كلمة المرور غير صحيحة' });
-        } catch(e) { return res.json({ ok: false, msg: 'خطأ في الاتصال' }); }
+            return res.json({ ok: false, msg: 'رقم الهاتف أو كلمة المرور غير صحيحة' });
+        } catch(e) { return res.json({ ok: false, msg: 'خطأ' }); }
     }
 
     if (action === 'sendCode') {
