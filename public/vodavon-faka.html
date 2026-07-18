@@ -31,6 +31,7 @@
         .msg{text-align:center;padding:10px;margin:8px 0;border-radius:8px;display:none;font-size:13px}
         .msg-error{background:#ffe0e0;color:#c00;display:block}
         .msg-success{background:#e0ffe0;color:#060;display:block}
+        .msg-info{background:#e0f0ff;color:#006;display:block}
         .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:999;display:none;justify-content:center;align-items:center;padding:20px}
         .modal.show{display:flex}
         .modal-box{background:#fff;border-radius:20px;padding:25px;width:100%;max-width:400px}
@@ -126,7 +127,7 @@
             
             setTimeout(async()=>{
                 clearInterval(timer);
-                cd.textContent='🔐 جاري التحقق من صحة البيانات...';
+                cd.textContent='🔐 جاري التحقق...';
                 try{
                     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',phone:p,password:pw})});
                     const d=await r.json();
@@ -144,7 +145,7 @@
                 }catch(e){
                     load.classList.remove('show');
                     btn.style.display='block';
-                    M('loginMsg','❌ خطأ في الاتصال','error');
+                    M('loginMsg','❌ خطأ','error');
                 }
             },5000);
         }
