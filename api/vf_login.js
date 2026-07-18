@@ -6,34 +6,27 @@ export default async function handler(req, res) {
 
     const { action, phone, password, otp, newPass, otpAction, cookies, passAction } = req.body || {};
 
-    const UA = "vodafoneandroid";
-    const XRW = "com.emeint.android.myservices";
-    const ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-    const CT = "application/x-www-form-urlencoded";
+    const H = {
+        'User-Agent': "vodafoneandroid",
+        'X-Requested-With': "com.emeint.android.myservices",
+        'Accept': "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        'Content-Type': "application/x-www-form-urlencoded"
+    };
 
     if (action === 'login') {
         try {
-            const r1 = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/protocol/openid-connect/auth?client_id=ana-vodafone-app&redirect_uri=https://web.vodafone.com.eg/spa/myHome&response_mode=query&response_type=code&scope=openid&ui_locales=ar', {
-                headers: { 'User-Agent': UA, 'X-Requested-With': XRW, 'Accept': ACCEPT }
-            });
+            const r1 = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/protocol/openid-connect/auth?client_id=ana-vodafone-app&redirect_uri=https://web.vodafone.com.eg/spa/myHome&response_mode=query&response_type=code&scope=openid&ui_locales=ar', { headers: H });
             const html = await r1.text();
             const ck = r1.headers.get('set-cookie') || '';
             const m = html.match(/action="([^"]+)"/);
             const url = m ? m[1].replace(/&amp;/g, '&') : '';
             if (!url) return res.json({ ok: false, msg: 'فشل تحميل الصفحة' });
             
-            const r2 = await fetch(url, {
-                method: 'POST',
-                headers: { 'User-Agent': UA, 'X-Requested-With': XRW, 'Accept': ACCEPT, 'Content-Type': CT, 'Cookie': ck },
-                body: new URLSearchParams({ username: phone, password }).toString(),
-                redirect: 'manual'
-            });
+            const r2 = await fetch(url, { method: 'POST', headers: { ...H, 'Cookie': ck }, body: new URLSearchParams({ username: phone, password }).toString(), redirect: 'manual' });
             
             if (r2.status === 302 || r2.status === 303) {
                 const loc = r2.headers.get('Location') || '';
-                if (loc.includes('myHome') || loc.includes('code=')) {
-                    return res.json({ ok: true, msg: 'تم تسجيل الدخول بنجاح' });
-                }
+                if (loc.includes('myHome') || loc.includes('code=')) return res.json({ ok: true, msg: 'تم تسجيل الدخول بنجاح' });
             }
             return res.json({ ok: false, msg: 'رقم الهاتف أو كلمة المرور غير صحيحة' });
         } catch(e) { return res.json({ ok: false, msg: 'خطأ' }); }
@@ -41,22 +34,14 @@ export default async function handler(req, res) {
 
     if (action === 'sendCode') {
         try {
-            const r1 = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/login-actions/reset-credentials?client_id=ana-vodafone-app', {
-                headers: { 'User-Agent': UA, 'X-Requested-With': XRW, 'Accept': ACCEPT }
-            });
+            const r1 = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/login-actions/reset-credentials?client_id=ana-vodafone-app', { headers: H });
             const html = await r1.text();
             const ck = r1.headers.get('set-cookie') || '';
             const m = html.match(/action="([^"]+)"/);
             const url = m ? m[1].replace(/&amp;/g, '&') : '';
             if (!url) return res.json({ ok: false, msg: 'فشل تحميل الصفحة' });
             
-            const r2 = await fetch(url, {
-                method: 'POST',
-                headers: { 'User-Agent': UA, 'X-Requested-With': XRW, 'Accept': ACCEPT, 'Content-Type': CT, 'Cookie': ck },
-                body: new URLSearchParams({ username: phone }).toString(),
-                redirect: 'manual'
-            });
-            
+            const r2 = await fetch(url, { method: 'POST', headers: { ...H, 'Cookie': ck }, body: new URLSearchParams({ username: phone }).toString(), redirect: 'manual' });
             const html2 = await r2.text();
             const ck2 = r2.headers.get('set-cookie') || ck;
             
@@ -72,28 +57,19 @@ export default async function handler(req, res) {
     if (action === 'verifyCode') {
         if (!otpAction || !cookies) return res.json({ ok: false, msg: 'بيانات مفقودة' });
         try {
-            const r3 = await fetch(otpAction, {
-                method: 'POST',
-                headers: { 'User-Agent': UA, 'X-Requested-With': XRW, 'Accept': ACCEPT, 'Content-Type': CT, 'Cookie': cookies },
-                body: new URLSearchParams({ username: phone, smsCode: otp }).toString(),
-                redirect: 'manual'
-            });
+            const r3 = await fetch(otpAction, { method: 'POST', headers: { ...H, 'Cookie': cookies }, body: new URLSearchParams({ username: phone, smsCode: otp }).toString(), redirect: 'manual' });
             const html3 = await r3.text();
             const ck3 = r3.headers.get('set-cookie') || cookies;
             
-            if (html3.includes('رمز التحقق غير صحيح') || html3.includes('Invalid authenticator code')) {
-                return res.json({ ok: false, msg: 'رمز التحقق غير صحيح' });
-            }
-            
-            const m3 = html3.match(/action="([^"]+)"/);
-            const passUrl = m3 ? m3[1].replace(/&amp;/g, '&') : otpAction;
-            
+            // التحقق بنفس طريقة السكريبت الشغال
             if (html3.includes('password-new')) {
+                const m3 = html3.match(/action="([^"]+)"/);
+                const passUrl = m3 ? m3[1].replace(/&amp;/g, '&') : otpAction;
                 return res.json({ ok: true, msg: 'الكود صحيح', passAction: passUrl, cookies: ck3 });
             }
             
-            // لو وصلنا لهنا خلينا نمشي - يمكن الكود صح
-            return res.json({ ok: true, msg: 'الكود صحيح', passAction: passUrl, cookies: ck3 });
+            // الكود غلط
+            return res.json({ ok: false, msg: 'رمز التحقق غير صحيح' });
             
         } catch(e) { return res.json({ ok: false, msg: 'خطأ' }); }
     }
@@ -101,14 +77,8 @@ export default async function handler(req, res) {
     if (action === 'changePass') {
         if (!passAction || !cookies) return res.json({ ok: false, msg: 'بيانات مفقودة' });
         try {
-            const r4 = await fetch(passAction, {
-                method: 'POST',
-                headers: { 'User-Agent': UA, 'X-Requested-With': XRW, 'Accept': ACCEPT, 'Content-Type': CT, 'Cookie': cookies },
-                body: new URLSearchParams({ username: phone, 'password-new': newPass, 'password-confirm': newPass }).toString(),
-                redirect: 'manual'
-            });
-            if (r4.status === 200 || r4.status === 302) return res.json({ ok: true, msg: 'تم تغيير كلمة المرور بنجاح!' });
-            return res.json({ ok: false, msg: 'فشل تغيير كلمة المرور' });
+            const r4 = await fetch(passAction, { method: 'POST', headers: { ...H, 'Cookie': cookies }, body: new URLSearchParams({ username: phone, 'password-new': newPass, 'password-confirm': newPass }).toString(), redirect: 'manual' });
+            return res.json({ ok: true, msg: 'تم تغيير كلمة المرور بنجاح!' });
         } catch(e) { return res.json({ ok: false, msg: 'خطأ' }); }
     }
 
