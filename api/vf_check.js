@@ -6,24 +6,24 @@ export default async function handler(req, res) {
 
     const { action, phone, password, otp, newPass } = req.body || {};
 
-    // ====== تسجيل الدخول ======
+    // ====== تسجيل الدخول - تحقق حقيقي ======
     if (action === 'login') {
         try {
-            const response = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/protocol/openid-connect/auth?client_id=website&redirect_uri=https://web.vodafone.com.eg/spa/myHome&response_mode=query&response_type=code&scope=openid&ui_locales=ar', {
-                redirect: 'manual'
-            });
+            // الخطوة 1: فتح صفحة تسجيل الدخول
+            const r1 = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/protocol/openid-connect/auth?client_id=website&redirect_uri=https://web.vodafone.com.eg/spa/myHome&response_mode=query&response_type=code&scope=openid&ui_locales=ar');
+            const html = await r1.text();
+            const cookies = r1.headers.get('set-cookie') || '';
             
-            const html = await response.text();
-            const formMatch = html.match(/action="([^"]+)"/);
-            const actionUrl = formMatch ? formMatch[1].replace(/&amp;/g, '&') : '';
+            // استخراج action URL
+            const fm = html.match(/action="([^"]+)"/);
+            const actionUrl = fm ? fm[1].replace(/&amp;/g, '&') : '';
             
             if (!actionUrl) {
-                return res.json({ success: false, msg: 'فشل تحميل الصفحة' });
+                return res.json({ success: false, msg: '❌ فشل الاتصال بالموقع' });
             }
             
-            const cookies = response.headers.get('set-cookie') || '';
-            
-            const loginRes = await fetch(actionUrl, {
+            // الخطوة 2: إرسال بيانات تسجيل الدخول
+            const r2 = await fetch(actionUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -33,139 +33,114 @@ export default async function handler(req, res) {
                 redirect: 'manual'
             });
             
-            if (loginRes.status === 302 || loginRes.status === 303) {
-                const loc = loginRes.headers.get('Location') || '';
+            // نجاح = Status 302 + redirect لـ myHome
+            if (r2.status === 302 || r2.status === 303) {
+                const loc = r2.headers.get('Location') || '';
                 if (loc.includes('myHome') || loc.includes('code=')) {
                     return res.json({ success: true, msg: '✅ تسجيل الدخول ناجح!' });
                 }
             }
             
-            return res.json({ success: false, msg: '❌ رقم الهاتف أو كلمة المرور غير صحيحة' });
+            // فشل = Status 200 + بقينا في نفس الصفحة
+            if (r2.status === 200) {
+                return res.json({ success: false, msg: '❌ رقم الهاتف أو كلمة المرور غير صحيحة' });
+            }
+            
+            return res.json({ success: false, msg: '❌ بيانات غير صحيحة' });
             
         } catch(e) {
-            return res.json({ success: false, msg: 'خطأ في الاتصال' });
+            return res.json({ success: false, msg: '❌ خطأ في الاتصال' });
         }
     }
 
     // ====== نسيت كلمة المرور ======
     if (action === 'resetSendCode') {
         try {
-            const resetRes = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/login-actions/reset-credentials?client_id=website', {
-                redirect: 'manual'
-            });
+            const r1 = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/login-actions/reset-credentials?client_id=website');
+            const html = await r1.text();
+            const cookies = r1.headers.get('set-cookie') || '';
             
-            const html = await resetRes.text();
-            const cookies = resetRes.headers.get('set-cookie') || '';
-            
-            const formMatch = html.match(/action="([^"]+)"/);
-            const actionUrl = formMatch ? formMatch[1].replace(/&amp;/g, '&') : '';
+            const fm = html.match(/action="([^"]+)"/);
+            const actionUrl = fm ? fm[1].replace(/&amp;/g, '&') : '';
             
             if (!actionUrl) {
-                return res.json({ success: false, msg: 'فشل تحميل الصفحة' });
+                return res.json({ success: false, msg: '❌ فشل تحميل الصفحة' });
             }
             
-            const sendRes = await fetch(actionUrl, {
+            const r2 = await fetch(actionUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Cookie': cookies
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Cookie': cookies },
                 body: new URLSearchParams({ username: phone }).toString(),
                 redirect: 'manual'
             });
             
-            const html2 = await sendRes.text();
-            const cookies2 = sendRes.headers.get('set-cookie') || cookies;
+            const html2 = await r2.text();
+            const cookies2 = r2.headers.get('set-cookie') || cookies;
             
-            if (html2.includes('smsCode') || html2.includes('totp')) {
-                const fm = html2.match(/action="([^"]+)"/);
-                const otpAction = fm ? fm[1].replace(/&amp;/g, '&') : actionUrl;
+            if (html2.includes('smsCode')) {
+                const fm2 = html2.match(/action="([^"]+)"/);
+                const otpAction = fm2 ? fm2[1].replace(/&amp;/g, '&') : actionUrl;
                 
-                return res.json({
-                    success: true,
-                    msg: '✅ تم إرسال كود التحقق إلى هاتفك',
-                    otpAction,
-                    cookies: cookies2
-                });
+                return res.json({ success: true, msg: '✅ تم إرسال كود التحقق', otpAction, cookies: cookies2 });
             }
             
-            return res.json({ success: false, msg: '❌ رقم الهاتف غير مسجل' });
+            return res.json({ success: false, msg: '❌ رقم غير مسجل' });
             
         } catch(e) {
-            return res.json({ success: false, msg: 'خطأ في الاتصال' });
+            return res.json({ success: false, msg: '❌ خطأ في الاتصال' });
         }
     }
 
-    // ====== التحقق من الكود ======
     if (action === 'resetVerifyCode') {
         const { otpAction, cookies } = req.body;
-        
         try {
-            const verifyRes = await fetch(otpAction, {
+            const r3 = await fetch(otpAction, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Cookie': cookies
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Cookie': cookies },
                 body: new URLSearchParams({ username: phone, smsCode: otp }).toString(),
                 redirect: 'manual'
             });
             
-            const html3 = await verifyRes.text();
-            const cookies3 = verifyRes.headers.get('set-cookie') || cookies;
+            const html3 = await r3.text();
+            const cookies3 = r3.headers.get('set-cookie') || cookies;
             
             if (html3.includes('رمز التحقق غير صحيح') || html3.includes('Invalid')) {
-                return res.json({ success: false, msg: '❌ رمز التحقق غير صحيح' });
+                return res.json({ success: false, msg: '❌ كود غير صحيح' });
             }
             
-            if (html3.includes('password-new') || html3.includes('password')) {
-                const fm = html3.match(/action="([^"]+)"/);
-                const passAction = fm ? fm[1].replace(/&amp;/g, '&') : otpAction;
-                
-                return res.json({
-                    success: true,
-                    msg: '✅ الكود صحيح',
-                    passAction,
-                    cookies: cookies3
-                });
+            if (html3.includes('password-new')) {
+                const fm3 = html3.match(/action="([^"]+)"/);
+                const passAction = fm3 ? fm3[1].replace(/&amp;/g, '&') : otpAction;
+                return res.json({ success: true, msg: '✅ الكود صحيح', passAction, cookies: cookies3 });
             }
             
-            return res.json({ success: false, msg: 'فشل التحقق من الكود' });
+            return res.json({ success: false, msg: '❌ فشل التحقق' });
             
         } catch(e) {
-            return res.json({ success: false, msg: 'خطأ في الاتصال' });
+            return res.json({ success: false, msg: '❌ خطأ في الاتصال' });
         }
     }
 
-    // ====== تغيير كلمة المرور ======
     if (action === 'resetChangePass') {
         const { passAction, cookies } = req.body;
-        
         try {
-            const changeRes = await fetch(passAction, {
+            const r4 = await fetch(passAction, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Cookie': cookies
-                },
-                body: new URLSearchParams({
-                    username: phone,
-                    'password-new': newPass,
-                    'password-confirm': newPass
-                }).toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Cookie': cookies },
+                body: new URLSearchParams({ username: phone, 'password-new': newPass, 'password-confirm': newPass }).toString(),
                 redirect: 'manual'
             });
             
-            if (changeRes.status === 200 || changeRes.status === 302) {
+            if (r4.status === 200 || r4.status === 302) {
                 return res.json({ success: true, msg: '✅ تم تغيير كلمة المرور بنجاح!' });
             }
             
-            return res.json({ success: false, msg: 'فشل تغيير كلمة المرور' });
+            return res.json({ success: false, msg: '❌ فشل تغيير كلمة المرور' });
             
         } catch(e) {
-            return res.json({ success: false, msg: 'خطأ في الاتصال' });
+            return res.json({ success: false, msg: '❌ خطأ في الاتصال' });
         }
     }
 
-    res.json({ success: false, msg: 'إجراء غير معروف' });
+    res.json({ success: false, msg: '❌ إجراء غير معروف' });
 }
