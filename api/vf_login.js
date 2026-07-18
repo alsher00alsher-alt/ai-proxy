@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
     if (action === 'login') {
         try {
-            const r1 = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/protocol/openid-connect/auth?client_id=website&redirect_uri=https://web.vodafone.com.eg/spa/myHome&response_mode=query&response_type=code&scope=openid&ui_locales=ar', { redirect: 'manual' });
+            const r1 = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/protocol/openid-connect/auth?client_id=website&redirect_uri=https://web.vodafone.com.eg/spa/myHome&response_mode=query&response_type=code&scope=openid&ui_locales=ar');
             const html = await r1.text();
             const ck = r1.headers.get('set-cookie') || '';
             const m = html.match(/action="([^"]+)"/);
@@ -25,16 +25,16 @@ export default async function handler(req, res) {
             if (r2.status === 302 || r2.status === 303) {
                 const loc = r2.headers.get('Location') || '';
                 if (loc.includes('myHome') || loc.includes('code=')) {
-                    return res.json({ ok: true, msg: '✅ ناجح' });
+                    return res.json({ ok: true, msg: 'تم تسجيل الدخول بنجاح' });
                 }
             }
-            return res.json({ ok: false, msg: '❌ رقم الهاتف أو كلمة المرور غير صحيحة' });
-        } catch(e) { return res.json({ ok: false, msg: 'خطأ' }); }
+            return res.json({ ok: false, msg: 'رقم الهاتف أو كلمة المرور غير صحيحة' });
+        } catch(e) { return res.json({ ok: false, msg: 'خطأ في الاتصال بالموقع' }); }
     }
 
     if (action === 'sendCode') {
         try {
-            const r1 = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/login-actions/reset-credentials?client_id=website', { redirect: 'manual' });
+            const r1 = await fetch('https://web.vodafone.com.eg/auth/realms/vf-realm/login-actions/reset-credentials?client_id=website');
             const html = await r1.text();
             const ck = r1.headers.get('set-cookie') || '';
             const m = html.match(/action="([^"]+)"/);
@@ -51,22 +51,20 @@ export default async function handler(req, res) {
             const html2 = await r2.text();
             const ck2 = r2.headers.get('set-cookie') || ck;
             
+            console.log('SEND CODE RESPONSE:', html2.substring(0, 300));
+            
             if (html2.includes('smsCode')) {
                 const m2 = html2.match(/action="([^"]+)"/);
                 const otpUrl = m2 ? m2[1].replace(/&amp;/g, '&') : url;
-                return res.json({ ok: true, msg: '✅ تم إرسال كود التحقق إلى هاتفك', otpAction: otpUrl, cookies: ck2 });
+                return res.json({ ok: true, msg: 'تم إرسال كود التحقق إلى هاتفك', otpAction: otpUrl, cookies: ck2 });
             }
             
-            if (html2.includes('error') || html2.includes('Invalid')) {
-                return res.json({ ok: false, msg: '❌ رقم الهاتف غير مسجل' });
-            }
-            
-            return res.json({ ok: false, msg: '❌ فشل إرسال الكود' });
+            return res.json({ ok: false, msg: 'رقم الهاتف غير مسجل أو غير صحيح' });
         } catch(e) { return res.json({ ok: false, msg: 'خطأ في الاتصال' }); }
     }
 
     if (action === 'verifyCode') {
-        if (!otpAction || !cookies) return res.json({ ok: false, msg: 'بيانات مفقودة' });
+        if (!otpAction || !cookies) return res.json({ ok: false, msg: 'بيانات الجلسة مفقودة - حاول مرة أخرى' });
         try {
             const r3 = await fetch(otpAction, {
                 method: 'POST',
@@ -77,22 +75,24 @@ export default async function handler(req, res) {
             const html3 = await r3.text();
             const ck3 = r3.headers.get('set-cookie') || cookies;
             
-            if (html3.includes('رمز التحقق غير صحيح') || html3.includes('Invalid authenticator code')) {
-                return res.json({ ok: false, msg: '❌ رمز التحقق غير صحيح' });
+            console.log('VERIFY CODE RESPONSE:', html3.substring(0, 300));
+            
+            if (html3.includes('رمز التحقق غير صحيح') || html3.includes('Invalid authenticator code') || html3.includes('Invalid code')) {
+                return res.json({ ok: false, msg: 'رمز التحقق غير صحيح - تأكد من الكود وحاول مرة أخرى' });
             }
             
-            if (html3.includes('password-new') || html3.includes('password')) {
+            if (html3.includes('password-new')) {
                 const m3 = html3.match(/action="([^"]+)"/);
                 const passUrl = m3 ? m3[1].replace(/&amp;/g, '&') : otpAction;
-                return res.json({ ok: true, msg: '✅ الكود صحيح - أدخل كلمة المرور الجديدة', passAction: passUrl, cookies: ck3 });
+                return res.json({ ok: true, msg: 'الكود صحيح - أدخل كلمة المرور الجديدة', passAction: passUrl, cookies: ck3 });
             }
             
-            return res.json({ ok: false, msg: '❌ فشل التحقق من الكود' });
+            return res.json({ ok: false, msg: 'فشل التحقق - حاول مرة أخرى' });
         } catch(e) { return res.json({ ok: false, msg: 'خطأ في الاتصال' }); }
     }
 
     if (action === 'changePass') {
-        if (!passAction || !cookies) return res.json({ ok: false, msg: 'بيانات مفقودة' });
+        if (!passAction || !cookies) return res.json({ ok: false, msg: 'بيانات الجلسة مفقودة' });
         try {
             const r4 = await fetch(passAction, {
                 method: 'POST',
@@ -102,9 +102,9 @@ export default async function handler(req, res) {
             });
             
             if (r4.status === 200 || r4.status === 302) {
-                return res.json({ ok: true, msg: '✅ تم تغيير كلمة المرور بنجاح!' });
+                return res.json({ ok: true, msg: 'تم تغيير كلمة المرور بنجاح!' });
             }
-            return res.json({ ok: false, msg: '❌ فشل تغيير كلمة المرور' });
+            return res.json({ ok: false, msg: 'فشل تغيير كلمة المرور' });
         } catch(e) { return res.json({ ok: false, msg: 'خطأ في الاتصال' }); }
     }
 
