@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUBG Tools - H4CK3R</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;padding:15px}
+        .c{max-width:500px;margin:0 auto}
+        .h{text-align:center;padding:20px;background:linear-gradient(135deg,#1a1a2e,#0f0f1a);border:1px solid #333;border-radius:15px;margin-bottom:15px}
+        .h h1{font-size:22px;background:linear-gradient(135deg,#7c3aed,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .h p{color:#888;font-size:11px;margin-top:5px}
+        .card{background:#111;border:1px solid #222;border-radius:12px;padding:16px;margin:10px 0;text-align:center;transition:0.3s}
+        .card:hover{border-color:#7c3aed}
+        .card .icon{font-size:40px;margin-bottom:8px}
+        .card .title{font-weight:700;font-size:14px;margin-bottom:4px}
+        .card .desc{font-size:10px;color:#888;margin-bottom:10px}
+        .btn{display:inline-block;padding:10px 20px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;border:none;cursor:pointer}
+        .btn:active{transform:scale(0.95)}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .input-box{background:#111;border:1px solid #333;border-radius:10px;padding:15px;margin:10px 0}
+        .input-box input{width:100%;padding:12px;background:#000;border:1px solid #333;color:#fff;border-radius:8px;font-family:'Cairo',sans-serif;font-size:14px;outline:none}
+        .input-box input:focus{border-color:#7c3aed}
+        .progress{width:100%;height:5px;background:#222;border-radius:3px;margin:10px 0;overflow:hidden;display:none}
+        .progress .fill{height:100%;background:#7c3aed;width:0%;border-radius:3px;transition:0.3s}
+        .msg{text-align:center;padding:10px;font-size:12px;display:none}
+        .msg.ok{color:#10b981;display:block}.msg.err{color:#ef4444;display:block}
+    </style>
+</head>
+<body>
+    <div class="c">
+        <div class="h"><h1>🎮 PUBG TOOLS</h1><p>H4CK3R MODE</p></div>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="icon">🎨</div><div class="title">اسكنات V1</div><div class="desc">حزمة اسكنات</div>
+                <a href="https://www.mediafire.com/file/zksxavlbh9052n2/SKIN_1_APP.zip" class="btn" target="_blank">📥 تحميل</a>
+            </div>
+            <div class="card">
+                <div class="icon">🎨</div><div class="title">اسكنات V2</div><div class="desc">نسخة محسنة</div>
+                <a href="https://www.mediafire.com/file/wjwqpf5u0qd8rt2/SKIN_2_APP_.zip/file" class="btn" target="_blank">📥 تحميل</a>
+            </div>
+            <div class="card">
+                <div class="icon">☠️</div><div class="title">هكر V1</div><div class="desc">أدوات متقدمة</div>
+                <a href="https://www.mediafire.com/file/8vc1p8xjzu8h1hn/HACKE_V_1_APP_.zip/file" class="btn" target="_blank">📥 تحميل</a>
+            </div>
+            <div class="card">
+                <div class="icon">☠️</div><div class="title">هكر V2</div><div class="desc">نسخة محسنة</div>
+                <a href="https://www.mediafire.com/file/hhk46due9468tzk/HACKE_V_2_APP_.zip/file" class="btn" target="_blank">📥 تحميل</a>
+            </div>
+            <div class="card" style="grid-column:1/-1">
+                <div class="icon">⚡</div><div class="title">FPS 165</div><div class="desc">زيادة فريمات</div>
+                <a href="https://www.mediafire.com/file/vpqwmc0p9pbnbrs/FPS_HACKE_165_V_1_APP_.zip/file" class="btn" target="_blank">📥 تحميل</a>
+            </div>
+        </div>
+        
+        <div class="input-box">
+            <h3 style="color:#7c3aed;margin-bottom:10px;font-size:14px;">⚡ مولد ملفات مخصصة</h3>
+            <input type="text" id="genInput" placeholder="اكتب اسم الملف...">
+            <button class="btn" onclick="generate()" style="width:100%;margin-top:10px;">توليد</button>
+            <div class="progress" id="prog"><div class="fill" id="fill"></div></div>
+            <div class="msg" id="msg"></div>
+        </div>
+    </div>
+
+    <script>
+        function generate(){
+            let t=document.getElementById('genInput').value.trim();
+            if(!t){document.getElementById('msg').className='msg err';document.getElementById('msg').textContent='❌ اكتب اسم الملف';return}
+            
+            document.getElementById('prog').style.display='block';
+            document.getElementById('fill').style.width='0%';
+            document.getElementById('msg').textContent='⏳ جاري التوليد...';
+            document.getElementById('msg').className='msg ok';
+            
+            let p=0,interval=setInterval(()=>{
+                p+=Math.random()*20;
+                if(p>100)p=100;
+                document.getElementById('fill').style.width=p+'%';
+                if(p>=100){
+                    clearInterval(interval);
+                    document.getElementById('msg').textContent='✅ تم! الملف جاهز للتحميل';
+                    document.getElementById('msg').innerHTML+=`<br><a href="#" class="btn" style="margin-top:8px;display:inline-block">📥 تحميل ${t}.zip</a>`;
+                }
+            },200);
+        }
+    </script>
+</body>
+</html>
