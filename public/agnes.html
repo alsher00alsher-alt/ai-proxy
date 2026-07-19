@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agnes AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0f0f1a;--surface:#1a1a2e;--primary:#8b5cf6;--primary-light:#a78bfa;--secondary:#06b6d4;--text:#f1f5f9;--muted:#94a3b8;--border:#2d2d4a}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+        
+        header{background:var(--surface);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+        header .logo{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#ec4899);display:flex;align-items:center;justify-content:center;font-size:20px}
+        header .info{flex:1}header .info h1{font-size:16px}header .info p{font-size:10px;color:var(--muted)}
+        
+        .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto}
+        .tab{flex:1;min-width:55px;padding:12px 6px;background:none;border:none;color:var(--muted);font-size:10px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;white-space:nowrap}
+        .tab.active{color:var(--primary-light);border-bottom:3px solid var(--primary)}
+        
+        main{flex:1;overflow-y:auto;padding:15px;padding-bottom:90px;max-width:550px;margin:0 auto;width:100%}
+        .tab-content{display:none}.tab-content.active{display:block}
+        
+        .chat-box{display:flex;flex-direction:column;gap:12px}
+        .msg{display:flex;gap:8px;max-width:88%}
+        .msg.user{align-self:flex-end;flex-direction:row-reverse}
+        .msg.agnes{align-self:flex-start}
+        .msg-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+        .msg.agnes .msg-avatar{background:linear-gradient(135deg,var(--primary),#ec4899)}
+        .msg.user .msg-avatar{background:var(--surface);border:1px solid var(--border)}
+        .msg-bubble{padding:10px 14px;border-radius:12px;font-size:12px;line-height:1.5}
+        .msg.agnes .msg-bubble{background:var(--surface);border:1px solid var(--border)}
+        .msg.user .msg-bubble{background:var(--primary);color:#fff}
+        
+        .input-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;z-index:90;max-width:550px;margin:0 auto}
+        .input-bar input{flex:1;padding:12px;background:var(--bg);border:2px solid var(--border);border-radius:20px;color:var(--text);outline:none;font-size:13px;font-family:'Cairo',sans-serif}
+        .input-bar input:focus{border-color:var(--primary)}
+        .input-bar button{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#ec4899);border:none;color:#fff;font-size:16px;cursor:pointer}
+        
+        .progress-card{background:var(--surface);border:2px dashed var(--primary);border-radius:12px;padding:15px;text-align:center;margin:8px 0}
+        .progress-bar{width:100%;height:4px;background:var(--border);border-radius:2px;margin:8px 0;overflow:hidden}
+        .progress-fill{height:100%;background:var(--primary);width:0%;border-radius:2px}
+        
+        .typing{display:flex;gap:3px;padding:4px 0}
+        .typing span{width:4px;height:4px;background:var(--muted);border-radius:50%;animation:bounce 1.4s infinite}
+        .typing span:nth-child(1){animation-delay:0s}.typing span:nth-child(2){animation-delay:0.2s}.typing span:nth-child(3){animation-delay:0.4s}
+        @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+        
+        img.preview,video.preview{width:100%;border-radius:10px;margin-top:10px;border:1px solid var(--border)}
+        .ratio-select{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}
+        .ratio-select button{padding:5px 10px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:15px;font-size:10px;cursor:pointer;font-family:'Cairo',sans-serif}
+        .ratio-select button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+        
+        .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--surface);border:1px solid var(--primary);color:var(--primary-light);padding:10px 20px;border-radius:20px;font-size:13px}
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">🤖</div>
+    <div class="info"><h1>Agnes AI</h1><p>Powered by Agnes 2.0 Flash</p></div>
+</header>
+
+<div class="tabs">
+    <button class="tab active" onclick="switchTab('chat')">💬 شات</button>
+    <button class="tab" onclick="switchTab('image')">🎨 صور</button>
+    <button class="tab" onclick="switchTab('video')">🎬 فيديو</button>
+</div>
+
+<main>
+    <!-- Chat -->
+    <div id="tab-chat" class="tab-content active">
+        <div class="chat-box" id="chat-box">
+            <div class="msg agnes"><div class="msg-avatar">🤖</div><div class="msg-bubble">👋 مرحباً! أنا Agnes AI. اسألني أي حاجة 💜</div></div>
+        </div>
+    </div>
+    
+    <!-- Image -->
+    <div id="tab-image" class="tab-content">
+        <div class="progress-card"><p>🎨 اكتب وصف الصورة في الشات</p></div>
+        <div class="ratio-select">
+            <button class="active" onclick="setRatio('1:1',this)">1:1 مربع</button>
+            <button onclick="setRatio('16:9',this)">16:9</button>
+            <button onclick="setRatio('9:16',this)">9:16</button>
+            <button onclick="setRatio('3:4',this)">3:4</button>
+        </div>
+        <div id="image-result"></div>
+    </div>
+    
+    <!-- Video -->
+    <div id="tab-video" class="tab-content">
+        <div class="progress-card"><p>🎬 اكتب وصف الفيديو في الشات</p></div>
+        <div id="video-result"></div>
+    </div>
+</main>
+
+<div class="input-bar">
+    <input type="text" id="prompt" placeholder="اكتب هنا..." onkeydown="if(event.key==='Enter')send()">
+    <button onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
+</div>
+
+<script>
+let TAB='chat',ratio='1:1';
+const $=id=>document.getElementById(id);
+
+function switchTab(t){TAB=t;document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));$('tab-'+t).classList.add('active');}
+function setRatio(r,el){ratio=r;document.querySelectorAll('.ratio-select button').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+
+function addMsg(role,html){
+    let d=document.createElement('div');d.className='msg '+role;
+    d.innerHTML=`<div class="msg-avatar">${role==='user'?'👤':'🤖'}</div><div class="msg-bubble">${html}</div>`;
+    $('chat-box').appendChild(d);$('chat-box').scrollTop=$('chat-box').scrollHeight;return d;
+}
+function loader(){return addMsg('agnes','<div class="typing"><span></span><span></span><span></span></div>');}
+function toast(m){let t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
+
+async function send(){
+    let t=$('prompt').value.trim();if(!t)return;$('prompt').value='';
+    
+    if(TAB==='chat'){
+        addMsg('user',t);let l=loader();
+        try{
+            let r=await fetch('/api/agnes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'chat',message:t})});
+            let d=await r.json();l.remove();
+            addMsg('agnes',d.success?d.message:'❌ '+d.message);
+        }catch(e){l.remove();addMsg('agnes','❌ خطأ في الاتصال');}
+    }
+    else if(TAB==='image'){
+        let el=$('image-result');
+        el.innerHTML=`<div class="progress-card"><p>🎨 جاري الرسم...</p><div class="progress-bar"><div class="progress-fill" id="pf"></div></div><p id="ps">0%</p></div>`;
+        let p=0,i=setInterval(()=>{p+=5;if(p>90)p=90;$('pf').style.width=p+'%';$('ps').textContent=p+'%';},300);
+        try{
+            let r=await fetch('/api/agnes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'image',prompt:t,size:'1K',ratio})});
+            let d=await r.json();clearInterval(i);
+            if(d.success){el.innerHTML+=`<img src="${d.image_url}" class="preview" alt="AI">`;toast('✅ تم!');}
+            else{el.innerHTML=`<div class="progress-card"><p>❌ ${d.message}</p></div>`;}
+        }catch(e){clearInterval(i);el.innerHTML=`<div class="progress-card"><p>❌ خطأ</p></div>`;}
+    }
+    else if(TAB==='video'){
+        let el=$('video-result');
+        el.innerHTML=`<div class="progress-card"><p>🎬 جاري إنشاء الفيديو...</p><div class="progress-bar"><div class="progress-fill" id="vf"></div></div><p id="vs">0%</p></div>`;
+        let p=0,i=setInterval(()=>{p+=2;if(p>95)p=95;$('vf').style.width=p+'%';$('vs').textContent=p+'%';},500);
+        try{
+            let r=await fetch('/api/agnes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'video',prompt:t})});
+            let d=await r.json();
+            if(d.success&&d.video_id){
+                let vid=d.video_id;
+                let chk=setInterval(async()=>{
+                    let r2=await fetch('/api/agnes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'video_result',video_id:vid})});
+                    let d2=await r2.json();
+                    if(d2.status==='completed'&&d2.url){clearInterval(chk);clearInterval(i);el.innerHTML+=`<video src="${d2.url}" class="preview" controls></video>`;toast('✅ تم!');}
+                    else if(d2.status==='failed'){clearInterval(chk);clearInterval(i);el.innerHTML=`<div class="progress-card"><p>❌ فشل</p></div>`;}
+                },3000);
+            }else{clearInterval(i);el.innerHTML=`<div class="progress-card"><p>❌ ${d.message}</p></div>`;}
+        }catch(e){clearInterval(i);el.innerHTML=`<div class="progress-card"><p>❌ خطأ</p></div>`;}
+    }
+}
+</script>
+</body>
+</html>
