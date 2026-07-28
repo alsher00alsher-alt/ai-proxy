@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>☠️ TEMP MAIL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>بريد مؤقت</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        :root{--bg:#000a00;--surface:#001400;--green:#00ff00;--yellow:#ffff00;--red:#ff0000;--muted:#006600;--border:#003300}
+        :root{--bg:#000a00;--green:#00ff00;--yellow:#ffff00;--red:#ff0000;--muted:#006600;--border:#003300}
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Share Tech Mono',monospace;background:var(--bg);color:var(--green);min-height:100vh;overflow-x:hidden}
+        body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--green);min-height:100vh;overflow-x:hidden}
         .matrix-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.03;
             background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,0,0.05) 2px,rgba(0,255,0,0.05) 4px)}
         .scanline{position:fixed;top:0;left:0;width:100%;height:2px;background:rgba(0,255,0,0.08);z-index:1;pointer-events:none;animation:scan 3s linear infinite}
@@ -17,29 +17,30 @@
         .header{background:#000;border:2px solid var(--green);padding:18px;text-align:center;margin-bottom:12px;box-shadow:0 0 25px rgba(0,255,0,0.15)}
         .header .skull{font-size:45px;animation:pulse 2s infinite}
         @keyframes pulse{0%,100%{text-shadow:0 0 10px var(--green)}50%{text-shadow:0 0 35px var(--green),0 0 70px var(--green)}}
-        .header h1{font-size:20px;text-shadow:0 0 10px var(--green);letter-spacing:4px;margin:8px 0}
-        .header .sub{color:var(--muted);font-size:9px;animation:blink 1.5s infinite;letter-spacing:3px}
+        .header h1{font-size:22px;text-shadow:0 0 10px var(--green);margin:8px 0;font-weight:900}
+        .header .sub{color:var(--muted);font-size:10px;animation:blink 1.5s infinite}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
         .email-panel{background:#000;border:1px solid var(--green);padding:14px;margin:10px 0;text-align:center;box-shadow:0 0 15px rgba(0,255,0,0.08)}
-        .email-panel .tag{color:var(--muted);font-size:9px;letter-spacing:3px;margin-bottom:6px}
-        .email-panel .addr{color:var(--yellow);font-size:16px;text-shadow:0 0 10px var(--yellow);word-break:break-all;cursor:pointer;letter-spacing:1px}
-        .email-panel .hint{color:var(--muted);font-size:7px;margin-top:5px}
+        .email-panel .tag{color:var(--muted);font-size:10px;margin-bottom:6px}
+        .email-panel .addr{color:var(--yellow);font-size:17px;text-shadow:0 0 10px var(--yellow);word-break:break-all;cursor:pointer;font-weight:700}
+        .email-panel .hint{color:var(--muted);font-size:9px;margin-top:5px}
         .btn-row{display:flex;gap:6px;margin:8px 0}
-        .btn{flex:1;padding:12px 6px;border:2px solid var(--green);background:#000;color:var(--green);font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:2px;transition:0.2s}
+        .btn{flex:1;padding:14px 6px;border:2px solid var(--green);background:#000;color:var(--green);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:0.2s;border-radius:5px}
         .btn:active{background:var(--green);color:#000}
         .btn-alt{border-color:var(--yellow);color:var(--yellow)}.btn-alt:active{background:var(--yellow);color:#000}
-        .status-line{text-align:center;color:var(--muted);font-size:10px;min-height:18px;letter-spacing:1px;margin:5px 0}
-        .msg{background:#000;border:1px solid var(--border);margin:6px 0;overflow:hidden;cursor:pointer}
+        .status-line{text-align:center;color:var(--muted);font-size:11px;min-height:20px;margin:5px 0}
+        .msg{background:#000;border:1px solid var(--border);margin:6px 0;overflow:hidden;cursor:pointer;border-radius:3px}
         .msg:hover{border-color:var(--green)}
-        .msg .preview{display:flex;justify-content:space-between;align-items:center;padding:10px;gap:8px}
-        .msg .preview .from{color:var(--yellow);font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .msg .preview .subject{color:var(--green);font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
-        .msg .content{display:none;padding:12px;border-top:1px solid var(--border);background:rgba(0,0,0,0.6);font-size:11px;line-height:1.7;color:#ccc;white-space:pre-wrap;word-break:break-all}
+        .msg .preview{display:flex;justify-content:space-between;align-items:center;padding:12px;gap:8px}
+        .msg .preview .from{color:var(--yellow);font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+        .msg .preview .subject{color:var(--green);font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+        .msg .content{display:none;padding:12px;border-top:1px solid var(--border);background:rgba(0,0,0,0.6);font-size:12px;line-height:1.8;color:#ccc;white-space:pre-wrap;word-break:break-all}
         .msg .content.open{display:block}
-        .msg .otp{color:var(--yellow);font-size:30px;text-align:center;letter-spacing:10px;text-shadow:0 0 20px var(--yellow);padding:12px;direction:ltr}
-        .toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:999;background:#000;border:1px solid var(--green);color:var(--green);padding:8px 18px;font-size:10px;letter-spacing:2px}
-        .empty{text-align:center;color:var(--muted);padding:35px;font-size:11px;letter-spacing:2px}
-        .spinner{border:2px solid #000;border-top:2px solid var(--green);border-radius:50%;width:25px;height:25px;animation:spin 0.8s linear infinite;margin:8px auto}
+        .msg .otp{color:var(--yellow);font-size:32px;text-align:center;letter-spacing:12px;text-shadow:0 0 20px var(--yellow);padding:12px;direction:ltr;font-weight:900}
+        .toast{position:fixed;top:15px;left:50%;transform:translateX(-50%);z-index:999;background:#000;border:1px solid var(--green);color:var(--green);padding:10px 20px;border-radius:25px;font-size:12px;font-weight:700}
+        .empty{text-align:center;color:var(--muted);padding:40px;font-size:12px}
+        .empty .icon{font-size:45px;margin-bottom:8px}
+        .spinner{border:2px solid #000;border-top:2px solid var(--green);border-radius:50%;width:28px;height:28px;animation:spin 0.8s linear infinite;margin:10px auto}
         @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
     </style>
 </head>
@@ -50,22 +51,22 @@
     <div class="container">
         <div class="header">
             <div class="skull">☠️</div>
-            <h1>TEMP_MAIL v3.0</h1>
-            <div class="sub">[ ANONYMOUS INBOX ]</div>
+            <h1>بريد مؤقت</h1>
+            <div class="sub">نظام بريد مجهول</div>
         </div>
         
         <div class="email-panel">
-            <div class="tag">[ CURRENT_ID ]</div>
-            <div class="addr" id="emailDisplay" onclick="copyEmail()">INITIALIZING...</div>
-            <div class="hint">[ TAP_TO_COPY ]</div>
+            <div class="tag">📧 بريدك الحالي</div>
+            <div class="addr" id="emailDisplay" onclick="copyEmail()">جاري التوليد...</div>
+            <div class="hint">اضغط للنسخ</div>
         </div>
         
         <div class="btn-row">
-            <button class="btn" id="btnNew" onclick="newEmail()">[ NEW_ID ]</button>
-            <button class="btn btn-alt" id="btnCheck" onclick="checkMessages()">[ SCAN ]</button>
+            <button class="btn" id="btnNew" onclick="newEmail()">🔄 بريد جديد</button>
+            <button class="btn btn-alt" id="btnCheck" onclick="checkMessages()">📡 فحص الرسائل</button>
         </div>
         
-        <div class="status-line" id="status">[ READY ]</div>
+        <div class="status-line" id="status">جاهز</div>
         <div id="inbox"><div class="spinner"></div></div>
     </div>
 
@@ -73,37 +74,38 @@
         const API='/api/tempmail';
         let email='',token='',seen={};
 
-        function toast(m){let t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),1800);}
-        function setStatus(m){document.getElementById('status').textContent='[ '+m+' ]';}
-        function copyEmail(){if(!email)return;navigator.clipboard.writeText(email).then(()=>toast('[+] COPIED'));}
+        function toast(m){let t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2000);}
+        function setStatus(m){document.getElementById('status').textContent=m;}
+        function copyEmail(){if(!email)return;navigator.clipboard.writeText(email).then(()=>toast('✅ تم نسخ البريد'));}
 
         async function newEmail(){
             let btn=document.getElementById('btnNew');
-            btn.disabled=true;btn.textContent='[ WAIT... ]';setStatus('GENERATING');
+            btn.disabled=true;btn.textContent='⏳ جاري الإنشاء...';setStatus('جاري إنشاء بريد جديد...');
             try{
                 let r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'create'})});
                 let d=await r.json();
                 if(d.ok){
                     email=d.email;token=d.token;
                     document.getElementById('emailDisplay').textContent=email;
-                    seen={};setStatus('ACTIVE');toast('[+] NEW EMAIL');
+                    seen={};setStatus('✅ جاهز للاستخدام');toast('✅ تم إنشاء بريد جديد');
                     checkMessages();
-                }else{setStatus('ERROR');}
-            }catch(e){setStatus('FAILED');}
-            btn.disabled=false;btn.textContent='[ NEW_ID ]';
+                }else{setStatus('❌ فشل');}
+            }catch(e){setStatus('❌ خطأ في الاتصال');}
+            btn.disabled=false;btn.textContent='🔄 بريد جديد';
         }
 
         async function checkMessages(){
             if(!email){await newEmail();return;}
             let btn=document.getElementById('btnCheck');
-            btn.disabled=true;btn.textContent='[ SCANNING... ]';setStatus('SCANNING');
+            btn.disabled=true;btn.textContent='⏳ جاري الفحص...';setStatus('جاري فحص الرسائل...');
             try{
                 let r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'check',token})});
                 let d=await r.json();
                 let inbox=document.getElementById('inbox');
                 
                 if(!d.ok||!d.messages.length){
-                    inbox.innerHTML='<div class="empty">[ INBOX_ZERO ]</div>';setStatus('EMPTY');
+                    inbox.innerHTML='<div class="empty"><div class="icon">📭</div>لا توجد رسائل بعد<br>استخدم البريد في أي موقع</div>';
+                    setStatus('📭 لا توجد رسائل');
                 }else{
                     let html='';
                     d.messages.forEach(m=>{
@@ -113,25 +115,25 @@
                         html+=`
                             <div class="msg">
                                 <div class="preview" onclick="document.getElementById('${mid}').classList.toggle('open')">
-                                    <span class="from">${m.from}</span>
+                                    <span class="from">📧 ${m.from}</span>
                                     <span class="subject">${m.subject}</span>
-                                    <span>▼</span>
+                                    <span style="color:var(--muted);font-size:10px;">▼</span>
                                 </div>
                                 <div class="content" id="${mid}">
                                     ${otp?`<div class="otp">${otp}</div>`:''}
-                                    ${m.text||'[ EMPTY ]'}
+                                    ${m.text||'لا يوجد محتوى'}
                                 </div>
                             </div>`;
-                        if(!seen[m.id]){seen[m.id]=true;if(otp)toast('[!] OTP: '+otp);}
+                        if(!seen[m.id]){seen[m.id]=true;if(otp)toast('🔑 كود التحقق: '+otp);}
                     });
-                    inbox.innerHTML=html;setStatus(d.messages.length+' MESSAGES');
+                    inbox.innerHTML=html;setStatus(`📩 ${d.messages.length} رسائل`);
                 }
-            }catch(e){document.getElementById('inbox').innerHTML='<div class="empty">[ OFFLINE ]</div>';setStatus('OFFLINE');}
-            btn.disabled=false;btn.textContent='[ SCAN ]';
+            }catch(e){document.getElementById('inbox').innerHTML='<div class="empty"><div class="icon">⚠️</div>فشل الاتصال</div>';setStatus('❌ غير متصل');}
+            btn.disabled=false;btn.textContent='📡 فحص الرسائل';
         }
 
         newEmail();
-        setInterval(checkMessages,12000);
+        setInterval(checkMessages,15000);
     </script>
 </body>
 </html>
