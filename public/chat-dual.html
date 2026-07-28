@@ -59,11 +59,11 @@
 <div class="normal-mode" id="normalMode">
     <div class="header">
         <div class="logo">🤖</div>
-        <div class="info"><h1>AI Chat</h1><p>ذكاء اصطناعي حقيقي</p></div>
+        <div class="info"><h1>AI Chat</h1><p>Agnes AI - ذكاء اصطناعي حقيقي</p></div>
         <button class="btn-x" onclick="openSplit()">✕</button>
     </div>
     <div class="chat-box" id="chatBox">
-        <div class="msg bot"><div class="msg-avatar">🤖</div><div class="msg-bubble">👋 مرحباً! أنا مساعدك الذكي المدعوم بـ Agnes AI<br><br>🔴 <b>اضغط ✕ الحمرا</b> لفتح المتصفح المزدوج</div></div>
+        <div class="msg bot"><div class="msg-avatar">🤖</div><div class="msg-bubble">👋 أهلاً! أنا Agnes AI - اسألني أي حاجة<br>🔴 <b>اضغط ✕ الحمرا</b> لفتح المتصفح المزدوج</div></div>
     </div>
     <div class="input-bar">
         <input type="text" id="prompt" placeholder="✍️ اكتب سؤالك..." onkeydown="if(event.key==='Enter')send()">
@@ -81,12 +81,12 @@
     <div class="split-container" id="splitContainer">
         <div class="split-panel" id="topPanel">
             <button class="panel-close" onclick="toggleTop()">✕</button>
-            <iframe id="frameTop" src="https://moakt.com/ar/inbox"></iframe>
+            <iframe id="frameTop" src="https://ai-undress.ai/ar"></iframe>
         </div>
         <div class="split-divider" id="divider"></div>
         <div class="split-panel" id="bottomPanel">
             <button class="panel-close" onclick="toggleBottom()">✕</button>
-            <iframe id="frameBottom" src="https://ai-proxy-omiz.vercel.app/number.html"></iframe>
+            <iframe id="frameBottom" src="https://moakt.com/ar/inbox"></iframe>
         </div>
     </div>
 </div>
@@ -118,37 +118,15 @@ async function send(){
 
 function openSplit(){document.getElementById('normalMode').classList.add('hide');document.getElementById('splitMode').classList.add('show');}
 function closeSplit(){document.getElementById('splitMode').classList.remove('show');document.getElementById('normalMode').classList.remove('hide');}
-
-function swapPanels(){
-    let t=document.getElementById('frameTop').src,b=document.getElementById('frameBottom').src;
-    document.getElementById('frameTop').src=b;document.getElementById('frameBottom').src=t;
-}
-function toggleTop(){
-    document.getElementById('topPanel').classList.toggle('hidden-panel');
-    document.getElementById('divider').classList.toggle('hidden-divider');
-    if(document.getElementById('topPanel').classList.contains('hidden-panel'))document.getElementById('bottomPanel').classList.add('single-panel');
-    else document.getElementById('bottomPanel').classList.remove('single-panel');
-}
-function toggleBottom(){
-    document.getElementById('bottomPanel').classList.toggle('hidden-panel');
-    document.getElementById('divider').classList.toggle('hidden-divider');
-    if(document.getElementById('bottomPanel').classList.contains('hidden-panel'))document.getElementById('topPanel').classList.add('single-panel');
-    else document.getElementById('topPanel').classList.remove('single-panel');
-}
+function swapPanels(){let t=document.getElementById('frameTop').src,b=document.getElementById('frameBottom').src;document.getElementById('frameTop').src=b;document.getElementById('frameBottom').src=t;}
+function toggleTop(){document.getElementById('topPanel').classList.toggle('hidden-panel');document.getElementById('divider').classList.toggle('hidden-divider');if(document.getElementById('topPanel').classList.contains('hidden-panel'))document.getElementById('bottomPanel').classList.add('single-panel');else document.getElementById('bottomPanel').classList.remove('single-panel');}
+function toggleBottom(){document.getElementById('bottomPanel').classList.toggle('hidden-panel');document.getElementById('divider').classList.toggle('hidden-divider');if(document.getElementById('bottomPanel').classList.contains('hidden-panel'))document.getElementById('topPanel').classList.add('single-panel');else document.getElementById('topPanel').classList.remove('single-panel');}
 
 let isDragging=false;
 document.getElementById('divider').addEventListener('mousedown',()=>isDragging=true);
 document.getElementById('divider').addEventListener('touchstart',()=>isDragging=true);
-document.addEventListener('mousemove',e=>{
-    if(!isDragging)return;
-    let top=document.getElementById('topPanel'),bottom=document.getElementById('bottomPanel');
-    top.style.flex='none';top.style.height=Math.max(50,e.clientY)+'px';bottom.style.flex='1';
-});
-document.addEventListener('touchmove',e=>{
-    if(!isDragging)return;
-    let top=document.getElementById('topPanel'),bottom=document.getElementById('bottomPanel');
-    top.style.flex='none';top.style.height=Math.max(50,e.touches[0].clientY)+'px';bottom.style.flex='1';
-});
+document.addEventListener('mousemove',e=>{if(!isDragging)return;let t=document.getElementById('topPanel'),b=document.getElementById('bottomPanel');t.style.flex='none';t.style.height=Math.max(50,e.clientY)+'px';b.style.flex='1';});
+document.addEventListener('touchmove',e=>{if(!isDragging)return;let t=document.getElementById('topPanel'),b=document.getElementById('bottomPanel');t.style.flex='none';t.style.height=Math.max(50,e.touches[0].clientY)+'px';b.style.flex='1';});
 document.addEventListener('mouseup',()=>isDragging=false);
 document.addEventListener('touchend',()=>isDragging=false);
 </script>
