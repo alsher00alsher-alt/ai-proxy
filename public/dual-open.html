@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Sites</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            font-family:'Cairo',sans-serif;
+            background:#0f0f1a;
+            color:#fff;
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:20px;
+        }
+        .container{
+            text-align:center;
+            max-width:400px;
+        }
+        .logo{
+            font-size:60px;
+            margin-bottom:20px;
+        }
+        h1{
+            font-size:24px;
+            margin-bottom:10px;
+            background:linear-gradient(135deg,#8b5cf6,#ec4899);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+        p{
+            color:#94a3b8;
+            font-size:14px;
+            margin-bottom:30px;
+        }
+        .btn{
+            display:block;
+            width:100%;
+            padding:18px;
+            margin:10px 0;
+            border:none;
+            border-radius:15px;
+            font-size:18px;
+            font-weight:800;
+            cursor:pointer;
+            font-family:'Cairo',sans-serif;
+            transition:0.3s;
+            text-decoration:none;
+        }
+        .btn-top{
+            background:linear-gradient(135deg,#8b5cf6,#ec4899);
+            color:#fff;
+        }
+        .btn-bottom{
+            background:linear-gradient(135deg,#06b6d4,#10b981);
+            color:#fff;
+        }
+        .btn-both{
+            background:linear-gradient(135deg,#ef4444,#f59e0b);
+            color:#fff;
+        }
+        .btn:active{
+            transform:scale(0.95);
+        }
+        .hint{
+            font-size:11px;
+            color:#64748b;
+            margin-top:5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🔗</div>
+        <h1>Open Sites</h1>
+        <p>اضغط على الزر لفتح الموقع في المتصفح</p>
+        
+        <button class="btn btn-top" onclick="openSite('https://ai-undress.ai/ar')">
+            🔝 فتح الموقع العلوي
+        </button>
+        <div class="hint">ai-undress.ai</div>
+        
+        <button class="btn btn-bottom" onclick="openSite('https://moakt.com/ar/inbox')">
+            🔽 فتح الموقع السفلي
+        </button>
+        <div class="hint">moakt.com - بريد مؤقت</div>
+        
+        <button class="btn btn-both" onclick="openBoth()">
+            🚀 فتح الموقعين معاً
+        </button>
+        <div class="hint">يفتح الاثنين في Tab منفصل</div>
+    </div>
+
+    <script>
+        function openSite(url) {
+            window.open(url, '_blank');
+        }
+        
+        function openBoth() {
+            window.open('https://ai-undress.ai/ar', '_blank');
+            setTimeout(() => {
+                window.open('https://moakt.com/ar/inbox', '_blank');
+            }, 500);
+        }
+    </script>
+</body>
+</html>
