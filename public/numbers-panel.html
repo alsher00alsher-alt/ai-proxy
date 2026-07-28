@@ -6,53 +6,40 @@
     <title>☠️ NUMBER PANEL</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root{--bg:#000a00;--surface:#001400;--green:#00ff00;--yellow:#ffff00;--red:#ff0000;--muted:#006600;--border:#003300;--cyan:#00ffff}
+        :root{--bg:#000a00;--green:#00ff00;--yellow:#ffff00;--red:#ff0000;--muted:#006600;--border:#003300;--cyan:#00ffff}
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Share Tech Mono',monospace;background:var(--bg);color:var(--green);min-height:100vh;overflow-x:hidden}
-        
+        body{font-family:'Share Tech Mono',monospace;background:var(--bg);color:var(--green);min-height:100vh}
         .matrix-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.03;
             background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,0,0.05) 2px,rgba(0,255,0,0.05) 4px)}
         .scanline{position:fixed;top:0;left:0;width:100%;height:2px;background:rgba(0,255,0,0.08);z-index:1;pointer-events:none;animation:scan 3s linear infinite}
         @keyframes scan{0%{top:-2px}100%{top:100%}}
-        
         .container{max-width:600px;margin:0 auto;padding:10px;position:relative;z-index:2}
-        
         .header{background:#000;border:2px solid var(--green);padding:15px;text-align:center;margin-bottom:10px;box-shadow:0 0 25px rgba(0,255,0,0.15)}
         .header .skull{font-size:40px;animation:pulse 2s infinite}
         @keyframes pulse{0%,100%{text-shadow:0 0 10px var(--green)}50%{text-shadow:0 0 35px var(--green),0 0 70px var(--green)}}
-        .header h1{font-size:18px;text-shadow:0 0 10px var(--green);letter-spacing:3px;margin:5px 0}
-        
+        .header h1{font-size:18px;text-shadow:0 0 10px var(--green);letter-spacing:3px}
         .panel{background:#000;border:1px solid var(--border);padding:10px;margin:8px 0}
-        .panel .title{color:var(--yellow);font-size:11px;margin-bottom:8px;letter-spacing:2px}
-        
-        .grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:200px;overflow-y:auto}
-        .grid-3{grid-template-columns:1fr 1fr 1fr}
-        .item{padding:8px;border:1px solid var(--border);cursor:pointer;text-align:center;font-size:9px;transition:0.2s}
+        .panel .title{color:var(--yellow);font-size:10px;margin-bottom:8px;letter-spacing:2px}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:250px;overflow-y:auto}
+        .item{padding:6px;border:1px solid var(--border);cursor:pointer;text-align:center;font-size:8px;transition:0.2s}
         .item:hover,.item.active{border-color:var(--green);background:rgba(0,255,0,0.05)}
-        .item .flag{font-size:14px}.item .name{color:var(--green);margin:2px 0}.item .count{color:var(--muted);font-size:8px}
-        
+        .item .flag{font-size:12px}.item .name{color:var(--green);margin:2px 0}.item .count{color:var(--muted);font-size:7px}
         .number-display{background:#000;border:2px solid var(--red);padding:15px;text-align:center;margin:8px 0;box-shadow:0 0 30px rgba(255,0,0,0.3);animation:redPulse 2s infinite;cursor:pointer}
         @keyframes redPulse{0%,100%{box-shadow:0 0 30px rgba(255,0,0,0.3)}50%{box-shadow:0 0 60px rgba(255,0,0,0.6)}}
-        .number-display .num{font-size:28px;color:var(--red);text-shadow:0 0 15px var(--red);letter-spacing:3px}
-        .number-display .info{color:var(--green);font-size:9px;margin-top:5px}
-        
-        .btn-row{display:flex;gap:5px;margin:6px 0;flex-wrap:wrap}
-        .btn{flex:1;min-width:70px;padding:10px 6px;border:2px solid var(--green);background:#000;color:var(--green);font-family:'Share Tech Mono',monospace;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:0.2s}
+        .number-display .num{font-size:26px;color:var(--red);text-shadow:0 0 15px var(--red);letter-spacing:2px}
+        .number-display .info{color:var(--green);font-size:8px;margin-top:4px}
+        .btn-row{display:flex;gap:4px;margin:6px 0;flex-wrap:wrap}
+        .btn{flex:1;min-width:60px;padding:10px 4px;border:2px solid var(--green);background:#000;color:var(--green);font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:0.2s}
         .btn:active{background:var(--green);color:#000}
         .btn-red{border-color:var(--red);color:var(--red)}.btn-red:active{background:var(--red);color:#000}
         .btn-yellow{border-color:var(--yellow);color:var(--yellow)}.btn-yellow:active{background:var(--yellow);color:#000}
-        
-        .live-feed{background:#000;border:1px solid var(--border);padding:8px;max-height:300px;overflow-y:auto;font-size:9px;margin:8px 0}
-        .live-feed .line{padding:3px 0;border-bottom:1px solid rgba(0,255,0,0.05);display:flex;justify-content:space-between}
+        .live-feed{background:#000;border:1px solid var(--border);padding:8px;max-height:250px;overflow-y:auto;font-size:8px;margin:8px 0}
+        .live-feed .line{padding:2px 0;border-bottom:1px solid rgba(0,255,0,0.05);display:flex;justify-content:space-between}
         .live-feed .svc{color:var(--yellow)}.live-feed .num{color:var(--cyan)}.live-feed .otp{color:var(--green)}
-        
-        .multi-numbers{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:8px 0}
-        .mini-card{background:#000;border:1px solid var(--border);padding:8px;text-align:center;cursor:pointer}
-        .mini-card:hover{border-color:var(--green)}
-        .mini-card .n{color:var(--red);font-size:11px}.mini-card .s{color:var(--green);font-size:8px}
-        .mini-card .o{color:var(--yellow);font-size:14px;margin-top:5px}
-        
-        .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:999;background:#000;border:1px solid var(--green);color:var(--green);padding:8px 16px;font-size:10px;letter-spacing:2px}
+        .multi-numbers{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:8px 0}
+        .mini-card{background:#000;border:1px solid var(--border);padding:6px;text-align:center;cursor:pointer}
+        .mini-card:hover{border-color:var(--green)}.mini-card .n{color:var(--red);font-size:9px}.mini-card .s{color:var(--green);font-size:7px}.mini-card .o{color:var(--yellow);font-size:12px;margin-top:4px}
+        .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:999;background:#000;border:1px solid var(--green);color:var(--green);padding:8px 16px;font-size:10px}
         .spinner{border:2px solid #000;border-top:2px solid var(--green);border-radius:50%;width:20px;height:20px;animation:spin 0.8s linear infinite;margin:10px auto}
         @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
     </style>
@@ -64,150 +51,189 @@
     <div class="container">
         <div class="header">
             <div class="skull">☠️</div>
-            <h1>NUMBER_PANEL v4.0</h1>
-            <div style="color:var(--muted);font-size:9px;">[ REAL NUMBERS + LIVE OTP ]</div>
+            <h1>NUMBER_PANEL v5.0</h1>
+            <div style="color:var(--muted);font-size:8px;">[ DIRECT API ]</div>
         </div>
         
-        <!-- لوحة التحكم -->
-        <div class="panel" id="controlPanel">
-            <div class="title">[ CONTROL_PANEL ]</div>
-            
-            <!-- الدول -->
-            <div id="countriesSection">
-                <div style="color:var(--muted);font-size:9px;margin-bottom:5px;">🌍 COUNTRIES</div>
-                <div class="grid" id="countriesGrid"></div>
-            </div>
-            
-            <!-- الخدمات -->
-            <div id="servicesSection" style="display:none;">
-                <div style="color:var(--muted);font-size:9px;margin-bottom:5px;">📱 SERVICES</div>
-                <div class="grid" id="servicesGrid"></div>
-                <button class="btn" style="margin-top:5px;width:100%" onclick="backToCountries()">← رجوع للدول</button>
-            </div>
-            
-            <!-- الرقم -->
-            <div id="numberSection" style="display:none;">
-                <div class="number-display" id="numberDisplay" onclick="copyNumber()">
-                    <div class="num" id="currentNumber">---</div>
-                    <div class="info" id="numberInfo"></div>
-                    <div style="color:var(--muted);font-size:7px;margin-top:3px;">[ TAP TO COPY ]</div>
-                </div>
-                <div class="btn-row">
-                    <button class="btn" onclick="changeNumber()">[ CHANGE ]</button>
-                    <button class="btn btn-yellow" onclick="fetchOTP()">[ GET_OTP ]</button>
-                </div>
-                <div id="otpResult" style="text-align:center;min-height:30px;"></div>
+        <div class="panel" id="mainPanel">
+            <div class="title" id="panelTitle">[ SELECT COUNTRY ]</div>
+            <div class="grid" id="mainGrid"></div>
+            <div id="backBtn" style="display:none;margin-top:5px;">
+                <button class="btn" onclick="backToCountries()" style="width:100%">[ BACK ]</button>
             </div>
         </div>
         
-        <!-- أزرار إضافية -->
+        <div id="numberSection" style="display:none;">
+            <div class="number-display" id="numberDisplay" onclick="copyNumber()">
+                <div class="num" id="currentNumber">---</div>
+                <div class="info" id="numberInfo"></div>
+                <div style="color:var(--muted);font-size:6px;margin-top:3px;">[ TAP TO COPY ]</div>
+            </div>
+            <div class="btn-row">
+                <button class="btn" onclick="changeNumber()">[ CHANGE ]</button>
+                <button class="btn btn-yellow" onclick="fetchOTP()">[ GET_OTP ]</button>
+                <button class="btn" onclick="resetAll()">[ NEW ]</button>
+            </div>
+            <div id="otpResult" style="text-align:center;min-height:25px;font-size:12px;"></div>
+        </div>
+        
         <div class="btn-row">
             <button class="btn btn-red" id="btnLive" onclick="toggleLive()">[ LIVE_FEED ]</button>
             <button class="btn btn-red" onclick="getMultiNumbers()">[ 5x_NUMBERS ]</button>
         </div>
         
-        <!-- بث مباشر -->
         <div class="live-feed" id="liveFeed" style="display:none;">
-            <div style="color:var(--yellow);text-align:center;margin-bottom:5px;">📡 LIVE OTP FEED</div>
+            <div style="color:var(--yellow);text-align:center;margin-bottom:4px;">📡 LIVE OTP</div>
             <div id="liveContent"></div>
-            <button class="btn btn-red" style="width:100%;margin-top:5px;" onclick="toggleLive()">[ STOP ]</button>
         </div>
         
-        <!-- 5 أرقام -->
         <div class="multi-numbers" id="multiNumbers"></div>
     </div>
 
     <script>
-        const API='https://ai-proxy-omiz.vercel.app/api/allinone';
-        let state={country:null,service:null,number:null},liveInterval=null;
+        const API='https://numberpanel.tech/api';
+        const KEY='np_live_6DknI4df2uZ0_BFv6CGGpX_BCBAq60TG1sKev64WPkw';
+        const H={'Authorization':'Bearer '+KEY};
+        let state={country:null,service:null,number:null},liveInterval=null,step='countries';
 
         function toast(m){let t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),1800);}
         function copyNumber(){if(!state.number)return;navigator.clipboard.writeText(state.number);toast('[+] COPIED');}
 
-        async function apiCall(body){
-            let r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        async function npApi(endpoint,params=''){
+            let url=`${API}/${endpoint}`;
+            if(params)url+='?'+new URLSearchParams(params);
+            let r=await fetch(url,{headers:H});
             return await r.json();
         }
 
         // ====== تحميل الدول ======
         async function loadCountries(){
-            document.getElementById('countriesGrid').innerHTML='<div class="spinner"></div>';
-            let d=await apiCall({type:'numbers',action:'countries',service:'WhatsApp'});
-            let countries=d.data||[];
-            let html='';
-            countries.sort((a,b)=>(b.count||0)-(a.count||0));
-            countries.forEach(c=>{
-                html+=`<div class="item" onclick="selectCountry('${c.name}')">
-                    <div class="flag">${c.flag||'🏳️'}</div>
-                    <div class="name">${c.name}</div>
-                    <div class="count">(${c.count||0})</div>
-                </div>`;
-            });
-            document.getElementById('countriesGrid').innerHTML=html||'لا توجد دول';
+            document.getElementById('mainGrid').innerHTML='<div class="spinner"></div>';
+            document.getElementById('panelTitle').textContent='[ SELECT COUNTRY ]';
+            document.getElementById('backBtn').style.display='none';
+            step='countries';
+            
+            try{
+                let d=await npApi('countries',{service:'WhatsApp'});
+                let countries=d.countries||[];
+                countries.sort((a,b)=>(b.count||0)-(a.count||0));
+                let html='';
+                countries.forEach(c=>{
+                    html+=`<div class="item" onclick="selectCountry('${c.name}')">
+                        <div class="flag">${c.flag||'🏳️'}</div>
+                        <div class="name">${c.name}</div>
+                        <div class="count">(${c.count||0})</div>
+                    </div>`;
+                });
+                document.getElementById('mainGrid').innerHTML=html||'لا توجد دول';
+            }catch(e){document.getElementById('mainGrid').innerHTML='خطأ في الاتصال';}
         }
 
-        // ====== اختيار الدولة ======
+        // ====== اختيار الدولة ← عرض الخدمات ======
         async function selectCountry(country){
             state.country=country;
-            document.getElementById('countriesSection').style.display='none';
-            document.getElementById('servicesSection').style.display='block';
-            document.getElementById('servicesGrid').innerHTML='<div class="spinner"></div>';
+            document.getElementById('mainGrid').innerHTML='<div class="spinner"></div>';
+            document.getElementById('panelTitle').textContent='[ SELECT SERVICE ]';
+            document.getElementById('backBtn').style.display='block';
+            step='services';
             
-            let d=await apiCall({type:'numbers',action:'services'});
-            let services=d.data||[];
-            let html='';
-            services.forEach(s=>{
-                html+=`<div class="item" onclick="requestNum('${s.name}')">
-                    <div class="name">${s.name}</div>
-                    <div class="count">(${s.count||0})</div>
-                </div>`;
-            });
-            document.getElementById('servicesGrid').innerHTML=html||'لا توجد خدمات';
+            try{
+                let d=await npApi('services');
+                let services=d.services||[];
+                let html='';
+                services.forEach(s=>{
+                    html+=`<div class="item" onclick="requestNum('${s.name}')">
+                        <div class="name">${s.name}</div>
+                        <div class="count">(${s.count||0})</div>
+                    </div>`;
+                });
+                document.getElementById('mainGrid').innerHTML=html||'لا توجد خدمات';
+            }catch(e){document.getElementById('mainGrid').innerHTML='خطأ';}
         }
 
-        function backToCountries(){
-            document.getElementById('countriesSection').style.display='block';
-            document.getElementById('servicesSection').style.display='none';
-            document.getElementById('numberSection').style.display='none';
-        }
+        function backToCountries(){loadCountries();}
 
         // ====== طلب رقم ======
         async function requestNum(service){
             state.service=service;
-            document.getElementById('servicesSection').style.display='none';
+            document.getElementById('mainPanel').style.display='none';
             document.getElementById('numberSection').style.display='block';
             document.getElementById('currentNumber').textContent='REQUESTING...';
             
-            let d=await apiCall({type:'numbers',action:'request',service,country:state.country});
-            if(d.success){
-                state.number=d.number;
-                document.getElementById('currentNumber').textContent=d.number;
-                document.getElementById('numberInfo').textContent=`${state.country} | ${service}`;
-            }else{
-                document.getElementById('currentNumber').textContent='FAILED';
-            }
+            try{
+                let d=await npApi('request_number',{service,country:state.country});
+                // request_number POST
+                let r=await fetch(`${API}/request_number`,{
+                    method:'POST',headers:{...H,'Content-Type':'application/json'},
+                    body:JSON.stringify({service,country:state.country})
+                });
+                let data=await r.json();
+                
+                if(data.success){
+                    state.number=data.number;
+                    document.getElementById('currentNumber').textContent=data.number;
+                    document.getElementById('numberInfo').textContent=`${state.country} | ${service}`;
+                }else{
+                    document.getElementById('currentNumber').textContent='FAILED';
+                }
+            }catch(e){document.getElementById('currentNumber').textContent='ERROR';}
         }
 
         async function changeNumber(){
             if(!state.service||!state.country)return;
             document.getElementById('currentNumber').textContent='CHANGING...';
-            let d=await apiCall({type:'numbers',action:'request',service:state.service,country:state.country});
-            if(d.success){
-                state.number=d.number;
-                document.getElementById('currentNumber').textContent=d.number;
+            let r=await fetch(`${API}/request_number`,{
+                method:'POST',headers:{...H,'Content-Type':'application/json'},
+                body:JSON.stringify({service:state.service,country:state.country})
+            });
+            let data=await r.json();
+            if(data.success){
+                state.number=data.number;
+                document.getElementById('currentNumber').textContent=data.number;
             }
         }
 
-        // ====== جلب OTP ======
+        function resetAll(){
+            state={country:null,service:null,number:null};
+            document.getElementById('numberSection').style.display='none';
+            document.getElementById('mainPanel').style.display='block';
+            loadCountries();
+        }
+
+        // ====== OTP ======
         async function fetchOTP(){
             if(!state.number)return;
             document.getElementById('otpResult').innerHTML='<div class="spinner"></div>';
-            let d=await apiCall({type:'numbers',action:'otp',number:state.number});
-            if(d.ok&&d.otp){
-                document.getElementById('otpResult').innerHTML=`<div style="color:var(--yellow);font-size:24px;text-shadow:0 0 15px var(--yellow);">${d.otp}</div>`;
-                toast('[!] OTP: '+d.otp);
+            
+            // نجرب otp مباشر
+            let d=await npApi('otp',{number:state.number});
+            let otp=d.otp||'';
+            
+            // my_otps
+            if(!otp||otp==='0'){
+                let d2=await npApi('my_otps',{number:state.number,limit:5});
+                if(d2.otps&&d2.otps[0]&&d2.otps[0].otp)otp=d2.otps[0].otp;
+            }
+            
+            // public OTPs
+            if(!otp){
+                let d3=await npApi('otp',{count:200});
+                if(Array.isArray(d3)){
+                    let clean=state.number.replace(/[^0-9]/g,'');
+                    for(let item of d3){
+                        if(Array.isArray(item)&&item[1]&&String(item[1]).includes(clean)){
+                            let msg=item[2]||'',m=msg.match(/\d{3,8}/);
+                            if(m){otp=m[0];break;}
+                        }
+                    }
+                }
+            }
+            
+            if(otp&&otp!=='0'){
+                document.getElementById('otpResult').innerHTML=`<div style="color:var(--yellow);font-size:22px;text-shadow:0 0 15px var(--yellow);">${otp}</div>`;
+                toast('[!] OTP: '+otp);
             }else{
-                document.getElementById('otpResult').innerHTML=`<div style="color:var(--red);">لا يوجد كود بعد</div>`;
+                document.getElementById('otpResult').innerHTML='<div style="color:var(--red);">لا يوجد كود</div>';
             }
         }
 
@@ -216,7 +242,7 @@
             let feed=document.getElementById('liveFeed');
             if(feed.style.display==='none'){
                 feed.style.display='block';
-                document.getElementById('btnLive').textContent='[ STOP_LIVE ]';
+                document.getElementById('btnLive').textContent='[ STOP ]';
                 startLiveFeed();
             }else{
                 feed.style.display='none';
@@ -227,20 +253,22 @@
 
         async function startLiveFeed(){
             let update=async()=>{
-                let d=await apiCall({type:'otp_public',count:20});
-                if(Array.isArray(d)){
-                    let html='';
-                    d.slice(0,15).forEach(item=>{
-                        if(Array.isArray(item)&&item.length>=3){
-                            let msg=item[2]||'',otpM=msg.match(/\d{3,8}/);
-                            html+=`<div class="line"><span class="svc">${item[0]||''}</span><span class="num">${item[1]||''}</span><span class="otp">${otpM?otpM[0]:''}</span></div>`;
-                        }
-                    });
-                    document.getElementById('liveContent').innerHTML=html||'لا توجد بيانات';
-                }
+                try{
+                    let d=await npApi('otp',{count:30});
+                    if(Array.isArray(d)){
+                        let html='';
+                        d.slice(0,20).forEach(item=>{
+                            if(Array.isArray(item)&&item.length>=3){
+                                let msg=item[2]||'',m=msg.match(/\d{3,8}/);
+                                html+=`<div class="line"><span class="svc">${item[0]||''}</span><span class="num">${item[1]||''}</span><span class="otp">${m?m[0]:''}</span></div>`;
+                            }
+                        });
+                        document.getElementById('liveContent').innerHTML=html||'لا توجد بيانات';
+                    }
+                }catch(e){}
             };
             update();
-            liveInterval=setInterval(update,5000);
+            liveInterval=setInterval(update,4000);
         }
 
         // ====== 5 أرقام ======
@@ -251,26 +279,31 @@
             let html='';
             
             for(let i=0;i<5;i++){
-                let svc=services[i],cty=countries[i];
-                let d=await apiCall({type:'numbers',action:'request',service:svc,country:cty});
-                if(d.success){
-                    html+=`<div class="mini-card" onclick="copyText('${d.number}')">
-                        <div class="n">${d.number}</div>
-                        <div class="s">${svc} | ${cty}</div>
-                        <div class="o" id="otp_${i}">---</div>
-                    </div>`;
-                    // جلب OTP لكل رقم
-                    fetchOTPForCard(d.number,i);
-                }
+                try{
+                    let r=await fetch(`${API}/request_number`,{
+                        method:'POST',headers:{...H,'Content-Type':'application/json'},
+                        body:JSON.stringify({service:services[i],country:countries[i]})
+                    });
+                    let d=await r.json();
+                    if(d.success){
+                        html+=`<div class="mini-card" onclick="copyText('${d.number}')">
+                            <div class="n">${d.number}</div>
+                            <div class="s">${services[i]} | ${countries[i]}</div>
+                            <div class="o" id="otp_${i}">---</div>
+                        </div>`;
+                        fetchOTPForCard(d.number,i);
+                    }
+                }catch(e){}
             }
             document.getElementById('multiNumbers').innerHTML=html||'فشل';
         }
 
         async function fetchOTPForCard(number,index){
-            let d=await apiCall({type:'numbers',action:'otp',number});
-            if(d.ok&&d.otp){
+            let d=await npApi('otp',{number});
+            let otp=(d.otp&&d.otp!=='0')?d.otp:'';
+            if(otp){
                 let el=document.getElementById('otp_'+index);
-                if(el)el.textContent=d.otp;
+                if(el)el.textContent=otp;
             }
         }
 
@@ -278,9 +311,6 @@
 
         // بداية
         loadCountries();
-        
-        // تحديث OTP كل 30 ثانية لو فيه رقم
-        setInterval(()=>{if(state.number)fetchOTP();},30000);
     </script>
 </body>
 </html>
