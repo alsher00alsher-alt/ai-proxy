@@ -3,199 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بريد مؤقت - H4CK3R</title>
+    <title>بريد مؤقت</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        :root{--bg:#000a00;--surface:#001400;--primary:#00ff00;--danger:#ff0000;--text:#00ff00;--muted:#006600;--border:#003300;--accent:#ffff00}
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-        
-        .matrix-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.03;
-            background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,0,0.05) 2px,rgba(0,255,0,0.05) 4px)}
-        .scanline{position:fixed;top:0;left:0;width:100%;height:2px;background:rgba(0,255,0,0.1);z-index:1;pointer-events:none;animation:scan 3s linear infinite}
-        @keyframes scan{0%{top:-2px}100%{top:100%}}
-        
-        .container{max-width:550px;margin:0 auto;padding:15px;position:relative;z-index:2}
-        
-        .header{background:#000;border:2px solid var(--primary);padding:20px;text-align:center;margin-bottom:15px;box-shadow:0 0 20px rgba(0,255,0,0.2)}
-        .header .skull{font-size:50px;animation:pulse 2s infinite}
-        @keyframes pulse{0%,100%{text-shadow:0 0 10px var(--primary)}50%{text-shadow:0 0 30px var(--primary),0 0 60px var(--primary)}}
-        .header h1{font-size:22px;color:var(--primary);text-shadow:0 0 10px var(--primary);margin:10px 0;font-weight:900}
-        .header .subtitle{color:var(--muted);font-size:11px;animation:blink 1.5s infinite}
-        @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-        
-        .email-box{background:#000;border:2px solid var(--primary);padding:15px;margin:10px 0;text-align:center;box-shadow:0 0 15px rgba(0,255,0,0.1)}
-        .email-box .label{color:var(--muted);font-size:10px;margin-bottom:5px}
-        .email-box .email{color:var(--accent);font-size:18px;text-shadow:0 0 10px var(--accent);word-break:break-all;cursor:pointer;font-weight:700}
-        
-        .btn-row{display:flex;gap:8px;margin:10px 0}
-        .btn{flex:1;padding:14px 10px;border:2px solid var(--primary);background:#000;color:var(--primary);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border-radius:5px;transition:0.3s}
-        .btn:active{background:var(--primary);color:#000}
-        .btn-yellow{border-color:var(--accent);color:var(--accent)}.btn-yellow:active{background:var(--accent);color:#000}
-        
-        .msg-count{color:var(--muted);font-size:11px;text-align:center;margin:8px 0}
-        
-        .msg-card{background:#000;border:1px solid var(--border);margin:8px 0;border-radius:3px;overflow:hidden}
-        .msg-card .msg-header{display:flex;justify-content:space-between;padding:12px;background:rgba(0,255,0,0.03);border-bottom:1px solid var(--border);cursor:pointer;gap:8px}
-        .msg-card .msg-from{color:var(--accent);font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
-        .msg-card .msg-subject{color:var(--primary);font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
-        .msg-card .msg-body{display:none;padding:12px;font-size:12px;line-height:1.8;background:rgba(0,0,0,0.5);border-top:1px solid var(--border);white-space:pre-wrap;word-break:break-all;color:#ccc}
-        .msg-card .msg-body.show{display:block}
-        .msg-card .otp{color:var(--accent);font-size:32px;text-align:center;padding:15px;letter-spacing:10px;text-shadow:0 0 20px var(--accent);font-weight:900;direction:ltr}
-        
-        .toast{position:fixed;top:15px;left:50%;transform:translateX(-50%);z-index:999;background:#000;border:1px solid var(--primary);color:var(--primary);padding:10px 20px;border-radius:25px;font-size:12px;font-weight:700}
-        
-        .loading{text-align:center;padding:30px}
-        .spinner{border:3px solid #000;border-top:3px solid var(--primary);border-radius:50%;width:35px;height:35px;animation:spin 0.8s linear infinite;margin:10px auto}
-        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-        
-        .empty{text-align:center;color:var(--muted);padding:40px;font-size:13px}
-        .empty .icon{font-size:50px;margin-bottom:10px}
+        body{font-family:'Cairo',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;padding:15px}
+        .container{max-width:500px;margin:0 auto}
+        .header{background:#111;border:2px solid#0f0;padding:20px;text-align:center;margin-bottom:15px;border-radius:10px}
+        .header h1{color:#0f0;font-size:20px}
+        .email-box{background:#000;border:1px solid#0f0;padding:12px;border-radius:8px;text-align:center;margin:10px 0}
+        .email-box .label{color:#888;font-size:10px}
+        .email-box .email{color:#ff0;font-size:15px;font-weight:700;word-break:break-all;cursor:pointer}
+        .btn{width:100%;padding:14px;margin:6px 0;border:2px solid#0f0;background:#000;color:#0f0;font-size:14px;font-weight:700;cursor:pointer;border-radius:8px;font-family:'Cairo',sans-serif}
+        .btn:active{background:#0f0;color:#000}
+        .btn-yellow{border-color:#ff0;color:#ff0}.btn-yellow:active{background:#ff0;color:#000}
+        .msg-card{background:#111;border:1px solid#333;padding:10px;margin:8px 0;border-radius:8px;cursor:pointer}
+        .msg-card .from{color:#ff0;font-size:13px;font-weight:600}
+        .msg-card .subject{color:#0f0;font-size:12px;margin:3px 0}
+        .msg-card .body{display:none;padding:10px;margin-top:8px;background:#000;border-radius:5px;font-size:12px;line-height:1.8;color:#ccc;white-space:pre-wrap;word-break:break-all}
+        .msg-card .body.show{display:block}
+        .otp-code{color:#ff0;font-size:32px;text-align:center;letter-spacing:10px;font-weight:900;padding:10px;direction:ltr}
+        .status{text-align:center;color:#888;font-size:12px;margin:8px 0;min-height:20px}
+        .toast{position:fixed;top:15px;left:50%;transform:translateX(-50%);z-index:999;background:#000;border:1px solid#0f0;color:#0f0;padding:10px 20px;border-radius:25px;font-size:13px}
     </style>
 </head>
 <body>
-    <div class="matrix-bg"></div>
-    <div class="scanline"></div>
-    
     <div class="container">
-        <div class="header">
-            <div class="skull">☠️</div>
-            <h1>بريد مؤقت</h1>
-            <div class="subtitle">[ نظام بريد مجهول ]</div>
-        </div>
+        <div class="header"><h1>📧 بريد مؤقت</h1></div>
         
         <div class="email-box">
-            <div class="label">📧 بريدك الحالي</div>
-            <div class="email" id="emailDisplay" onclick="copyEmail()">جاري التوليد...</div>
-            <div style="color:var(--muted);font-size:9px;margin-top:5px;">اضغط للنسخ</div>
+            <div class="label">بريدك الحالي</div>
+            <div class="email" id="emailDisplay" onclick="copyEmail()">---</div>
+            <div style="color:#888;font-size:9px;margin-top:3px;">اضغط للنسخ</div>
         </div>
         
-        <div class="btn-row">
-            <button class="btn" onclick="newEmail()">🔄 بريد جديد</button>
-            <button class="btn btn-yellow" onclick="checkMessages()">📡 فحص الرسائل</button>
-        </div>
+        <button class="btn" id="btnNew" onclick="newEmail()">🔄 إنشاء بريد جديد</button>
+        <button class="btn btn-yellow" id="btnCheck" onclick="checkMessages()">📡 فحص الرسائل</button>
         
-        <div id="messagesContainer">
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p style="color:var(--muted);">جاري الاتصال...</p>
-            </div>
-        </div>
+        <div class="status" id="status"></div>
+        <div id="messages"></div>
     </div>
 
     <script>
-        let currentEmail='',currentToken='',seenIds=new Set();
-        
+        let email='',token='',seen={};
+
         function toast(m){
             let t=document.createElement('div');t.className='toast';t.textContent=m;
             document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
         }
         
+        function setStatus(m){document.getElementById('status').textContent=m;}
+        
         function copyEmail(){
-            if(!currentEmail)return;
-            navigator.clipboard.writeText(currentEmail).then(()=>toast('✅ تم النسخ!'));
+            if(!email)return;
+            navigator.clipboard.writeText(email).then(()=>toast('✅ تم نسخ البريد'));
         }
-        
-        async function api(url,options={}){
-            let headers={'Accept':'application/json'};
-            if(currentToken)headers['Authorization']='Bearer '+currentToken;
-            let r=await fetch(url,{headers,...options});
-            return await r.json();
-        }
-        
+
         async function newEmail(){
-            let load=document.getElementById('loading');
-            load.style.display='block';
-            load.innerHTML='<div class="spinner"></div><p>جاري إنشاء بريد جديد...</p>';
+            let btn=document.getElementById('btnNew');
+            btn.disabled=true;btn.textContent='⏳ جاري الإنشاء...';
+            setStatus('جاري إنشاء بريد جديد...');
             
             try{
-                let d=await api('https://api.mail.tm/domains');
-                let domains=Array.isArray(d)?d:(d['hydra:member']||d.data||[]);
-                if(!domains.length){toast('❌ فشل');return;}
+                // جلب الدومين
+                let r=await fetch('https://api.mail.tm/domains');
+                let d=await r.json();
+                let domains=d['hydra:member']||[];
+                if(!domains.length){setStatus('❌ فشل');return;}
                 
-                let domain=domains[0].domain||domains[0];
+                let domain=domains[0].domain;
                 let user=Math.random().toString(36).substring(2,12);
-                currentEmail=user+'@'+domain;
+                email=user+'@'+domain;
                 let pass=Math.random().toString(36).substring(2,16);
                 
+                // إنشاء حساب
                 await fetch('https://api.mail.tm/accounts',{
                     method:'POST',headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({address:currentEmail,password:pass})
+                    body:JSON.stringify({address:email,password:pass})
                 });
                 
-                let t=await api('https://api.mail.tm/token',{
+                // جلب token
+                let r3=await fetch('https://api.mail.tm/token',{
                     method:'POST',headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({address:currentEmail,password:pass})
+                    body:JSON.stringify({address:email,password:pass})
                 });
-                currentToken=t.token||'';
+                let t=await r3.json();
+                token=t.token||'';
                 
-                document.getElementById('emailDisplay').textContent=currentEmail;
-                seenIds.clear();
-                toast('✅ تم إنشاء بريد جديد');
+                document.getElementById('emailDisplay').textContent=email;
+                seen={};
+                setStatus('✅ تم إنشاء البريد');
+                toast('✅ بريد جديد جاهز');
                 checkMessages();
             }catch(e){
-                toast('❌ خطأ في الاتصال');
-                load.style.display='none';
+                setStatus('❌ خطأ: '+e.message);
             }
+            btn.disabled=false;btn.textContent='🔄 إنشاء بريد جديد';
         }
-        
+
         async function checkMessages(){
-            if(!currentEmail){await newEmail();return;}
+            if(!email){await newEmail();return;}
             
-            let load=document.getElementById('loading');
-            load.style.display='block';
-            load.innerHTML='<div class="spinner"></div><p>جاري الفحص...</p>';
+            let btn=document.getElementById('btnCheck');
+            btn.disabled=true;btn.textContent='⏳ جاري الفحص...';
+            setStatus('جاري فحص الرسائل...');
             
             try{
-                let msgs=await api('https://api.mail.tm/messages');
-                let list=Array.isArray(msgs)?msgs:(msgs['hydra:member']||[]);
+                let headers={'Accept':'application/json'};
+                if(token)headers['Authorization']='Bearer '+token;
                 
-                load.style.display='none';
-                let container=document.getElementById('messagesContainer');
+                let r=await fetch('https://api.mail.tm/messages',{headers});
+                let d=await r.json();
+                let msgs=d['hydra:member']||[];
                 
-                if(!list.length){
-                    container.innerHTML='<div class="empty"><div class="icon">📭</div>لا توجد رسائل بعد<br>استخدم البريد في أي موقع</div>';
-                    return;
-                }
+                let html='';
                 
-                let html='<div class="msg-count">📩 عدد الرسائل: '+list.length+'</div>';
-                
-                for(let m of list){
-                    let mid=m.id;
-                    let detail=await api('https://api.mail.tm/messages/'+mid);
+                if(!msgs.length){
+                    html='<div style="text-align:center;color:#888;padding:30px;">📭 لا توجد رسائل</div>';
+                }else{
+                    html=`<div style="text-align:center;color:#888;margin:10px 0;">📩 ${msgs.length} رسائل</div>`;
                     
-                    let from=detail.from?.address||'غير معروف';
-                    let subject=detail.subject||'بدون موضوع';
-                    let text=(detail.text||detail.html||'').replace(/<[^>]+>/g,'').trim();
-                    let otp='';
-                    let otpMatch=text.match(/\b(\d{4,8})\b/);
-                    if(otpMatch)otp=otpMatch[1];
-                    
-                    html+=`
-                        <div class="msg-card">
-                            <div class="msg-header" onclick="this.nextElementSibling.classList.toggle('show')">
-                                <span class="msg-from">📧 ${from}</span>
-                                <span class="msg-subject">${subject}</span>
-                            </div>
-                            <div class="msg-body">
-                                ${otp?`<div class="otp">${otp}</div>`:''}
-                                ${text||'[ لا يوجد محتوى ]'}
-                            </div>
-                        </div>`;
-                    
-                    if(!seenIds.has(mid)){
-                        seenIds.add(mid);
-                        if(otp)toast('🔑 كود التحقق: '+otp);
+                    for(let m of msgs){
+                        let h2={'Accept':'application/json'};
+                        if(token)h2['Authorization']='Bearer '+token;
+                        let r2=await fetch('https://api.mail.tm/messages/'+m.id,{headers:h2});
+                        let detail=await r2.json();
+                        
+                        let from=detail.from?.address||'غير معروف';
+                        let subject=detail.subject||'بدون موضوع';
+                        let text=(detail.text||detail.html||'').replace(/<[^>]+>/g,'').trim();
+                        let otp='';
+                        let otpMatch=text.match(/\b(\d{4,8})\b/);
+                        if(otpMatch)otp=otpMatch[1];
+                        
+                        let msgId='msg_'+m.id;
+                        html+=`
+                            <div class="msg-card">
+                                <div onclick="document.getElementById('${msgId}').classList.toggle('show')">
+                                    <div class="from">📧 ${from}</div>
+                                    <div class="subject">${subject}</div>
+                                </div>
+                                <div class="body" id="${msgId}">
+                                    ${otp?`<div class="otp-code">${otp}</div>`:''}
+                                    ${text||'لا يوجد محتوى'}
+                                </div>
+                            </div>`;
+                        
+                        if(!seen[m.id]){
+                            seen[m.id]=true;
+                            if(otp)toast('🔑 كود: '+otp);
+                        }
                     }
                 }
                 
-                container.innerHTML=html;
+                document.getElementById('messages').innerHTML=html;
+                setStatus(msgs.length?'✅ تم التحديث':'📭 لا توجد رسائل');
             }catch(e){
-                load.style.display='none';
-                document.getElementById('messagesContainer').innerHTML='<div class="empty"><div class="icon">⚠️</div>فشل الاتصال</div>';
+                setStatus('❌ خطأ في الاتصال');
             }
+            btn.disabled=false;btn.textContent='📡 فحص الرسائل';
         }
-        
+
         // بداية
         newEmail();
         
