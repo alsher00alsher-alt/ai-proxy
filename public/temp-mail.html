@@ -2,13 +2,13 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TEMP MAIL - H4CK3R</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بريد مؤقت - H4CK3R</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        :root{--bg:#000a00;--surface:#001400;--primary:#00ff00;--primary-dark:#009900;--danger:#ff0000;--text:#00ff00;--muted:#006600;--border:#003300;--accent:#ffff00}
+        :root{--bg:#000a00;--surface:#001400;--primary:#00ff00;--danger:#ff0000;--text:#00ff00;--muted:#006600;--border:#003300;--accent:#ffff00}
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Share Tech Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+        body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
         
         .matrix-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.03;
             background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,0,0.05) 2px,rgba(0,255,0,0.05) 4px)}
@@ -17,47 +17,40 @@
         
         .container{max-width:550px;margin:0 auto;padding:15px;position:relative;z-index:2}
         
-        .header{background:#000;border:2px solid var(--primary);padding:20px;text-align:center;margin-bottom:15px;box-shadow:0 0 20px rgba(0,255,0,0.2),inset 0 0 20px rgba(0,255,0,0.05)}
+        .header{background:#000;border:2px solid var(--primary);padding:20px;text-align:center;margin-bottom:15px;box-shadow:0 0 20px rgba(0,255,0,0.2)}
         .header .skull{font-size:50px;animation:pulse 2s infinite}
         @keyframes pulse{0%,100%{text-shadow:0 0 10px var(--primary)}50%{text-shadow:0 0 30px var(--primary),0 0 60px var(--primary)}}
-        .header h1{font-size:22px;color:var(--primary);text-shadow:0 0 10px var(--primary);letter-spacing:5px;margin:10px 0}
-        .header .subtitle{color:var(--muted);font-size:10px;animation:blink 1.5s infinite}
+        .header h1{font-size:22px;color:var(--primary);text-shadow:0 0 10px var(--primary);margin:10px 0;font-weight:900}
+        .header .subtitle{color:var(--muted);font-size:11px;animation:blink 1.5s infinite}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
         
         .email-box{background:#000;border:2px solid var(--primary);padding:15px;margin:10px 0;text-align:center;box-shadow:0 0 15px rgba(0,255,0,0.1)}
-        .email-box .label{color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:3px;margin-bottom:5px}
-        .email-box .email{color:var(--accent);font-size:18px;text-shadow:0 0 10px var(--accent);word-break:break-all;cursor:pointer}
-        .email-box .email:active{color:var(--primary)}
+        .email-box .label{color:var(--muted);font-size:10px;margin-bottom:5px}
+        .email-box .email{color:var(--accent);font-size:18px;text-shadow:0 0 10px var(--accent);word-break:break-all;cursor:pointer;font-weight:700}
         
         .btn-row{display:flex;gap:8px;margin:10px 0}
-        .btn{flex:1;padding:12px;border:2px solid var(--primary);background:#000;color:var(--primary);font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:2px;transition:0.3s}
-        .btn:hover{background:var(--primary);color:#000;box-shadow:0 0 20px rgba(0,255,0,0.3)}
-        .btn:active{transform:scale(0.95)}
-        .btn-refresh{border-color:var(--accent);color:var(--accent)}.btn-refresh:hover{background:var(--accent);color:#000}
-        .btn-new{border-color:var(--primary);color:var(--primary)}
-        .btn-copy{border-color:var(--primary-dark);color:var(--primary-dark)}.btn-copy:hover{background:var(--primary-dark)}
+        .btn{flex:1;padding:14px 10px;border:2px solid var(--primary);background:#000;color:var(--primary);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border-radius:5px;transition:0.3s}
+        .btn:active{background:var(--primary);color:#000}
+        .btn-yellow{border-color:var(--accent);color:var(--accent)}.btn-yellow:active{background:var(--accent);color:#000}
         
-        .messages{padding:10px 0}
-        .msg-count{color:var(--muted);font-size:10px;text-align:center;margin:5px 0}
+        .msg-count{color:var(--muted);font-size:11px;text-align:center;margin:8px 0}
         
-        .msg-card{background:#000;border:1px solid var(--border);margin:8px 0;border-radius:2px;overflow:hidden;transition:0.3s}
-        .msg-card:hover{border-color:var(--primary);box-shadow:0 0 10px rgba(0,255,0,0.1)}
-        .msg-card .msg-header{display:flex;justify-content:space-between;padding:10px;background:rgba(0,255,0,0.03);border-bottom:1px solid var(--border);cursor:pointer}
-        .msg-card .msg-from{color:var(--accent);font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .msg-card .msg-subject{color:var(--primary);font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
-        .msg-card .msg-time{color:var(--muted);font-size:9px}
-        .msg-card .msg-body{display:none;padding:12px;color:var(--text);font-size:11px;line-height:1.6;background:rgba(0,0,0,0.5);border-top:1px solid var(--border);white-space:pre-wrap;word-break:break-all}
+        .msg-card{background:#000;border:1px solid var(--border);margin:8px 0;border-radius:3px;overflow:hidden}
+        .msg-card .msg-header{display:flex;justify-content:space-between;padding:12px;background:rgba(0,255,0,0.03);border-bottom:1px solid var(--border);cursor:pointer;gap:8px}
+        .msg-card .msg-from{color:var(--accent);font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+        .msg-card .msg-subject{color:var(--primary);font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+        .msg-card .msg-body{display:none;padding:12px;font-size:12px;line-height:1.8;background:rgba(0,0,0,0.5);border-top:1px solid var(--border);white-space:pre-wrap;word-break:break-all;color:#ccc}
         .msg-card .msg-body.show{display:block}
-        .msg-card .otp{color:var(--accent);font-size:28px;text-align:center;padding:10px;letter-spacing:8px;text-shadow:0 0 15px var(--accent);animation:pulse 2s infinite}
+        .msg-card .otp{color:var(--accent);font-size:32px;text-align:center;padding:15px;letter-spacing:10px;text-shadow:0 0 20px var(--accent);font-weight:900;direction:ltr}
         
-        .toast{position:fixed;top:15px;left:50%;transform:translateX(-50%);z-index:999;background:#000;border:1px solid var(--primary);color:var(--primary);padding:10px 20px;font-size:11px;letter-spacing:2px}
+        .toast{position:fixed;top:15px;left:50%;transform:translateX(-50%);z-index:999;background:#000;border:1px solid var(--primary);color:var(--primary);padding:10px 20px;border-radius:25px;font-size:12px;font-weight:700}
         
-        .loading{text-align:center;padding:20px}
-        .spinner{border:3px solid #000;border-top:3px solid var(--primary);border-radius:50%;width:30px;height:30px;animation:spin 0.8s linear infinite;margin:10px auto}
+        .loading{text-align:center;padding:30px}
+        .spinner{border:3px solid #000;border-top:3px solid var(--primary);border-radius:50%;width:35px;height:35px;animation:spin 0.8s linear infinite;margin:10px auto}
         @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
         
-        .empty{text-align:center;color:var(--muted);padding:30px;font-size:12px;letter-spacing:2px}
-        .empty .icon{font-size:40px;margin-bottom:10px}
+        .empty{text-align:center;color:var(--muted);padding:40px;font-size:13px}
+        .empty .icon{font-size:50px;margin-bottom:10px}
     </style>
 </head>
 <body>
@@ -67,39 +60,31 @@
     <div class="container">
         <div class="header">
             <div class="skull">☠️</div>
-            <h1>TEMP_MAIL v2.0</h1>
-            <div class="subtitle">[ ANONYMOUS EMAIL SYSTEM ]</div>
+            <h1>بريد مؤقت</h1>
+            <div class="subtitle">[ نظام بريد مجهول ]</div>
         </div>
         
         <div class="email-box">
-            <div class="label">[ CURRENT_EMAIL ]</div>
-            <div class="email" id="emailDisplay" onclick="copyEmail()">---</div>
-            <div style="color:var(--muted);font-size:8px;margin-top:5px;">TAP TO COPY</div>
+            <div class="label">📧 بريدك الحالي</div>
+            <div class="email" id="emailDisplay" onclick="copyEmail()">جاري التوليد...</div>
+            <div style="color:var(--muted);font-size:9px;margin-top:5px;">اضغط للنسخ</div>
         </div>
         
         <div class="btn-row">
-            <button class="btn btn-new" onclick="newEmail()">🔄 NEW_ID</button>
-            <button class="btn btn-refresh" onclick="checkMessages()">📡 SCAN</button>
-            <button class="btn btn-copy" onclick="copyEmail()">📋 COPY</button>
+            <button class="btn" onclick="newEmail()">🔄 بريد جديد</button>
+            <button class="btn btn-yellow" onclick="checkMessages()">📡 فحص الرسائل</button>
         </div>
         
-        <div class="messages" id="messagesContainer">
+        <div id="messagesContainer">
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p style="color:var(--muted);font-size:10px;">ESTABLISHING CONNECTION...</p>
+                <p style="color:var(--muted);">جاري الاتصال...</p>
             </div>
         </div>
     </div>
 
     <script>
         let currentEmail='',currentToken='',seenIds=new Set();
-        
-        async function api(url,options={}){
-            let headers={'Accept':'application/json'};
-            if(currentToken)headers['Authorization']='Bearer '+currentToken;
-            let r=await fetch(url,{headers,...options});
-            return await r.json();
-        }
         
         function toast(m){
             let t=document.createElement('div');t.className='toast';t.textContent=m;
@@ -108,20 +93,27 @@
         
         function copyEmail(){
             if(!currentEmail)return;
-            navigator.clipboard.writeText(currentEmail);
-            toast('[+] COPIED: '+currentEmail);
+            navigator.clipboard.writeText(currentEmail).then(()=>toast('✅ تم النسخ!'));
+        }
+        
+        async function api(url,options={}){
+            let headers={'Accept':'application/json'};
+            if(currentToken)headers['Authorization']='Bearer '+currentToken;
+            let r=await fetch(url,{headers,...options});
+            return await r.json();
         }
         
         async function newEmail(){
-            document.getElementById('loading').style.display='block';
-            document.getElementById('messagesContainer').innerHTML='<div class="loading"><div class="spinner"></div><p>GENERATING...</p></div>';
+            let load=document.getElementById('loading');
+            load.style.display='block';
+            load.innerHTML='<div class="spinner"></div><p>جاري إنشاء بريد جديد...</p>';
             
             try{
                 let d=await api('https://api.mail.tm/domains');
                 let domains=Array.isArray(d)?d:(d['hydra:member']||d.data||[]);
-                if(!domains.length)return;
-                let domain=domains[0].domain||domains[0];
+                if(!domains.length){toast('❌ فشل');return;}
                 
+                let domain=domains[0].domain||domains[0];
                 let user=Math.random().toString(36).substring(2,12);
                 currentEmail=user+'@'+domain;
                 let pass=Math.random().toString(36).substring(2,16);
@@ -139,68 +131,76 @@
                 
                 document.getElementById('emailDisplay').textContent=currentEmail;
                 seenIds.clear();
-                toast('[+] NEW EMAIL GENERATED');
+                toast('✅ تم إنشاء بريد جديد');
                 checkMessages();
-            }catch(e){toast('[!] ERROR');}
+            }catch(e){
+                toast('❌ خطأ في الاتصال');
+                load.style.display='none';
+            }
         }
         
         async function checkMessages(){
             if(!currentEmail){await newEmail();return;}
             
-            document.getElementById('loading').style.display='block';
+            let load=document.getElementById('loading');
+            load.style.display='block';
+            load.innerHTML='<div class="spinner"></div><p>جاري الفحص...</p>';
             
             try{
                 let msgs=await api('https://api.mail.tm/messages');
                 let list=Array.isArray(msgs)?msgs:(msgs['hydra:member']||[]);
                 
-                document.getElementById('loading').style.display='none';
+                load.style.display='none';
                 let container=document.getElementById('messagesContainer');
                 
                 if(!list.length){
-                    container.innerHTML='<div class="empty"><div class="icon">📭</div>[ INBOX_ZERO ]<br>WAITING FOR PACKETS...</div>';
+                    container.innerHTML='<div class="empty"><div class="icon">📭</div>لا توجد رسائل بعد<br>استخدم البريد في أي موقع</div>';
                     return;
                 }
                 
-                container.innerHTML='<div class="msg-count">[ MESSAGES: '+list.length+' ]</div>';
+                let html='<div class="msg-count">📩 عدد الرسائل: '+list.length+'</div>';
                 
                 for(let m of list){
                     let mid=m.id;
                     let detail=await api('https://api.mail.tm/messages/'+mid);
                     
-                    let from=detail.from?.address||'UNKNOWN';
-                    let subject=detail.subject||'NO_SUBJECT';
+                    let from=detail.from?.address||'غير معروف';
+                    let subject=detail.subject||'بدون موضوع';
                     let text=(detail.text||detail.html||'').replace(/<[^>]+>/g,'').trim();
                     let otp='';
                     let otpMatch=text.match(/\b(\d{4,8})\b/);
                     if(otpMatch)otp=otpMatch[1];
                     
-                    let card=document.createElement('div');card.className='msg-card';
-                    card.innerHTML=`
-                        <div class="msg-header" onclick="this.nextElementSibling.classList.toggle('show')">
-                            <span class="msg-from">${from}</span>
-                            <span class="msg-subject">${subject}</span>
-                            <span class="msg-time">${(detail.createdAt||'').substring(11,19)}</span>
-                        </div>
-                        <div class="msg-body">${otp?`<div class="otp">${otp}</div>`:''}${text||'[ EMPTY_BODY ]'}</div>
-                    `;
-                    container.appendChild(card);
+                    html+=`
+                        <div class="msg-card">
+                            <div class="msg-header" onclick="this.nextElementSibling.classList.toggle('show')">
+                                <span class="msg-from">📧 ${from}</span>
+                                <span class="msg-subject">${subject}</span>
+                            </div>
+                            <div class="msg-body">
+                                ${otp?`<div class="otp">${otp}</div>`:''}
+                                ${text||'[ لا يوجد محتوى ]'}
+                            </div>
+                        </div>`;
                     
                     if(!seenIds.has(mid)){
                         seenIds.add(mid);
-                        if(otp)toast('[!] OTP DETECTED: '+otp);
+                        if(otp)toast('🔑 كود التحقق: '+otp);
                     }
                 }
+                
+                container.innerHTML=html;
             }catch(e){
-                document.getElementById('loading').style.display='none';
-                document.getElementById('messagesContainer').innerHTML='<div class="empty"><div class="icon">⚠️</div>[ CONNECTION_LOST ]</div>';
+                load.style.display='none';
+                document.getElementById('messagesContainer').innerHTML='<div class="empty"><div class="icon">⚠️</div>فشل الاتصال</div>';
             }
         }
         
         // بداية
         newEmail();
         
-        // تحديث تلقائي كل 10 ثواني
-        setInterval(checkMessages,10000);
+        // تحديث تلقائي
+        setInterval(checkMessages,15000);
     </script>
 </body>
 </html>
