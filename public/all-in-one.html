@@ -12,13 +12,10 @@
         
         .container{display:flex;flex-direction:column;height:100vh}
         
-        .top-bar{background:var(--surface);padding:8px 10px;display:flex;gap:6px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0}
-        .top-bar button{padding:10px 14px;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;color:#fff;flex:1;min-width:55px;white-space:nowrap}
-        .btn-chat{background:var(--primary)}
-        .btn-site1{background:linear-gradient(135deg,var(--primary),#ec4899)}
-        .btn-site2{background:linear-gradient(135deg,var(--secondary),#10b981)}
-        .btn-split{background:#f59e0b}
-        .btn-both{background:var(--danger)}
+        .top-bar{background:var(--surface);padding:6px 8px;display:flex;gap:5px;border-bottom:1px solid var(--border);flex-shrink:0;align-items:center}
+        .top-bar button{padding:8px 10px;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;color:#fff;white-space:nowrap}
+        .btn-chat{background:var(--primary)}.btn-switch{background:#f59e0b}.btn-close{background:var(--danger)}
+        .site-label{flex:1;text-align:center;font-size:10px;color:var(--muted)}
         
         .main-content{flex:1;overflow:hidden;position:relative}
         
@@ -40,19 +37,16 @@
         .typing{display:flex;gap:3px;padding:3px 0}.typing span{width:4px;height:4px;background:var(--muted);border-radius:50%;animation:bounce 1.4s infinite}
         .typing span:nth-child(1){animation-delay:0s}.typing span:nth-child(2){animation-delay:0.2s}.typing span:nth-child(3){animation-delay:0.4s}
         @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
-        
-        .toast{position:fixed;top:15px;left:50%;transform:translateX(-50%);z-index:999;background:var(--surface);border:1px solid var(--primary);color:var(--primary);padding:8px 20px;border-radius:20px;font-size:12px;font-weight:700}
     </style>
 </head>
 <body>
 
 <div class="container">
     <!-- شريط الأزرار -->
-    <div class="top-bar">
-        <button class="btn-chat" onclick="showChat()">💬 شات</button>
-        <button class="btn-site1" onclick="openWebView('https://ai-undress.ai/ar')">🔝 فتح</button>
-        <button class="btn-site2" onclick="openWebView('https://moakt.com/ar/inbox')">🔽 بريد</button>
-        <button class="btn-both" onclick="openBoth()">🚀 الاتنين</button>
+    <div class="top-bar" id="topBar">
+        <button class="btn-chat" onclick="showPanel('chat')">💬 شات</button>
+        <button class="btn-chat" onclick="showPanel('site1')">🔝 موقع</button>
+        <button class="btn-chat" onclick="showPanel('site2')">🔽 بريد</button>
     </div>
     
     <!-- المحتوى الرئيسي -->
@@ -62,51 +56,64 @@
             <div class="chat-box" id="chatBox">
                 <div class="msg bot"><div class="msg-avatar">🤖</div><div class="msg-bubble">
                     👋 أهلاً! أنا Agnes AI<br><br>
-                    🔝 <b>اضغط "فتح"</b> لفتح الموقع في المتصفح<br>
-                    🔽 <b>اضغط "بريد"</b> لفتح البريد المؤقت<br>
-                    🚀 <b>اضغط "الاتنين"</b> لفتحهم مع بعض
+                    🔝 <b>موقع</b> | 🔽 <b>بريد</b> | 💬 <b>شات</b>
                 </div></div>
             </div>
             <div class="input-bar">
-                <input type="text" id="prompt" placeholder="✍️ اكتب سؤالك..." onkeydown="if(event.key==='Enter')send()">
+                <input type="text" id="prompt" placeholder="✍️ اكتب..." onkeydown="if(event.key==='Enter')send()">
                 <button onclick="send()">➤</button>
             </div>
+        </div>
+        
+        <!-- الموقع 1 -->
+        <div class="panel" id="site1Panel">
+            <iframe id="site1Frame" src="https://ai-undress.ai/ar"></iframe>
+        </div>
+        
+        <!-- الموقع 2 -->
+        <div class="panel" id="site2Panel">
+            <iframe id="site2Frame" src="https://moakt.com/ar/inbox"></iframe>
         </div>
     </div>
 </div>
 
 <script>
 const API='/api/agnes';
+let currentPanel='chat';
+let SITE1='https://ai-undress.ai/ar',SITE2='https://moakt.com/ar/inbox';
 
-function toast(m){
-    let t=document.createElement('div');t.className='toast';t.textContent=m;
-    document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
-}
-
-// ====== WebView حقيقي - يفتح في المتصفح ======
-function openWebView(url){
-    toast('✅ جاري فتح الموقع...');
-    // طريقة 1: window.open
-    let w=window.open(url,'_blank');
-    // طريقة 2: لو مانعش، نستخدم location.href
-    if(!w||w.closed){
-        window.location.href=url;
+function showPanel(panel){
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    
+    if(panel==='chat'){
+        document.getElementById('chatPanel').classList.add('active');
+        // زرار التبديل في وضع الشات
+        document.getElementById('topBar').innerHTML=`
+            <button class="btn-chat" onclick="showPanel('chat')">💬 شات</button>
+            <button class="btn-chat" onclick="showPanel('site1')">🔝 موقع</button>
+            <button class="btn-chat" onclick="showPanel('site2')">🔽 بريد</button>
+        `;
+    }else if(panel==='site1'){
+        document.getElementById('site1Panel').classList.add('active');
+        // زرار يبدل للموقع التاني
+        document.getElementById('topBar').innerHTML=`
+            <button class="btn-chat" onclick="showPanel('chat')">💬 شات</button>
+            <span class="site-label">🔝 ${SITE1.replace('https://','').split('/')[0]}</span>
+            <button class="btn-switch" onclick="showPanel('site2')">⏩ تبديل لـ 🔽</button>
+        `;
+    }else if(panel==='site2'){
+        document.getElementById('site2Panel').classList.add('active');
+        // زرار يبدل للموقع التاني
+        document.getElementById('topBar').innerHTML=`
+            <button class="btn-chat" onclick="showPanel('chat')">💬 شات</button>
+            <span class="site-label">🔽 ${SITE2.replace('https://','').split('/')[0]}</span>
+            <button class="btn-switch" onclick="showPanel('site1')">⏩ تبديل لـ 🔝</button>
+        `;
     }
+    currentPanel=panel;
 }
 
-function openBoth(){
-    toast('🚀 جاري فتح الموقعين...');
-    window.open('https://ai-undress.ai/ar','_blank');
-    setTimeout(()=>{
-        window.open('https://moakt.com/ar/inbox','_blank');
-    },500);
-}
-
-function showChat(){
-    document.getElementById('chatPanel').classList.add('active');
-}
-
-// ====== شات Agnes AI ======
+// ====== شات ======
 function addMsg(role,html){
     let d=document.createElement('div');d.className='msg '+role;
     d.innerHTML=`<div class="msg-avatar">${role==='user'?'👤':'🤖'}</div><div class="msg-bubble">${html}</div>`;
