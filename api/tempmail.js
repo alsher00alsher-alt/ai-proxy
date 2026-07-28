@@ -4,17 +4,25 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     if (req.method === 'OPTIONS') return res.status(200).end();
 
-    const { action, email, password, token } = req.body || {};
+    const { action, token } = req.body || {};
     const BASE = 'https://api.mail.tm';
 
-    // ====== إنشاء بريد جديد ======
     if (action === 'create') {
         try {
             // جلب الدومين
-            const r1 = await fetch(`${BASE}/domains`);
-            const data1 = await r1.json();
-            const domains = Array.isArray(data1) ? data1 : (data1['hydra:member'] || []);
-            if (!domains.length) return res.json({ ok: false, msg: 'فشل جلب الدومين' });
+            const r1 = await fetch(`${BASE}/domains`, {
+                headers: { 'Accept': 'application/json' }
+            });
+            const text1 = await r1.text();
+            let domains = [];
+            try {
+                const data1 = JSON.parse(text1);
+                domains = Array.isArray(data1) ? data1 : (data1['hydra:member'] || []);
+            } catch(e) {}
+
+            if (!domains.length) {
+                return res.json({ ok: false, msg: 'فشل جلب الدومين: ' + text1.substring(0, 50) });
+            }
             
             const domain = domains[0].domain || domains[0];
             const user = Math.random().toString(36).substring(2, 12);
@@ -27,15 +35,20 @@ export default async function handler(req, res) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ address: mail, password: pass })
             });
-
+            const text2 = await r2.text();
+            
             // جلب token
             const r3 = await fetch(`${BASE}/token`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ address: mail, password: pass })
             });
-            const data3 = await r3.json();
-            const tok = data3.token || '';
+            const text3 = await r3.text();
+            let tok = '';
+            try {
+                const data3 = JSON.parse(text3);
+                tok = data3.token || '';
+            } catch(e) {}
 
             return res.json({ ok: true, email: mail, password: pass, token: tok });
         } catch(e) {
@@ -43,38 +56,41 @@ export default async function handler(req, res) {
         }
     }
 
-    // ====== فحص الرسائل ======
     if (action === 'check') {
         if (!token) return res.json({ ok: false, msg: 'Token مطلوب' });
-        
         try {
             const r = await fetch(`${BASE}/messages`, {
                 headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
             });
-            const data = await r.json();
-            const msgs = Array.isArray(data) ? data : (data['hydra:member'] || []);
+            const text = await r.text();
+            let msgs = [];
+            try { 
+                const data = JSON.parse(text);
+                msgs = Array.isArray(data) ? data : (data['hydra:member'] || []);
+            } catch(e) {}
 
-            // جلب تفاصيل كل رسالة
             const details = [];
             for (const m of msgs) {
                 const mid = m.id || m;
                 const r2 = await fetch(`${BASE}/messages/${mid}`, {
                     headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
                 });
-                const d = await r2.json();
+                const t2 = await r2.text();
+                let d = {};
+                try { d = JSON.parse(t2); } catch(e) {}
+                
                 details.push({
                     id: mid,
-                    from: d.from?.address || 'غير معروف',
+                    from: (d.from && d.from.address) || 'غير معروف',
                     subject: d.subject || 'بدون موضوع',
-                    text: (d.text || d.html || '').replace(/<[^>]+>/g, '').trim()
+                    text: ((d.text || d.html || '')).replace(/<[^>]+>/g, '').trim()
                 });
             }
-
             return res.json({ ok: true, messages: details });
         } catch(e) {
             return res.json({ ok: false, msg: e.message });
         }
     }
 
-    return res.json({ ok: false, msg: 'إجراء غير معروف' });
+    return res.json({ ok: false, msg: 'خطأ' });
 }
