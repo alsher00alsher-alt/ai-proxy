@@ -3,54 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>☠️ TEMP MAIL - H4CK3R</title>
+    <title>☠️ TEMP MAIL</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root{--bg:#000a00;--surface:#001400;--green:#00ff00;--yellow:#ffff00;--red:#ff0000;--muted:#006600;--border:#003300}
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Share Tech Mono',monospace;background:var(--bg);color:var(--green);min-height:100vh;overflow-x:hidden}
-        
         .matrix-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.03;
             background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,0,0.05) 2px,rgba(0,255,0,0.05) 4px)}
         .scanline{position:fixed;top:0;left:0;width:100%;height:2px;background:rgba(0,255,0,0.08);z-index:1;pointer-events:none;animation:scan 3s linear infinite}
         @keyframes scan{0%{top:-2px}100%{top:100%}}
-        
         .container{max-width:520px;margin:0 auto;padding:15px;position:relative;z-index:2}
-        
         .header{background:#000;border:2px solid var(--green);padding:18px;text-align:center;margin-bottom:12px;box-shadow:0 0 25px rgba(0,255,0,0.15)}
         .header .skull{font-size:45px;animation:pulse 2s infinite}
         @keyframes pulse{0%,100%{text-shadow:0 0 10px var(--green)}50%{text-shadow:0 0 35px var(--green),0 0 70px var(--green)}}
         .header h1{font-size:20px;text-shadow:0 0 10px var(--green);letter-spacing:4px;margin:8px 0}
         .header .sub{color:var(--muted);font-size:9px;animation:blink 1.5s infinite;letter-spacing:3px}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-        
         .email-panel{background:#000;border:1px solid var(--green);padding:14px;margin:10px 0;text-align:center;box-shadow:0 0 15px rgba(0,255,0,0.08)}
         .email-panel .tag{color:var(--muted);font-size:9px;letter-spacing:3px;margin-bottom:6px}
         .email-panel .addr{color:var(--yellow);font-size:16px;text-shadow:0 0 10px var(--yellow);word-break:break-all;cursor:pointer;letter-spacing:1px}
         .email-panel .hint{color:var(--muted);font-size:7px;margin-top:5px}
-        
         .btn-row{display:flex;gap:6px;margin:8px 0}
         .btn{flex:1;padding:12px 6px;border:2px solid var(--green);background:#000;color:var(--green);font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:2px;transition:0.2s}
         .btn:active{background:var(--green);color:#000}
         .btn-alt{border-color:var(--yellow);color:var(--yellow)}.btn-alt:active{background:var(--yellow);color:#000}
-        
         .status-line{text-align:center;color:var(--muted);font-size:10px;min-height:18px;letter-spacing:1px;margin:5px 0}
-        
-        .inbox{margin-top:8px}
         .msg{background:#000;border:1px solid var(--border);margin:6px 0;overflow:hidden;cursor:pointer}
         .msg:hover{border-color:var(--green)}
         .msg .preview{display:flex;justify-content:space-between;align-items:center;padding:10px;gap:8px}
         .msg .preview .from{color:var(--yellow);font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .msg .preview .subject{color:var(--green);font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
-        .msg .preview .arrow{color:var(--muted);font-size:10px}
         .msg .content{display:none;padding:12px;border-top:1px solid var(--border);background:rgba(0,0,0,0.6);font-size:11px;line-height:1.7;color:#ccc;white-space:pre-wrap;word-break:break-all}
         .msg .content.open{display:block}
         .msg .otp{color:var(--yellow);font-size:30px;text-align:center;letter-spacing:10px;text-shadow:0 0 20px var(--yellow);padding:12px;direction:ltr}
-        
         .toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:999;background:#000;border:1px solid var(--green);color:var(--green);padding:8px 18px;font-size:10px;letter-spacing:2px}
         .empty{text-align:center;color:var(--muted);padding:35px;font-size:11px;letter-spacing:2px}
-        
-        .loader{text-align:center;padding:20px}
         .spinner{border:2px solid #000;border-top:2px solid var(--green);border-radius:50%;width:25px;height:25px;animation:spin 0.8s linear infinite;margin:8px auto}
         @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
     </style>
@@ -62,7 +50,7 @@
     <div class="container">
         <div class="header">
             <div class="skull">☠️</div>
-            <h1>TEMP_MAIL v2.0</h1>
+            <h1>TEMP_MAIL v3.0</h1>
             <div class="sub">[ ANONYMOUS INBOX ]</div>
         </div>
         
@@ -78,127 +66,67 @@
         </div>
         
         <div class="status-line" id="status">[ READY ]</div>
-        
-        <div class="inbox" id="inbox">
-            <div class="loader" id="loader"><div class="spinner"></div></div>
-        </div>
+        <div id="inbox"><div class="spinner"></div></div>
     </div>
 
     <script>
+        const API='/api/tempmail';
         let email='',token='',seen={};
 
-        function toast(m){
-            let t=document.createElement('div');t.className='toast';t.textContent=m;
-            document.body.appendChild(t);setTimeout(()=>t.remove(),1800);
-        }
+        function toast(m){let t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),1800);}
         function setStatus(m){document.getElementById('status').textContent='[ '+m+' ]';}
-        function copyEmail(){
-            if(!email)return;
-            navigator.clipboard.writeText(email).then(()=>toast('[+] COPIED'));
-        }
+        function copyEmail(){if(!email)return;navigator.clipboard.writeText(email).then(()=>toast('[+] COPIED'));}
 
         async function newEmail(){
             let btn=document.getElementById('btnNew');
-            btn.disabled=true;btn.textContent='[ WAIT... ]';
-            setStatus('GENERATING');
-            
+            btn.disabled=true;btn.textContent='[ WAIT... ]';setStatus('GENERATING');
             try{
-                let r=await fetch('https://api.mail.tm/domains');
+                let r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'create'})});
                 let d=await r.json();
-                let domains=d['hydra:member']||[];
-                if(!domains.length){setStatus('ERROR');return;}
-                
-                let domain=domains[0].domain;
-                let user=Math.random().toString(36).substring(2,12);
-                email=user+'@'+domain;
-                let pass=Math.random().toString(36).substring(2,16);
-                
-                await fetch('https://api.mail.tm/accounts',{
-                    method:'POST',headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({address:email,password:pass})
-                });
-                
-                let r3=await fetch('https://api.mail.tm/token',{
-                    method:'POST',headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({address:email,password:pass})
-                });
-                let t=await r3.json();
-                token=t.token||'';
-                
-                document.getElementById('emailDisplay').textContent=email;
-                seen={};setStatus('ACTIVE');
-                toast('[+] NEW EMAIL');
-                checkMessages();
+                if(d.ok){
+                    email=d.email;token=d.token;
+                    document.getElementById('emailDisplay').textContent=email;
+                    seen={};setStatus('ACTIVE');toast('[+] NEW EMAIL');
+                    checkMessages();
+                }else{setStatus('ERROR');}
             }catch(e){setStatus('FAILED');}
             btn.disabled=false;btn.textContent='[ NEW_ID ]';
         }
 
         async function checkMessages(){
             if(!email){await newEmail();return;}
-            
             let btn=document.getElementById('btnCheck');
-            btn.disabled=true;btn.textContent='[ SCANNING... ]';
-            setStatus('SCANNING');
-            document.getElementById('loader').style.display='block';
-            
+            btn.disabled=true;btn.textContent='[ SCANNING... ]';setStatus('SCANNING');
             try{
-                let headers={'Accept':'application/json'};
-                if(token)headers['Authorization']='Bearer '+token;
-                
-                let r=await fetch('https://api.mail.tm/messages',{headers});
+                let r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'check',token})});
                 let d=await r.json();
-                let msgs=d['hydra:member']||[];
-                
-                document.getElementById('loader').style.display='none';
                 let inbox=document.getElementById('inbox');
                 
-                if(!msgs.length){
-                    inbox.innerHTML='<div class="empty">[ INBOX_ZERO ]<br><br>WAITING_FOR_PACKETS...</div>';
-                    setStatus('EMPTY');
+                if(!d.ok||!d.messages.length){
+                    inbox.innerHTML='<div class="empty">[ INBOX_ZERO ]</div>';setStatus('EMPTY');
                 }else{
                     let html='';
-                    
-                    for(let m of msgs){
-                        let h2={'Accept':'application/json'};
-                        if(token)h2['Authorization']='Bearer '+token;
-                        let r2=await fetch('https://api.mail.tm/messages/'+m.id,{headers:h2});
-                        let detail=await r2.json();
-                        
-                        let from=detail.from?.address||'UNKNOWN';
-                        let subject=detail.subject||'NO_SUBJECT';
-                        let text=(detail.text||detail.html||'').replace(/<[^>]+>/g,'').trim();
-                        let otp='';
-                        let otpMatch=text.match(/\b(\d{4,8})\b/);
-                        if(otpMatch)otp=otpMatch[1];
-                        
+                    d.messages.forEach(m=>{
+                        let otp='',otpMatch=m.text.match(/\b(\d{4,8})\b/);
+                        if(otpMatch)otp=otpMatch[0];
                         let mid='m_'+m.id;
                         html+=`
                             <div class="msg">
                                 <div class="preview" onclick="document.getElementById('${mid}').classList.toggle('open')">
-                                    <span class="from">${from}</span>
-                                    <span class="subject">${subject}</span>
-                                    <span class="arrow">▼</span>
+                                    <span class="from">${m.from}</span>
+                                    <span class="subject">${m.subject}</span>
+                                    <span>▼</span>
                                 </div>
                                 <div class="content" id="${mid}">
                                     ${otp?`<div class="otp">${otp}</div>`:''}
-                                    ${text||'[ EMPTY ]'}
+                                    ${m.text||'[ EMPTY ]'}
                                 </div>
                             </div>`;
-                        
-                        if(!seen[m.id]){
-                            seen[m.id]=true;
-                            if(otp)toast('[!] OTP: '+otp);
-                        }
-                    }
-                    
-                    inbox.innerHTML=html;
-                    setStatus(msgs.length+' MESSAGES');
+                        if(!seen[m.id]){seen[m.id]=true;if(otp)toast('[!] OTP: '+otp);}
+                    });
+                    inbox.innerHTML=html;setStatus(d.messages.length+' MESSAGES');
                 }
-            }catch(e){
-                document.getElementById('loader').style.display='none';
-                document.getElementById('inbox').innerHTML='<div class="empty">[ CONNECTION_LOST ]</div>';
-                setStatus('OFFLINE');
-            }
+            }catch(e){document.getElementById('inbox').innerHTML='<div class="empty">[ OFFLINE ]</div>';setStatus('OFFLINE');}
             btn.disabled=false;btn.textContent='[ SCAN ]';
         }
 
