@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Pro Sender</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #0a0a0a;
+            color: #00ff00;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image: 
+                linear-gradient(0deg, rgba(0,255,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,0,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 650px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            background: rgba(0,0,0,0.8);
+            box-shadow: 0 0 30px rgba(0,255,0,0.2);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            text-shadow: 0 0 20px #00ff00;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+        }
+        
+        .header .subtitle {
+            color: #00cc00;
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+        
+        .terminal {
+            background: #000;
+            border: 2px solid #00ff00;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0,255,0,0.3);
+        }
+        
+        .terminal-header {
+            background: #111;
+            padding: 10px 15px;
+            border-bottom: 1px solid #00ff00;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .terminal-dots {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid #00ff00;
+        }
+        
+        .dot.red { background: #ff0000; box-shadow: 0 0 10px #ff0000; }
+        .dot.yellow { background: #ffff00; box-shadow: 0 0 10px #ffff00; }
+        .dot.green { background: #00ff00; box-shadow: 0 0 10px #00ff00; }
+        
+        .terminal-body {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        
+        .terminal-body::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .terminal-body::-webkit-scrollbar-track {
+            background: #000;
+        }
+        
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 3px;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(0,255,0,0.1);
+        }
+        
+        .log-entry.success {
+            color: #00ff00;
+        }
+        
+        .log-entry.info {
+            color: #00ccff;
+        }
+        
+        .log-entry.error {
+            color: #ff4444;
+        }
+        
+        .log-entry .check {
+            color: #00ff00;
+            margin-left: 5px;
+        }
+        
+        .input-box {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0,255,0,0.2);
+        }
+        
+        .input-box label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 1.1em;
+            text-shadow: 0 0 10px rgba(0,255,0,0.5);
+        }
+        
+        .input-box input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            background: #0a0a0a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .input-box input:focus {
+            box-shadow: 0 0 15px rgba(0,255,0,0.3);
+            border-color: #00ff00;
+        }
+        
+        .input-box input::placeholder {
+            color: rgba(0,255,0,0.3);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #00ff00;
+            background: #000;
+            color: #00ff00;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 30px rgba(0,255,0,0.5);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #333;
+            color: #333;
+        }
+        
+        .btn:disabled:hover {
+            background: #000;
+            color: #333;
+            box-shadow: none;
+        }
+        
+        .status-bar {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 2px solid #00ff00;
+        }
+        
+        .status-indicator.online {
+            background: #00ff00;
+            box-shadow: 0 0 15px #00ff00;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status-indicator.offline {
+            background: transparent;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px #00ff00; }
+            50% { box-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00; }
+            100% { box-shadow: 0 0 5px #00ff00; }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .countdown {
+            text-align: center;
+            font-size: 3em;
+            color: #00ff00;
+            text-shadow: 0 0 30px #00ff00;
+            margin: 20px 0;
+        }
+        
+        .pairing-code {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .pairing-code .code {
+            font-size: 4em;
+            font-weight: 900;
+            letter-spacing: 10px;
+            color: #00ff00;
+            text-shadow: 0 0 40px #00ff00;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .pairing-code .instruction {
+            color: #00cc00;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ WHATSAPP PRO</h1>
+            <div class="subtitle">[ Secure Connection Established ]</div>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-indicator offline" id="statusIndicator"></div>
+            <span id="statusText">╼ جاري الاتصال بالسيرفر...</span>
+        </div>
+        
+        <!-- شاشة تسجيل الدخول -->
+        <div id="loginScreen">
+            <div class="input-box">
+                <label>📱 رقم الهاتف (مع كود الدولة)</label>
+                <input type="text" id="phoneNumber" placeholder="201012345678" maxlength="15">
+                <button class="btn" onclick="requestPairing()">⚡ طلب رمز الربط</button>
+            </div>
+        </div>
+        
+        <!-- شاشة كود الربط -->
+        <div id="pairingScreen" class="hidden">
+            <div class="pairing-code">
+                <div class="code" id="pairingCode">----</div>
+                <div class="instruction">
+                    ⚠️ افتح واتساب → الأجهزة المرتبطة → ربط جهاز → "الربط باستخدام رقم الهاتف"
+                </div>
+            </div>
+            <div class="countdown" id="countdown"></div>
+        </div>
+        
+        <!-- شاشة الإرسال -->
+        <div id="senderScreen" class="hidden">
+            <div class="input-box">
+                <label>🎯 رقم الهدف (مع كود الدولة)</label>
+                <input type="text" id="targetNumber" placeholder="201012345678">
+                
+                <label>💬 الرسالة</label>
+                <input type="text" id="messageText" placeholder="اكتب رسالتك هنا...">
+                
+                <label>🔢 عدد الرسائل</label>
+                <input type="number" id="messageCount" value="10" min="1" max="10000">
+                
+                <button class="btn" id="sendBtn" onclick="startSending()">🚀 بدء الإرسال</button>
+            </div>
+        </div>
+        
+        <!-- التيرمنال -->
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-dots">
+                    <div class="dot red"></div>
+                    <div class="dot yellow"></div>
+                    <div class="dot green"></div>
+                </div>
+                <span style="color: #00ff00; font-size: 0.8em;">root@whatsapp-pro:~#</span>
+            </div>
+            <div class="terminal-body" id="terminalBody">
+                <div class="log-entry info">[+] Initializing system...</div>
+                <div class="log-entry info">[+] Loading modules...</div>
+                <div class="log-entry info">[+] Waiting for connection...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let ws = null;
+        let isConnected = false;
+        const WS_URL = 'ws://localhost:3000';
+        
+        // إضافة لوج للتيرمنال
+        function addLog(message, type = 'info') {
+            const terminal = document.getElementById('terminalBody');
+            const time = new Date().toLocaleTimeString('ar-EG', { hour12: false });
+            const check = type === 'success' ? '<span class="check">✔</span>' : '';
+            terminal.innerHTML += `<div class="log-entry ${type}">[${time}] ${check} ${message}</div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        // الاتصال بـ WebSocket
+        function connectWS() {
+            addLog('[~] محاولة الاتصال بالسيرفر...', 'info');
+            
+            ws = new WebSocket(WS_URL);
+            
+            ws.onopen = () => {
+                isConnected = true;
+                document.getElementById('statusIndicator').classList.add('online');
+                document.getElementById('statusIndicator').classList.remove('offline');
+                document.getElementById('statusText').textContent = '╼ متصل بالسيرفر';
+                addLog('[+] Connected to server successfully', 'success');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'pairing_code') {
+                    // استقبال كود الربط
+                    document.getElementById('pairingCode').textContent = data.code;
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('pairingScreen').classList.remove('hidden');
+                    addLog('[+] تم استلام كود الربط', 'success');
+                    addLog('[!] أدخل الكود في واتساب', 'info');
+                }
+                
+                if (data.type === 'connected') {
+                    document.getElementById('pairingScreen').classList.add('hidden');
+                    document.getElementById('senderScreen').classList.remove('hidden');
+                    addLog('[+] تم ربط واتساب بنجاح!', 'success');
+                    addLog('[✓] النظام جاهز للإرسال', 'success');
+                }
+                
+                if (data.type === 'progress') {
+                    addLog(`[✓] تم إرسال الرسالة (${data.sent}/${data.total})`, 'success');
+                }
+                
+                if (data.type === 'done') {
+                    addLog(`[✓] ${data.message}`, 'success');
+                    document.getElementById('sendBtn').disabled = false;
+                    document.getElementById('sendBtn').textContent = '🚀 بدء الإرسال';
+                }
+                
+                if (data.type === 'error') {
+                    addLog(`[✗] ${data.message}`, 'error');
+                }
+            };
+            
+            ws.onclose = () => {
+                isConnected = false;
+                document.getElementById('statusIndicator').classList.remove('online');
+                document.getElementById('statusIndicator').classList.add('offline');
+                document.getElementById('statusText').textContent = '╼ غير متصل';
+                addLog('[-] Connection lost', 'error');
+            };
+        }
+        
+        // طلب كود الربط
+        function requestPairing() {
+            const phone = document.getElementById('phoneNumber').value.replace(/\D/g, '');
+            
+            if (!phone) {
+                addLog('[!] الرجاء إدخال رقم الهاتف', 'error');
+                return;
+            }
+            
+            if (!isConnected) {
+                addLog('[!] لا يوجد اتصال بالسيرفر', 'error');
+                return;
+            }
+            
+            addLog(`[~] جاري طلب كود الربط لـ ${phone}...`, 'info');
+            
+            ws.send(JSON.stringify({
+                type: 'request_pairing',
+                phone: phone
+            }));
+            
+            document.getElementById('phoneNumber').disabled = true;
+        }
+        
+        // بدء الإرسال
+        function startSending() {
+            const target = document.getElementById('targetNumber').value.replace(/\D/g, '');
+            const message = document.getElementById('messageText').value;
+            const count = parseInt(document.getElementById('messageCount').value);
+            
+            if (!target || !message || !count) {
+                addLog('[!] الرجاء إدخال جميع البيانات', 'error');
+                return;
+            }
+            
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('sendBtn').textContent = '⏳ جاري الإرسال...';
+            
+            addLog(`[→] بدء إرسال ${count} رسالة إلى ${target}`, 'info');
+            
+            ws.send(JSON.stringify({
+                type: 'spam',
+                phone: target,
+                message: message,
+                count: count
+            }));
+        }
+        
+        // بدء الاتصال تلقائياً
+        connectWS();
+    </script>
+</body>
+</html>
