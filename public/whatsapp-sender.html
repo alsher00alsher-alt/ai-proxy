@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>واتساب سندر - WhatsApp Sender</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .whatsapp-btn {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            grid-column: span 2;
+        }
+        
+        .stats {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .stats p {
+            margin: 5px 0;
+            color: #666;
+        }
+        
+        .counter {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .sending {
+            animation: pulse 1s infinite;
+        }
+        
+        .log {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 واتساب سندر</h1>
+            <p>لوحة تحكم إرسال رسائل واتساب</p>
+        </div>
+        
+        <div class="form-group">
+            <label>📱 رقم الهاتف (مع كود الدولة)</label>
+            <input type="text" id="phoneNumber" placeholder="مثال: 201012345678" value="">
+        </div>
+        
+        <div class="form-group">
+            <label>💬 الرسالة</label>
+            <textarea id="message" placeholder="اكتب رسالتك هنا..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>🔢 عدد الرسائل</label>
+            <input type="number" id="count" value="1" min="1" max="10000">
+        </div>
+        
+        <div class="button-group">
+            <button class="send-btn" onclick="openWhatsAppWeb()">💻 فتح واتساب ويب</button>
+            <button class="whatsapp-btn" onclick="openWhatsApp()">📱 فتح تطبيق واتساب</button>
+        </div>
+        
+        <div class="stats" id="stats" style="display: none;">
+            <p>📊 تم الإرسال: <span class="counter" id="sentCount">0</span></p>
+            <p>📊 المتبقي: <span class="counter" id="remainingCount">0</span></p>
+        </div>
+        
+        <div class="log" id="log" style="display: none;">
+            <div id="logContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        let isSending = false;
+        let sentMessages = 0;
+        let totalMessages = 0;
+        
+        function formatPhone(number) {
+            return number.replace(/\D/g, '');
+        }
+        
+        async function openWhatsApp() {
+            const phone = formatPhone(document.getElementById('phoneNumber').value);
+            const message = encodeURIComponent(document.getElementById('message').value);
+            const count = parseInt(document.getElementById('count').value) || 1;
+            
+            if (!phone) {
+                alert('❌ الرجاء إدخال رقم الهاتف');
+                return;
+            }
+            
+            if (!message) {
+                alert('❌ الرجاء إدخال الرسالة');
+                return;
+            }
+            
+            totalMessages = count;
+            sentMessages = 0;
+            
+            document.getElementById('stats').style.display = 'block';
+            document.getElementById('log').style.display = 'block';
+            updateStats();
+            
+            const url = `https://wa.me/${phone}?text=${message}`;
+            
+            for (let i = 0; i < count; i++) {
+                window.open(url, '_blank');
+                sentMessages++;
+                updateStats();
+                addLog(`✅ تم فتح الرابط (${sentMessages}/${totalMessages})`);
+                
+                // انتظار بين الرسائل
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            addLog('🎉 تم إرسال جميع الرسائل!');
+        }
+        
+        function openWhatsAppWeb() {
+            const phone = formatPhone(document.getElementById('phoneNumber').value);
+            const message = document.getElementById('message').value;
+            const count = parseInt(document.getElementById('count').value) || 1;
+            
+            if (!phone) {
+                alert('❌ الرجاء إدخال رقم الهاتف');
+                return;
+            }
+            
+            if (!message) {
+                alert('❌ الرجاء إدخال الرسالة');
+                return;
+            }
+            
+            totalMessages = count;
+            sentMessages = 0;
+            
+            document.getElementById('stats').style.display = 'block';
+            document.getElementById('log').style.display = 'block';
+            updateStats();
+            
+            // فتح واتساب ويب مع الرقم
+            const url = `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+            
+            addLog('💻 تم فتح واتساب ويب - قم بإرسال الرسائل يدوياً');
+        }
+        
+        function updateStats() {
+            document.getElementById('sentCount').textContent = sentMessages;
+            document.getElementById('remainingCount').textContent = totalMessages - sentMessages;
+        }
+        
+        function addLog(message) {
+            const logContent = document.getElementById('logContent');
+            const time = new Date().toLocaleTimeString('ar-EG');
+            logContent.innerHTML += `<div>[${time}] ${message}</div>`;
+            document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
+        }
+        
+        // حفظ آخر رقم مستخدم
+        window.onload = function() {
+            const lastPhone = localStorage.getItem('lastPhone');
+            if (lastPhone) {
+                document.getElementById('phoneNumber').value = lastPhone;
+            }
+        }
+        
+        // حفظ الرقم عند التغيير
+        document.getElementById('phoneNumber').addEventListener('change', function() {
+            localStorage.setItem('lastPhone', this.value);
+        });
+    </script>
+</body>
+</html>
