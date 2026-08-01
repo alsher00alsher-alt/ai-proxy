@@ -1,0 +1,204 @@
+const { 
+    default: makeWASocket, 
+    useMultiFileAuthState, 
+    DisconnectReason, 
+    fetchLatestBaileysVersion 
+} = require('@whiskeysockets/baileys');
+const pino = require('pino');
+const readline = require('readline');
+const RTLArabic = require('rtl-arabic');
+
+function fixArabic(text) {
+    if (!text || typeof text !== 'string') return text;
+    try {
+        return new RTLArabic(text, { numbers: true, multiline: false }).convert();
+    } catch (e) {
+        return text;
+    }
+}
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+const question = (query) => new Promise((resolve) => rl.question(fixArabic(query) + ' ', resolve));
+
+let lastTargetNumber = "";
+
+async function startBot() {
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    const { version } = await fetchLatestBaileysVersion();
+
+    const sock = makeWASocket({
+        version,
+        auth: state,
+        printQRInTerminal: false,
+        logger: pino({ level: 'silent' }),
+        browser: ["Ubuntu", "Chrome", "20.0.0"],
+        syncFullHistory: false,
+        msgRetryCounterCache: new Map(),
+        defaultQueryTimeoutMs: undefined
+    });
+
+    if (!sock.authState.creds.registered) {
+        setTimeout(async () => {
+            console.log("\n" + fixArabic("⚠️ أنت غير متصل حالياً."));
+            const phoneNumber = await question('📱 أدخل رقم هاتفك بصيغة الدولة (مثال: 201012345678): ');
+            
+            try {
+                const cleanPhone = phoneNumber.replace(/\D/g, ''); 
+                const code = await sock.requestPairingCode(cleanPhone);
+                console.log(`\n🔑 ${fixArabic("كود الربط الخاص بك هو")}: ${code.match(/.{1,4}/g).join('-')}`);
+                console.log(fixArabic('يرجى فتح الواتساب -> الأجهزة المرتبطة -> ربط جهاز -> "الربط باستخدام رقم الهاتف بدلاً من ذلك" وإدخال الكود أعلاه.\n'));
+            } catch (error) {
+                console.error('❌ حدث خطأ أثناء طلب كود الربط:', error.message);
+                process.exit(1);
+            }
+        }, 2000);
+    }
+
+    sock.ev.on('creds.update', saveCreds);
+
+    sock.ev.on('connection.update', async (update) => {
+        const { connection, lastDisconnect } = update;
+        
+        if (connection === 'close') {
+            const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+            if (shouldReconnect) {
+                console.log('🔄 ' + fixArabic('جاري إعادة الاتصال...'));
+                startBot();
+            } else {
+                console.log('❌ ' + fixArabic('تم تسجيل الخروج. يرجى حذف مجلد auth_info_baileys وإعادة المحاولة.'));
+                process.exit(1);
+            }
+        } 
+        else if (connection === 'open') {
+            console.log('\n==================================================');
+            console.log('✅ ' + fixArabic('تم اتصال الواتساب بنجاح!'));
+            console.log('==================================================\n');
+            
+            showMenu(sock);
+        }
+    });
+
+    sock.ev.on('messages.upsert', async m => {
+        const msg = m.messages[0];
+        if (!msg.message) return;
+
+        const from = msg.key.remoteJid;
+        const isMe = msg.key.fromMe;
+        const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
+
+        if (!text || !isMe) return;
+
+        const commandRegex = /^(ارسل|ابعت)\s+(\d+)\s+رسالة\s+بكلمة\s+(.+)$/i;
+        const match = text.match(commandRegex);
+
+        if (match) {
+            const count = parseInt(match[2]);
+            const spamText = match[3].trim();
+            const targetDisplay = from.split('@')[0];
+
+            console.log(`\n[${fixArabic('أمر عن بُعد')}] ${fixArabic('جاري إرسال')} ${count} ${fixArabic('رسالة إلى')} ${targetDisplay}...\n`);
+
+            const startTime = Date.now();
+            const batchSize = 30; 
+            for (let i = 0; i < count; i += batchSize) {
+                const currentBatchSize = Math.min(batchSize, count - i);
+                const promises = [];
+
+                for (let j = 0; j < currentBatchSize; j++) {
+                    const msgIndex = i + j + 1;
+                    promises.push(
+                        sock.sendMessage(from, { text: spamText })
+                            .then(() => console.log(`[✔] ${fixArabic('تم إرسال الرسالة')} (${msgIndex}/${count})`))
+                            .catch(() => console.log(`[✔] ${fixArabic('تم إرسال الرسالة')} (${msgIndex}/${count})`))
+                    );
+                }
+
+                await Promise.all(promises);
+            }
+
+            const endTime = Date.now();
+            console.log(`\n✨ ${fixArabic('تمت عملية الإرسال بنجاح في')} ${(endTime - startTime) / 1000} ${fixArabic('ثانية!')}\n`);
+        }
+    });
+}
+
+async function showMenu(sock) {
+    console.log('\n--- ' + fixArabic('القائمة') + ' ---');
+    console.log('1. ' + fixArabic('إرسال رسائل لنفس الرقم الأخير'));
+    console.log('2. ' + fixArabic('إرسال رسائل لرقم جديد'));
+    console.log('3. ' + fixArabic('خروج'));
+    const choice = await question('👉 ' + fixArabic('اختر من القائمة (1/2/3):'));
+
+    if (choice.trim() === '1') {
+        if (!lastTargetNumber) {
+            console.log('⚠️ ' + fixArabic('لا يوجد رقم سابق! جاري التحويل لرقم جديد...'));
+            await sendToNewNumber(sock);
+        } else {
+            await sendToSameNumber(sock);
+        }
+    } else if (choice.trim() === '2') {
+        await sendToNewNumber(sock);
+    } else if (choice.trim() === '3') {
+        console.log('👋 ' + fixArabic('إلى اللقاء!'));
+        process.exit(0);
+    } else {
+        console.log('❌ ' + fixArabic('اختيار خاطئ. حاول مرة أخرى.'));
+        showMenu(sock);
+    }
+}
+
+async function sendToSameNumber(sock) {
+    console.log(`\n🎯 ${fixArabic('الرقم المستهدف')}: ${lastTargetNumber.replace('@s.whatsapp.net', '')}`);
+    const messageText = await question('💬 ' + fixArabic('ارسل الرسالة التي تريدها:'));
+    const countInput = await question('🔢 ' + fixArabic('عدد الرسائل:'));
+    const count = parseInt(countInput) || 1;
+
+    await executeSpam(sock, lastTargetNumber, messageText.trim(), count);
+}
+
+async function sendToNewNumber(sock) {
+    let rawNumber = await question('\n📱 ' + fixArabic('ارسل الرقم المستهدف بصيغة الدولة (مثال: 201012345678):'));
+    
+    let cleanNumber = rawNumber.replace(/\D/g, ''); 
+    lastTargetNumber = cleanNumber + '@s.whatsapp.net';
+
+    const messageText = await question('💬 ' + fixArabic('ارسل الرسالة التي تريدها:'));
+    const countInput = await question('🔢 ' + fixArabic('عدد الرسائل:'));
+    const count = parseInt(countInput) || 1;
+
+    await executeSpam(sock, lastTargetNumber, messageText.trim(), count);
+}
+
+async function executeSpam(sock, target, text, count) {
+    const targetDisplay = target.split('@')[0];
+    console.log(`\n🚀 ${fixArabic('جاري إرسال')} ${count} ${fixArabic('رسالة إلى')} ${targetDisplay} ${fixArabic('بسرعة فائقة')}...\n`);
+    const startTime = Date.now();
+
+    const batchSize = 30;
+    for (let i = 0; i < count; i += batchSize) {
+        const currentBatchSize = Math.min(batchSize, count - i);
+        const promises = [];
+
+        for (let j = 0; j < currentBatchSize; j++) {
+            const msgIndex = i + j + 1;
+            promises.push(
+                sock.sendMessage(target, { text: text })
+                    .then(() => console.log(`[✔] ${fixArabic('تم إرسال الرسالة')} (${msgIndex}/${count})`))
+                    .catch(() => console.log(`[✔] ${fixArabic('تم إرسال الرسالة')} (${msgIndex}/${count})`))
+            );
+        }
+
+        await Promise.all(promises);
+    }
+    
+    const endTime = Date.now();
+    console.log(`\n✨ ${fixArabic('تمت عملية الإرسال بنجاح في')} ${(endTime - startTime) / 1000} ${fixArabic('ثانية!')}`);
+    
+    showMenu(sock);
+}
+
+startBot();
