@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Live - Telegram</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 340px; background: #1e293b; border-left: 1px solid #334155; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 15px 20px; font-size: 1.1rem; font-weight: bold; border-bottom: 1px solid #334155; background: #1e293b; }
+        .chat-list { list-style: none; overflow-y: auto; flex: 1; }
+        .chat-list-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #1e293b; cursor: pointer; transition: 0.2s; gap: 12px; }
+        .chat-list-item:hover, .chat-list-item.active { background: #334155; }
+        .chat-avatar { width: 45px; height: 45px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; color: white; flex-shrink: 0; }
+        .chat-info { flex: 1; min-width: 0; }
+        .chat-name { font-weight: bold; font-size: 0.95rem; margin-bottom: 3px; }
+        .chat-preview { font-size: 0.85rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: #0b132b; }
+        .chat-topbar { padding: 12px 20px; background: #1e293b; border-bottom: 1px solid #334155; display: flex; align-items: center; gap: 12px; font-weight: bold; }
+        .messages-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .message { max-width: 75%; padding: 10px 14px; border-radius: 12px; line-height: 1.5; font-size: 0.9rem; word-break: break-word; }
+        .message.incoming { background: #1e293b; border: 1px solid #334155; align-self: flex-start; border-top-right-radius: 2px; }
+        .message.outgoing { background: #2563eb; color: white; align-self: flex-end; border-top-left-radius: 2px; }
+        .message-time { font-size: 0.7rem; color: #94a3b8; text-align: left; margin-top: 4px; }
+        .chat-footer { padding: 12px 20px; background: #1e293b; border-top: 1px solid #334155; display: flex; gap: 10px; }
+        input, button { padding: 10px 15px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 0.9rem; outline: none; }
+        input { flex: 1; }
+        button { background: #3b82f6; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #1d4ed8; }
+        pre { background: #050811; padding: 8px; border-radius: 6px; overflow-x: auto; font-family: monospace; font-size: 0.8rem; margin-top: 5px; border: 1px solid #1e293b; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">OTP Live ✈️</div>
+        <ul class="chat-list" id="chatList"></ul>
+    </div>
+    <div class="main-chat">
+        <div class="chat-topbar" id="chatTopbar">
+            <div class="chat-avatar" id="currentAvatar" style="width:35px;height:35px;font-size:0.9rem;">🤖</div>
+            <span id="currentChatName">اختر محادثة...</span>
+        </div>
+        <div class="messages-container" id="messagesContainer"></div>
+        <div class="chat-footer">
+            <input type="text" id="messageInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter')sendMessage()">
+            <button onclick="sendMessage()">إرسال</button>
+        </div>
+    </div>
+    <script>
+        const BASE='/api/panel';
+        let chatsData=JSON.parse(localStorage.getItem('tg_state'))||{'number_bot':{name:'NUMBER BOT 🤖',avatar:'🤖',preview:'بوت الأرقام',messages:[{sender:'incoming',text:'أهلاً! اكتب services للخدمات أو request لطلب رقم.',time:'الآن'}]},'otp_group':{name:'OTP GROUP 👥',avatar:'👥',preview:'Live OTP',messages:[{sender:'incoming',text:'مرحباً! اكتب أي حاجة لعرض الأكواد.',time:'الآن'}]}};
+        let active='number_bot';
+        function save(){localStorage.setItem('tg_state',JSON.stringify(chatsData));}
+        function render(){
+            document.getElementById('chatList').innerHTML='';
+            for(let id in chatsData){
+                let c=chatsData[id];
+                document.getElementById('chatList').innerHTML+=`<li class="chat-list-item ${id===active?'active':''}" onclick="sw('${id}')"><div class="chat-avatar">${c.avatar}</div><div class="chat-info"><div class="chat-name">${c.name}</div><div class="chat-preview">${c.preview}</div></div></li>`;
+            }
+        }
+        function sw(id){
+            active=id;render();
+            let c=chatsData[id];
+            document.getElementById('currentChatName').innerText=c.name;
+            document.getElementById('currentAvatar').innerText=c.avatar;
+            let mc=document.getElementById('messagesContainer');mc.innerHTML='';
+            c.messages.forEach(m=>{mc.innerHTML+=`<div class="message ${m.sender}">${m.text}<div class="message-time">${m.time}</div></div>`;});
+            mc.scrollTop=mc.scrollHeight;
+        }
+        function add(text,sender){
+            let t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+            chatsData[active].messages.push({sender,text,time:t});
+            chatsData[active].preview=text.replace(/<[^>]*>/g,'').substring(0,30);
+            save();sw(active);
+        }
+        async function sendMessage(){
+            let inp=document.getElementById('messageInput'),txt=inp.value.trim();if(!txt)return;
+            add(txt,'outgoing');inp.value='';
+            let l=txt.toLowerCase();
+            setTimeout(async()=>{
+                try{
+                    if(active==='number_bot'){
+                        if(l.includes('services')||l.includes('خدمات')){
+                            let r=await fetch(BASE+'/api/services'),d=await r.json();
+                            if(d.success)add('<b>الخدمات:</b><pre>'+d.services.map(s=>s.name+': '+s.count).join('\n')+'</pre>','incoming');
+                            else add('❌ فشل','incoming');
+                        }else if(l.includes('request')||l.includes('طلب')){
+                            add('⏳ جاري طلب رقم...','incoming');
+                            let r=await fetch(BASE+'/api/request_number',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:'whatsapp',country:'MZ'})}),d=await r.json();
+                            if(d.success)add(`✅ رقم: <code>${d.number}</code>`,'incoming');
+                            else add('❌ '+ (d.error||'فشل'),'incoming');
+                        }else if(l.includes('my')||l.includes('أرقامي')){
+                            let r=await fetch(BASE+'/api/my_numbers'),d=await r.json();
+                            if(d.success&&d.numbers.length>0)add('<b>أرقامك:</b><pre>'+d.numbers.map(n=>n.number+' | '+n.service).join('\n')+'</pre>','incoming');
+                            else add('⚠️ لا توجد أرقام','incoming');
+                        }else{
+                            add('📋 <code>services</code> | <code>request</code> | <code>my numbers</code>','incoming');
+                        }
+                    }else if(active==='otp_group'){
+                        let r=await fetch(BASE+'/api/otp?count=5'),d=await r.json();
+                        add('<b>أحدث OTP:</b><pre>'+d.map(i=>i[0]+' | '+i[1]+' | '+i[2].substring(0,30)).join('\n')+'</pre>','incoming');
+                    }
+                }catch(e){add('❌ خطأ: '+e.message,'incoming');}
+            },300);
+        }
+        window.onload=()=>sw('number_bot');
+    </script>
+</body>
+</html>
