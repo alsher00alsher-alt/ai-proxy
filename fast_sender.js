@@ -14,8 +14,6 @@ const rl = readline.createInterface({
 
 const question = (query) => new Promise((resolve) => rl.question(query, resolve));
 
-let lastTargetNumber = "";
-
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
     const { version } = await fetchLatestBaileysVersion();
@@ -23,22 +21,21 @@ async function startBot() {
     const sock = makeWASocket({
         version,
         auth: state,
-        printQRInTerminal: false,
+        printQRInTerminal: false, // تم تعطيل الـ QR Code
         logger: pino({ level: 'silent' }),
         browser: ["Ubuntu", "Chrome", "20.0.0"],
-        syncFullHistory: false,
-        msgRetryCounterCache: new Map(),
-        defaultQueryTimeoutMs: undefined
+        syncFullHistory: false
     });
 
+    // طلب كود الربط برقم الهاتف إذا كان الحساب جديداً (غير مسجل دخول)
     if (!sock.authState.creds.registered) {
         setTimeout(async () => {
             console.log("\n⚠️ أنت غير متصل حالياً.");
-            const phoneNumber = await question('📱 أدخل رقم هاتفك بصيغة الدولة (مثال: 201012345678): ');
+            const phoneNumber = await question('📱 أدخل رقم هاتفك (الخاص بحسابك الذي سيرسل الرسائل) بصيغة الدولة (مثال: 201012345678): ');
             
             try {
-                const cleanPhone = phoneNumber.replace(/\D/g, ''); 
-                const code = await sock.requestPairingCode(cleanPhone);
+                // طلب كود الربط
+                const code = await sock.requestPairingCode(phoneNumber.trim());
                 console.log(`\n🔑 كود الربط الخاص بك هو: ${code.match(/.{1,4}/g).join('-')}`);
                 console.log('يرجى فتح الواتساب -> الأجهزة المرتبطة -> ربط جهاز -> "الربط باستخدام رقم الهاتف بدلاً من ذلك" وإدخال الكود أعلاه.\n');
             } catch (error) {
@@ -68,133 +65,52 @@ async function startBot() {
             console.log('✅ تم اتصال الواتساب بنجاح!');
             console.log('==================================================\n');
             
-            showMenu(sock);
-        }
-    });
-
-    // مراقبة الرسائل لاكتشاف الأمر (سواء بـ "ارسل" أو "ابعت")
-    sock.ev.on('messages.upsert', async m => {
-        const msg = m.messages[0];
-        if (!msg.message) return;
-
-        const from = msg.key.remoteJid;
-        const isMe = msg.key.fromMe;
-        const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
-
-        if (!text || !isMe) return;
-
-        // تدعم الصيغتين: "ارسل 100 رسالة بكلمة محمد" أو "ابعت 4000 رسالة بكلمة محمد"
-        const commandRegex = /^(ارسل|ابعت)\s+(\d+)\s+رسالة\s+بكلمة\s+(.+)$/i;
-        const match = text.match(commandRegex);
-
-        if (match) {
-            const count = parseInt(match[2]);
-            const spamText = match[3].trim();
-            const targetDisplay = from.split('@')[0];
-
-            console.log(`\n[أمر عن بُعد] جاري إرسال ${count} رسالة إلى ${targetDisplay}...\n`);
-
-            const startTime = Date.now();
-            
-            // نظام إرسال متطور لتفادي الحظر وأخطاء السيرفر عند الأعداد الكبيرة (مثل 4000 رسالة)
-            const batchSize = 30; // إرسال دفعات سريعة لتجنب سقوط الـ Socket
-            for (let i = 0; i < count; i += batchSize) {
-                const currentBatchSize = Math.min(batchSize, count - i);
-                const promises = [];
-
-                for (let j = 0; j < currentBatchSize; j++) {
-                    const msgIndex = i + j + 1;
-                    promises.push(
-                        sock.sendMessage(from, { text: spamText })
-                            .then(() => console.log(`[✔] تم إرسال الرسالة (${msgIndex}/${count})`))
-                            .catch(() => console.log(`[✔] تم إرسال الرسالة (${msgIndex}/${count})`)) // تجاوز الأخطاء الوهمية لضمان استمرار العلامة الخضراء
-                    );
-                }
-
-                await Promise.all(promises);
-            }
-
-            const endTime = Date.now();
-            console.log(`\n✨ تمت عملية الإرسال بنجاح في ${(endTime - startTime) / 1000} ثانية!\n`);
-            
-            console.log("اضغط Enter للعودة للقائمة...");
+            runInteractivePrompt(sock);
         }
     });
 }
 
-async function showMenu(sock) {
-    console.log('\n--- القائمة ---');
-    console.log('1. إرسال رسائل لنفس الرقم الأخير');
-    console.log('2. إرسال رسائل لرقم جديد');
-    console.log('3. خروج');
-    const choice = await question('👉 اختر من القائمة (1/2/3): ');
+async function runInteractivePrompt(sock) {
+    try {
+        const messageText = await question('💬 ارسل الرسالة التي تريدها: ');
+        let rawNumber = await question('📱 ارسل الرقم المستهدف بصيغة الدولة (مثال: 201012345678): ');
+        const countInput = await question('🔢 عدد الرسائل: ');
 
-    if (choice === '1') {
-        if (!lastTargetNumber) {
-            console.log('⚠️ لا يوجد رقم سابق! جاري التحويل لرقم جديد...');
-            await sendToNewNumber(sock);
-        } else {
-            await sendToSameNumber(sock);
+        let targetNumber = rawNumber.trim();
+        if (!targetNumber.includes('@s.whatsapp.net')) {
+            targetNumber = targetNumber + '@s.whatsapp.net';
         }
-    } else if (choice === '2') {
-        await sendToNewNumber(sock);
-    } else if (choice === '3') {
-        console.log('👋 إلى اللقاء!');
-        process.exit(0);
-    } else {
-        console.log('❌ اختيار خاطئ. حاول مرة أخرى.');
-        showMenu(sock);
-    }
-}
 
-async function sendToSameNumber(sock) {
-    console.log(`\n🎯 الرقم المستهدف: ${lastTargetNumber.replace('@s.whatsapp.net', '')}`);
-    const messageText = await question('💬 ارسل الرسالة التي تريدها: ');
-    const countInput = await question('🔢 عدد الرسائل: ');
-    const count = parseInt(countInput) || 1;
+        const count = parseInt(countInput) || 1;
 
-    await executeSpam(sock, lastTargetNumber, messageText, count);
-}
+        console.log(`\n🚀 جاري إرسال ${count} رسالة إلى ${rawNumber} بسرعة فائقة...\n`);
 
-async function sendToNewNumber(sock) {
-    let rawNumber = await question('\n📱 ارسل الرقم المستهدف بصيغة الدولة (مثال: 201012345678): ');
-    
-    let cleanNumber = rawNumber.replace(/\D/g, ''); 
-    lastTargetNumber = cleanNumber + '@s.whatsapp.net';
-
-    const messageText = await question('💬 ارسل الرسالة التي تريدها: ');
-    const countInput = await question('🔢 عدد الرسائل: ');
-    const count = parseInt(countInput) || 1;
-
-    await executeSpam(sock, lastTargetNumber, messageText, count);
-}
-
-async function executeSpam(sock, target, text, count) {
-    const targetDisplay = target.split('@')[0];
-    console.log(`\n🚀 جاري إرسال ${count} رسالة إلى ${targetDisplay} بسرعة فائقة...\n`);
-    const startTime = Date.now();
-
-    const batchSize = 30;
-    for (let i = 0; i < count; i += batchSize) {
-        const currentBatchSize = Math.min(batchSize, count - i);
+        const startTime = Date.now();
         const promises = [];
 
-        for (let j = 0; j < currentBatchSize; j++) {
-            const msgIndex = i + j + 1;
+        // إنشاء وعود إرسال الرسائل في نفس اللحظة
+        for (let i = 1; i <= count; i++) {
             promises.push(
-                sock.sendMessage(target, { text: text })
-                    .then(() => console.log(`[✔] تم إرسال الرسالة (${msgIndex}/${count})`))
-                    .catch(() => console.log(`[✔] تم إرسال الرسالة (${msgIndex}/${count})`))
+                sock.sendMessage(targetNumber, { text: messageText })
+                    .then(() => console.log(`[✔] تم إرسال الرسالة (${i}/${count})`))
+                    .catch(err => console.log(`[❌] فشل إرسال الرسالة (${i}): ${err.message}`))
             );
         }
 
+        // الانتظار حتى يتم الإرسال بالكامل
         await Promise.all(promises);
+        
+        const endTime = Date.now();
+        console.log(`\n✨ تمت عملية الإرسال بنجاح في ${(endTime - startTime) / 1000} ثانية!`);
+
+        rl.close();
+        process.exit(0);
+
+    } catch (err) {
+        console.error('❌ حدث خطأ:', err.message);
+        rl.close();
+        process.exit(1);
     }
-    
-    const endTime = Date.now();
-    console.log(`\n✨ تمت عملية الإرسال بنجاح في ${(endTime - startTime) / 1000} ثانية!`);
-    
-    showMenu(sock);
 }
 
 startBot();
