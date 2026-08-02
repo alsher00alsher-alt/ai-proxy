@@ -1,13 +1,6 @@
 {
-  "functions": {
-    "api/numberproxy.js": {
-      "memory": 128,
-      "maxDuration": 30
-    }
-  },
+  "version": 2,
   "rewrites": [
-    { "source": "/api/numberproxy", "destination": "/api/numberproxy" },
-    { "source": "/number", "destination": "/public/number.html" },
-    { "source": "/number.html", "destination": "/public/number.html" }
+    { "source": "/api/panel/(.*)", "destination": "/api/panel" }
   ]
 }
