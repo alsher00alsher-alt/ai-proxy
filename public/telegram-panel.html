@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Live</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a1a; height: 100vh; overflow: hidden; }
+        
+        /* حاوية التطبيق */
+        .app { display: flex; height: 100vh; }
+        
+        /* القائمة الجانبية */
+        .sidebar { width: 320px; background: #212121; border-left: 1px solid #333; flex-shrink: 0; }
+        .sidebar-header { padding: 15px; background: #2a2a2a; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; }
+        .sidebar-header span { color: #fff; font-weight: 600; font-size: 16px; }
+        .chat-list { overflow-y: auto; height: calc(100vh - 60px); }
+        .chat-item { display: flex; align-items: center; padding: 12px 15px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #2a2a2a; }
+        .chat-item:hover { background: #2a2a2a; }
+        .chat-item.active { background: #2e7d32; }
+        .chat-avatar { width: 50px; height: 50px; border-radius: 50%; margin-left: 12px; background: #555; overflow: hidden; flex-shrink: 0; }
+        .chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .chat-info { flex: 1; min-width: 0; }
+        .chat-name { color: #fff; font-size: 15px; font-weight: 500; }
+        .chat-preview { color: #999; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
+
+        /* منطقة الشات */
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #0d0d0d; position: relative; }
+        .chat-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><pattern id="p" patternUnits="userSpaceOnUse" width="50" height="50"><circle cx="25" cy="25" r="1" fill="%23333"/></pattern><rect width="100" height="100" fill="%23url(%23p)"/></svg>'); opacity: 0.5; }
+        .chat-header { padding: 12px 20px; background: #212121; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+        .chat-header .avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+        .chat-header .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .chat-header .name { color: #fff; font-weight: 600; font-size: 15px; }
+        .chat-header .status { color: #4caf50; font-size: 12px; }
+
+        /* الرسايل */
+        .messages { flex: 1; overflow-y: auto; padding: 20px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 8px; }
+        .msg { max-width: 70%; padding: 10px 15px; border-radius: 12px; position: relative; word-wrap: break-word; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .msg-left { align-self: flex-start; background: #1e3a5f; color: #fff; border-bottom-right-radius: 4px; }
+        .msg-right { align-self: flex-end; background: #1b5e20; color: #fff; border-bottom-left-radius: 4px; }
+        .msg-otp { align-self: flex-start; background: #37474f; color: #fff; border-bottom-right-radius: 4px; border-right: 3px solid #ff9800; }
+        .msg .sender { font-size: 11px; color: #90caf9; margin-bottom: 3px; font-weight: 600; }
+        .msg .text { font-size: 14px; line-height: 1.5; }
+        .msg .time { font-size: 10px; color: #aaa; margin-top: 4px; text-align: left; }
+        .msg .code-highlight { background: #ff9800; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: bold; display: inline-block; margin: 5px 0; }
+        .msg .number-highlight { color: #4fc3f7; font-weight: bold; }
+        .msg .service-highlight { color: #ff5252; font-weight: bold; }
+
+        /* أزرار البوت */
+        .bot-buttons { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 20px; position: relative; z-index: 1; }
+        .bot-btn { background: #1e3a5f; color: #fff; border: 1px solid #2e5a7f; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .bot-btn:hover { background: #2e5a7f; }
+
+        /* شريط الإدخال */
+        .input-bar { padding: 12px 20px; background: #212121; border-top: 1px solid #333; display: flex; gap: 10px; position: relative; z-index: 1; }
+        .input-bar input { flex: 1; background: #333; border: none; padding: 12px 18px; border-radius: 25px; color: #fff; font-size: 14px; outline: none; }
+        .input-bar button { background: #1e3a5f; color: #fff; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 600; }
+
+        /* إخفاء */
+        .hidden { display: none !important; }
+
+        /* سكرول */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+
+        /* موبايل */
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; position: absolute; z-index: 10; height: 100vh; }
+            .sidebar.hidden { display: none !important; }
+            .chat-area { width: 100%; }
+            .back-btn { display: block !important; }
+        }
+        .back-btn { display: none; background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- القائمة الجانبية -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header"><span>💬 OTP Live</span></div>
+            <div class="chat-list">
+                <div class="chat-item active" onclick="openChat('bot')">
+                    <div class="chat-avatar"><img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="Bot"></div>
+                    <div class="chat-info"><div class="chat-name">🤖 NUMBER BOT</div><div class="chat-preview">بوت الخدمات والأرقام</div></div>
+                </div>
+                <div class="chat-item" onclick="openChat('group')">
+                    <div class="chat-avatar"><img src="https://cdn-icons-png.flaticon.com/512/4712/4712100.png" alt="Group"></div>
+                    <div class="chat-info"><div class="chat-name">👥 OTP GROUP</div><div class="chat-preview">Live OTP Messages</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- منطقة الشات -->
+        <div class="chat-area" id="chatArea">
+            <div class="chat-bg"></div>
+            <div class="chat-header" id="chatHeader">
+                <button class="back-btn" onclick="showSidebar()">←</button>
+                <div class="avatar"><img id="chatAvatar" src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt=""></div>
+                <div><div class="name" id="chatName">🤖 NUMBER BOT</div><div class="status" id="chatStatus">online</div></div>
+            </div>
+            <div class="messages" id="messages"></div>
+            <div class="bot-buttons" id="botButtons"></div>
+            <div class="input-bar" id="inputBar">
+                <input type="text" id="msgInput" placeholder="رسالة..." onkeypress="if(event.key==='Enter')sendMsg()">
+                <button onclick="sendMsg()">إرسال</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="sendSound" preload="auto"><source src="https://www.soundjay.com/buttons/sounds/button-09.mp3" type="audio/mpeg"></audio>
+    <audio id="recvSound" preload="auto"><source src="https://www.soundjay.com/buttons/sounds/button-07.mp3" type="audio/mpeg"></audio>
+
+    <script>
+        // Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5LuJwdTckc6V2zClBeRiozM_tdMx5fAQ",
+            projectId: "otp-5acda",
+            databaseURL: "https://otp-5acda-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // NumberPanel API
+        const API_KEY = 'np_live_p7ixAR9OQq305WZlIocWG-lMEHqOjNtoQ8-WWHYQJa8';
+        const API_URL = 'https://numberpanel.tech';
+        
+        let currentChat = 'bot';
+        let currentService = '';
+        let currentCountry = '';
+        let myName = 'أنا';
+        let knownOTPs = new Set();
+
+        // فتح شات
+        function openChat(type) {
+            currentChat = type;
+            document.getElementById('messages').innerHTML = '';
+            document.getElementById('botButtons').innerHTML = '';
+            
+            if (type === 'bot') {
+                document.getElementById('chatAvatar').src = 'https://cdn-icons-png.flaticon.com/512/4712/4712027.png';
+                document.getElementById('chatName').textContent = '🤖 NUMBER BOT';
+                document.getElementById('chatStatus').textContent = 'bot';
+                document.getElementById('inputBar').classList.remove('hidden');
+                document.getElementById('botButtons').classList.remove('hidden');
+                showBotStart();
+            } else {
+                document.getElementById('chatAvatar').src = 'https://cdn-icons-png.flaticon.com/512/4712/4712100.png';
+                document.getElementById('chatName').textContent = '👥 OTP GROUP';
+                document.getElementById('chatStatus').textContent = 'live';
+                document.getElementById('inputBar').classList.remove('hidden');
+                document.getElementById('botButtons').classList.add('hidden');
+                loadGroupMessages();
+                startOTPLive();
+            }
+            
+            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.chat-item')[type === 'bot' ? 0 : 1].classList.add('active');
+            
+            if (window.innerWidth <= 768) document.getElementById('sidebar').classList.add('hidden');
+        }
+
+        function showSidebar() { document.getElementById('sidebar').classList.remove('hidden'); }
+
+        // بوت START
+        function showBotStart() {
+            addBotMsg('👋 أهلًا بك في NUMBER BOT!\n\nأنا بوت الأرقام الافتراضية، أقدر أوفرلك أرقام لتفعيل حساباتك.\n\nاضغط على الزر لبدء:');
+            document.getElementById('botButtons').innerHTML = '<button class="bot-btn" onclick="startBot()">▶️ START</button>';
+            document.getElementById('inputBar').classList.add('hidden');
+        }
+
+        // بدء البوت
+        async function startBot() {
+            addBotMsg('⏳ جاري تحميل الخدمات...');
+            document.getElementById('botButtons').innerHTML = '';
+            document.getElementById('inputBar').classList.add('hidden');
+            
+            try {
+                const res = await fetch(`${API_URL}/api/services`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    addBotMsg('📋 *الخدمات المتاحة:*\nاختر الخدمة اللي عايزها:');
+                    let btns = '';
+                    data.services.slice(0, 8).forEach(s => {
+                        btns += `<button class="bot-btn" onclick="selectService('${s.key}','${s.name}')">${s.name} (${s.count})</button>`;
+                    });
+                    document.getElementById('botButtons').innerHTML = btns;
+                }
+            } catch(e) {
+                addBotMsg('❌ حدث خطأ، حاول مرة تانية');
+            }
+        }
+
+        // اختيار خدمة
+        async function selectService(key, name) {
+            currentService = key;
+            addUserMsg(`📱 ${name}`);
+            addBotMsg('⏳ جاري تحميل الدول...');
+            document.getElementById('botButtons').innerHTML = '';
+            
+            try {
+                const res = await fetch(`${API_URL}/api/countries?service=${key}`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    addBotMsg(`🌍 *الدول المتاحة لـ ${name}:*\nاختر الدولة:`);
+                    let btns = '';
+                    data.countries.slice(0, 10).forEach(c => {
+                        btns += `<button class="bot-btn" onclick="selectCountry('${c.name}','${c.flag}')">${c.flag} ${c.name} (${c.count})</button>`;
+                    });
+                    document.getElementById('botButtons').innerHTML = btns;
+                }
+            } catch(e) {
+                addBotMsg('❌ حدث خطأ');
+            }
+        }
+
+        // اختيار دولة
+        async function selectCountry(country, flag) {
+            currentCountry = country;
+            addUserMsg(`🌍 ${flag} ${country}`);
+            addBotMsg('⏳ جاري جلب رقم...');
+            document.getElementById('botButtons').innerHTML = '';
+            
+            // نجيب رقم من OTP العام
+            try {
+                const res = await fetch(`${API_URL}/api/otp?count=20`);
+                const data = await res.json();
+                const filtered = data.filter(item => item[0].toLowerCase().includes(currentService.toLowerCase()));
+                
+                if (filtered.length > 0) {
+                    const num = filtered[0][1];
+                    addBotMsg(`📱 *الرقم:* \`${num}\`\n📌 ${flag} ${country}\n🔹 ${filtered[0][0]}\n\nكود التفعيل هيوصلك هنا تلقائي.`);
+                    
+                    document.getElementById('botButtons').innerHTML = `
+                        <button class="bot-btn" onclick="selectCountry('${country}','${flag}')">🔄 تغيير الرقم</button>
+                        <button class="bot-btn" onclick="startBot()">🌍 تغيير الدولة</button>
+                        <button class="bot-btn" onclick="checkOTP('${num}')">📩 جلب الكود</button>
+                    `;
+                    document.getElementById('inputBar').classList.add('hidden');
+                } else {
+                    addBotMsg('❌ لا توجد أرقام متاحة حاليًا');
+                    document.getElementById('botButtons').innerHTML = '<button class="bot-btn" onclick="startBot()">🔙 رجوع</button>';
+                }
+            } catch(e) {
+                addBotMsg('❌ حدث خطأ');
+            }
+        }
+
+        // جلب كود OTP
+        async function checkOTP(number) {
+            addBotMsg('⏳ جاري البحث عن كود التفعيل...');
+            try {
+                const res = await fetch(`${API_URL}/api/otp?count=30`);
+                const data = await res.json();
+                const found = data.find(item => item[1] === number);
+                
+                if (found && found[2]) {
+                    const codeMatch = found[2].match(/\d{4,8}/);
+                    const code = codeMatch ? codeMatch[0] : found[2];
+                    addBotMsg(`✅ *تم العثور على الكود!*\n\n🔑 الكود: \`${code}\`\n📱 الرقم: \`${number}\`\n📋 الخدمة: ${found[0]}`);
+                } else {
+                    addBotMsg('⏳ لم يصل الكود بعد، جرب مرة تانية بعد شوية');
+                }
+            } catch(e) {
+                addBotMsg('❌ حدث خطأ');
+            }
+        }
+
+        // إضافة رسالة بوت
+        function addBotMsg(text) {
+            const msgs = document.getElementById('messages');
+            msgs.innerHTML += `
+                <div class="msg msg-left">
+                    <div class="text">${text.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<b>$1</b>').replace(/`(.*?)`/g, '<code style="background:#333;padding:2px 6px;border-radius:3px;">$1</code>')}</div>
+                    <div class="time">${new Date().toLocaleTimeString('ar-EG')}</div>
+                </div>`;
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        // إضافة رسالة مستخدم
+        function addUserMsg(text) {
+            const msgs = document.getElementById('messages');
+            msgs.innerHTML += `
+                <div class="msg msg-right">
+                    <div class="text">${text}</div>
+                    <div class="time">${new Date().toLocaleTimeString('ar-EG')}</div>
+                </div>`;
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        // === OTP GROUP ===
+        function loadGroupMessages() {
+            db.ref('messages').on('child_added', (snap) => {
+                const msg = snap.val();
+                displayGroupMsg(msg);
+            });
+        }
+
+        function displayGroupMsg(msg) {
+            const msgs = document.getElementById('messages');
+            if (currentChat !== 'group') return;
+            
+            const isMe = msg.sender === myName;
+            const cls = msg.type === 'otp' ? 'msg-otp' : (isMe ? 'msg-right' : 'msg-left');
+            
+            let content = '';
+            if (msg.type === 'otp') {
+                content = `<span class="service-highlight">${msg.service || ''}</span><br>
+                           <span class="number-highlight">${msg.number || ''}</span><br>
+                           <span class="code-highlight">${msg.code || ''}</span><br>
+                           <small>${msg.text || ''}</small>`;
+            } else {
+                content = msg.text || '';
+            }
+            
+            msgs.innerHTML += `
+                <div class="msg ${cls}">
+                    ${!isMe && msg.type !== 'otp' ? `<div class="sender">${msg.sender || 'مستخدم'}</div>` : ''}
+                    ${msg.type === 'otp' ? '<div class="sender">📩 OTP Live</div>' : ''}
+                    <div class="text">${content}</div>
+                    <div class="time">${msg.time || ''}</div>
+                </div>`;
+            msgs.scrollTop = msgs.scrollHeight;
+            document.getElementById('recvSound').play().catch(()=>{});
+        }
+
+        // OTP Live
+        async function startOTPLive() {
+            setInterval(async () => {
+                if (currentChat !== 'group') return;
+                try {
+                    const res = await fetch(`${API_URL}/api/otp?count=10`);
+                    const data = await res.json();
+                    
+                    data.forEach(item => {
+                        const key = `${item[1]}-${item[2]}`;
+                        if (!knownOTPs.has(key)) {
+                            knownOTPs.add(key);
+                            const otpMsg = {
+                                type: 'otp',
+                                service: item[0],
+                                number: item[1],
+                                code: item[2].match(/\d{4,8}/)?.[0] || item[2],
+                                text: item[2].slice(0, 100),
+                                time: new Date().toLocaleTimeString('ar-EG'),
+                                sender: 'OTP'
+                            };
+                            db.ref('messages').push(otpMsg);
+                        }
+                    });
+                } catch(e) {}
+            }, 3000);
+        }
+
+        // إرسال رسالة
+        function sendMsg() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            if (currentChat === 'group') {
+                db.ref('messages').push({
+                    type: 'user',
+                    text: text,
+                    sender: myName,
+                    time: new Date().toLocaleTimeString('ar-EG')
+                });
+                document.getElementById('sendSound').play().catch(()=>{});
+            } else {
+                addUserMsg(text);
+                if (text.toLowerCase() === 'start' || text === 'ابدأ') startBot();
+            }
+            
+            input.value = '';
+        }
+
+        // بدء
+        openChat('bot');
+    </script>
+</body>
+</html>
