@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram & NumberPanel Bot</title>
+    <title>Telegram Interface - NumberPanel</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,14 +35,15 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
         .message {
-            max-width: 80%;
-            padding: 12px 18px;
-            border-radius: 10px;
-            line-height: 1.5;
+            max-width: 85%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            line-height: 1.6;
             word-break: break-word;
+            font-size: 19px;
         }
         .message.user {
             background: #2b5278;
@@ -87,41 +88,52 @@
 <body>
 
     <div class="container">
-        <header>Telegram Bot & NumberPanel</header>
+        <header id="panelTitle">NUMBER BOT 🤖</header>
         
         <div class="chat-box" id="chatBox">
-            <div class="message bot">أهلاً بك! اضغط على Start أو أرسل رسالة لبدء التفاعل مع الأرقام والخدمات.</div>
+            <div class="message bot">👋 أهلاً بك في NUMBER BOT!<br>أنا بوت الأرقام الافتراضية.<br>اكتب <b>START</b> للبدء واستعراض الخدمات المتاحة.</div>
         </div>
 
         <div class="input-panel">
             <input type="text" id="userInput" placeholder="اكتب رسالتك هنا...">
-            <button onclick="sendMessage()">إرسال</button>
+            <button onclick="handleUserMessage()">إرسال</button>
         </div>
     </div>
 
     <script>
-        function sendMessage() {
-            const input = document.getElementById('userInput');
-            const chatBox = document.getElementById('chatBox');
-            if (!input.value.trim()) return;
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
 
-            const userMsg = document.createElement('div');
-            userMsg.className = 'message user';
-            userMsg.textContent = input.value;
-            chatBox.appendChild(userMsg);
-
-            const text = input.value;
-            input.value = '';
+        function appendMessage(text, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+            msgDiv.innerHTML = text;
+            chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
-
-            setTimeout(() => {
-                const botMsg = document.createElement('div');
-                botMsg.className = 'message bot';
-                botMsg.textContent = "رد البوت على: " + text;
-                chatBox.appendChild(botMsg);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }, 500);
         }
+
+        function handleUserMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            userInput.value = '';
+
+            if (text.toUpperCase() === 'START' || text.includes('بدء')) {
+                appendMessage('⏳ جاري الاتصال بالخادم وجلب الخدمات...', 'bot');
+                setTimeout(() => {
+                    appendMessage('✅ تم الاتصال بنجاح!<br>الخدمات المتاحة حالياً:<br>1️⃣ WhatsApp<br>2️⃣ Telegram<br>3️⃣ Google<br><br>أرسل رقم الخدمة أو اسمها لطلب رقم.', 'bot');
+                }, 1000);
+            } else {
+                appendMessage('⚠️ تم استلام طلبك: ' + text + '<br>جارٍ معالجة الرقم من الخادم...', 'bot');
+            }
+        }
+
+        userInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                handleUserMessage();
+            }
+        });
     </script>
 </body>
 </html>
