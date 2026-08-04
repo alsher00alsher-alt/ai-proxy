@@ -2,95 +2,74 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>💬 Chat</title>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Chat Viewer</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0a0f;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
-        .chat-container{width:100%;max-width:550px;background:#111118;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;height:90vh;box-shadow:0 10px 40px rgba(0,0,0,0.6)}
-        .chat-header{background:#000;padding:12px 20px;font-weight:bold;font-size:18px;border-bottom:1px solid #333;display:flex;align-items:center;gap:8px}
-        .chat-header .dot{width:10px;height:10px;background:#2ed573;border-radius:50%;animation:pulse 1.5s infinite}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-        .messages-box{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:8px}
-        .message{max-width:85%;padding:10px 14px;border-radius:12px;word-wrap:break-word;animation:fadeIn 0.3s}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-        .message.others{align-self:flex-start;background:#1e1e2a;border-bottom-right-radius:4px}
-        .message.mine{align-self:flex-end;background:#1e90ff;border-bottom-left-radius:4px}
-        .msg-name{font-size:11px;color:#d4af37;margin-bottom:3px;font-weight:bold}
-        .msg-text{font-size:14px;color:#ddd}
-        .msg-time{font-size:9px;color:#888;margin-top:4px}
-        .input-area{display:flex;gap:8px;padding:10px 15px;background:#000;border-top:1px solid #333}
-        .input-area input{flex:1;padding:12px;background:#1a1a22;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;outline:none}
-        .input-area input:focus{border-color:#1e90ff}
-        .btn-send{background:#1e90ff;color:#fff;border:none;padding:12px 18px;border-radius:8px;font-weight:bold;cursor:pointer}
-        .btn-send:active{transform:scale(0.95)}
-        .setup-panel{padding:20px;text-align:center;background:#000}
-        .setup-panel input{width:100%;padding:12px;background:#1a1a22;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;outline:none;margin-bottom:8px;text-align:center}
-        .setup-panel input:focus{border-color:#d4af37}
-        .btn-join{width:100%;padding:12px;background:#d4af37;color:#000;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:16px}
+        body{font-family:sans-serif;background:#0a0a0a;color:#fff;display:flex;height:100vh}
+        .sidebar{width:280px;background:#111;padding:15px;overflow-y:auto;border-left:1px solid #222}
+        .sidebar h3{color:#25D366;margin-bottom:10px}
+        .user{cursor:pointer;padding:10px;background:#1a1a1a;margin:5px 0;border-radius:8px}
+        .user:hover{background:#222}.user.active{background:#25D366;color:#000}
+        .main{flex:1;display:flex;flex-direction:column}
+        .header{padding:15px;background:#111;border-bottom:1px solid #222}
+        .header h2{color:#25D366}
+        .msgs{flex:1;overflow-y:auto;padding:15px}
+        .msg{padding:12px;margin:5px 0;border-radius:12px;max-width:80%}
+        .msg.in{background:#1a1a1a}.msg.out{background:#005c4b;margin-right:0;margin-left:auto}
+        .sender{color:#25D366;font-weight:bold;font-size:14px}
+        .text{word-wrap:break-word;margin:5px 0}
+        .time{font-size:10px;color:#888}
     </style>
 </head>
 <body>
-<div class="chat-container" id="chatApp">
-    <div id="setupPanel" class="setup-panel">
-        <h2 style="margin-bottom:15px;color:#d4af37;">💬 دخول الشات</h2>
-        <input type="text" id="nameInput" placeholder="اكتب اسمك" maxlength="20">
-        <button class="btn-join" onclick="joinChat()">دخول</button>
+    <div class="sidebar">
+        <h3>📱 Online Users</h3>
+        <div id="users"><p style="color:#888">Waiting...</p></div>
     </div>
-    <div id="chatPanel" style="display:none;display:flex;flex-direction:column;height:100%;">
-        <div class="chat-header"><div class="dot"></div> Chat Room</div>
-        <div class="messages-box" id="messagesBox"></div>
-        <div class="input-area">
-            <input type="text" id="msgInput" placeholder="اكتب رسالتك..." maxlength="500">
-            <button class="btn-send" onclick="sendMsg()">إرسال</button>
-        </div>
+    <div class="main">
+        <div class="header"><h2>💬 WhatsApp Chat</h2><p style="color:#888;font-size:14px" id="active">Select user</p></div>
+        <div class="msgs" id="msgs"><p style="color:#888;text-align:center;margin-top:100px">👈 Select a phone</p></div>
     </div>
-</div>
-<script>
-firebase.initializeApp({apiKey:"AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",projectId:"game-a1aca",storageBucket:"game-a1aca.firebasestorage.app",appId:"1:598280425947:android:0e4ead8d9b50cfc92157fe"});
-var db=firebase.firestore();
-var myName='';
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        const socket = io('https://ai-proxy-production-59b3.up.railway.app');
+        let active = null;
+        
+        socket.on('message', (d) => {
+            if (active && d.phone === active) addMsg(d);
+            updateUsers();
+        });
 
-function joinChat(){
-var name=document.getElementById('nameInput').value.trim();
-if(!name)return alert('اكتب اسمك');
-myName=name;
-localStorage.setItem('chatName',name);
-document.getElementById('setupPanel').style.display='none';
-document.getElementById('chatPanel').style.display='flex';
-loadMessages();
-document.getElementById('msgInput').addEventListener('keydown',function(e){if(e.key==='Enter')sendMsg();});
-}
+        function addMsg(d) {
+            const div = document.createElement('div');
+            div.className = 'msg ' + (d.type === 'out' ? 'out' : 'in');
+            div.innerHTML = `<div class="sender">👤 ${d.from}</div><div class="text">${d.text}</div><div class="time">🕒 ${new Date(d.time).toLocaleTimeString('ar-EG')}</div>`;
+            document.getElementById('msgs').appendChild(div);
+            document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
+        }
 
-var savedName=localStorage.getItem('chatName');
-if(savedName){myName=savedName;document.getElementById('setupPanel').style.display='none';document.getElementById('chatPanel').style.display='flex';loadMessages();document.getElementById('msgInput').addEventListener('keydown',function(e){if(e.key==='Enter')sendMsg();});}
+        function selectUser(p) {
+            active = p;
+            document.getElementById('active').textContent = '📱 ' + p;
+            document.getElementById('msgs').innerHTML = '';
+            fetch('https://ai-proxy-production-59b3.up.railway.app/api/messages')
+                .then(r => r.json())
+                .then(msgs => msgs.filter(m => m.phone === p).forEach(addMsg));
+        }
 
-function sendMsg(){
-var text=document.getElementById('msgInput').value.trim();
-if(!text)return;
-db.collection('chat').add({name:myName,text:text,timestamp:firebase.firestore.FieldValue.serverTimestamp()});
-document.getElementById('msgInput').value='';
-}
+        function updateUsers() {
+            fetch('https://ai-proxy-production-59b3.up.railway.app/api/users')
+                .then(r => r.json())
+                .then(u => {
+                    document.getElementById('users').innerHTML = u.map(p => 
+                        `<div class="user ${p===active?'active':''}" onclick="selectUser('${p}')">📱 ${p}</div>`
+                    ).join('') || '<p style="color:#888">No users</p>';
+                });
+        }
 
-function loadMessages(){
-db.collection('chat').orderBy('timestamp','asc').limit(100).onSnapshot(function(snap){
-var html='';
-snap.forEach(function(doc){
-var d=doc.data();
-var isMine=d.name===myName;
-var time=d.timestamp?new Date(d.timestamp.toDate()).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):'';
-html+='<div class="message '+(isMine?'mine':'others')+'">';
-if(!isMine)html+='<div class="msg-name">'+d.name+'</div>';
-html+='<div class="msg-text">'+d.text+'</div>';
-html+='<div class="msg-time">'+time+'</div></div>';
-});
-var box=document.getElementById('messagesBox');
-box.innerHTML=html;
-box.scrollTop=box.scrollHeight;
-});
-}
-</script>
+        setInterval(updateUsers, 3000);
+        updateUsers();
+    </script>
 </body>
 </html>
