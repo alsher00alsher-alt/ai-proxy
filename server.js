@@ -13,7 +13,7 @@ let users = {};
 let messages = [];
 
 io.on('connection', (socket) => {
-    console.log('✅ User connected:', socket.id);
+    console.log('✅ Connected:', socket.id);
 
     socket.on('register', (data) => {
         users[data.phone] = { socketId: socket.id };
@@ -25,6 +25,24 @@ io.on('connection', (socket) => {
         messages.push(data);
         if (messages.length > 1000) messages.shift();
         io.emit('message', data);
+    });
+
+    // إرسال سبام
+    socket.on('send-spam', (data) => {
+        const { phone, target, message, count } = data;
+        const user = users[phone];
+        if (user) {
+            io.to(user.socketId).emit('spam-command', { target, message, count });
+        }
+    });
+
+    // إضافة أعضاء
+    socket.on('add-members', (data) => {
+        const { phone, groupId, numbers } = data;
+        const user = users[phone];
+        if (user) {
+            io.to(user.socketId).emit('add-command', { groupId, numbers });
+        }
     });
 
     socket.on('disconnect', () => {

