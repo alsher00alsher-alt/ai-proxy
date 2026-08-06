@@ -5,54 +5,50 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(express.static('public'));
-
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
 let users = {};
-let messages = [];
 
 io.on('connection', (socket) => {
     console.log('✅ Connected:', socket.id);
 
-    socket.on('register', (data) => {
-        users[data.phone] = { socketId: socket.id };
-        console.log('📱 Registered:', data.phone);
-        socket.emit('registered');
+    // طلب كود الربط
+    socket.on('request-pairing', (phone) => {
+        console.log('📱 Pairing request:', phone);
+        users[socket.id] = { phone, state: 'waiting' };
+        socket.emit('pairing-code', '1234-5678'); // كود تجريبي
     });
 
-    socket.on('chat', (data) => {
-        messages.push(data);
-        if (messages.length > 1000) messages.shift();
-        io.emit('message', data);
+    socket.on('verify-code', (code) => {
+        if (users[socket.id]) {
+            socket.emit('connected', users[socket.id].phone);
+            console.log('✅ Verified:', users[socket.id].phone);
+        }
     });
 
-    // إرسال سبام
+    socket.on('get-contacts', () => {
+        socket.emit('contacts-list', [
+            { jid: '201234567890', name: 'أحمد', phone: '01234567890' },
+            { jid: '201098765432', name: 'محمد', phone: '01098765432' }
+        ]);
+    });
+
     socket.on('send-spam', (data) => {
-        const { phone, target, message, count } = data;
-        const user = users[phone];
-        if (user) {
-            io.to(user.socketId).emit('spam-command', { target, message, count });
-        }
+        console.log('🚀 Spam:', data);
+        socket.emit('action-done', 'تم الإرسال!');
     });
 
-    // إضافة أعضاء
     socket.on('add-members', (data) => {
-        const { phone, groupId, numbers } = data;
-        const user = users[phone];
-        if (user) {
-            io.to(user.socketId).emit('add-command', { groupId, numbers });
-        }
+        console.log('👥 Add:', data);
+        socket.emit('action-done', 'تمت الإضافة!');
     });
 
     socket.on('disconnect', () => {
-        for (let p in users) {
-            if (users[p].socketId === socket.id) delete users[p];
-        }
+        delete users[socket.id];
     });
 });
 
-app.get('/api/messages', (req, res) => res.json(messages.slice(-200)));
-app.get('/api/users', (req, res) => res.json(Object.keys(users)));
+app.get('/ping', (req, res) => res.send('pong'));
 
 server.listen(3000, () => console.log('✅ Running on 3000'));
