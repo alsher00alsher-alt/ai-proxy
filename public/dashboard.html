@@ -23,19 +23,27 @@ body{font-family:sans-serif;background:#0a3320;color:#fff;display:flex;height:10
 #loginBox{text-align:center;padding:50px;background:#0a3320;margin:20px auto;border-radius:20px;max-width:450px;border:2px solid #25D366}
 #loginBox h1{color:#25D366;margin-bottom:20px}
 #loginBox input{width:100%;padding:15px;font-size:18px;margin:10px 0;background:#0d4728;color:#fff;border:2px solid #1a5c3a;border-radius:10px;text-align:center}
-#loginBox button{padding:15px 40px;font-size:18px;background:#25D366;color:#000;border:none;border-radius:10px;font-weight:bold;cursor:pointer}
+#loginBox button{padding:15px 40px;font-size:18px;background:#25D366;color:#000;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin:5px}
 #error{background:#ff4444;color:#fff;padding:10px;border-radius:8px;margin:10px 0;display:none}
-#log{background:#000;color:#0f0;padding:10px;margin:10px 0;border-radius:8px;font-size:12px;max-height:200px;overflow-y:auto;text-align:left;display:none}
+#log{background:#000;color:#0f0;padding:10px;margin:10px 0;border-radius:8px;font-size:12px;max-height:150px;overflow-y:auto;text-align:left;display:none}
+.server-box{background:#0d4728;padding:15px;border-radius:10px;margin:15px 0;border:1px solid #1a5c3a}
+.server-box small{color:#888;display:block;margin-bottom:5px}
+.server-box input{width:100%!important;font-size:14px!important;padding:10px!important}
 </style>
 </head>
 <body>
 <div id="loginBox">
     <h1>📱 واتساب داشبورد</h1>
     <input type="text" id="phoneInput" placeholder="رقم الهاتف (201234567890)">
+    <div class="server-box">
+        <small>⚙️ رابط السيرفر:</small>
+        <input type="text" id="serverInput" value="http://localhost:3000" placeholder="http://localhost:3000">
+    </div>
     <button onclick="requestCode()">🔑 طلب كود الربط</button>
+    <button onclick="connectServer()" style="background:#1a5c3a;font-size:14px">🔌 اختبار الاتصال</button>
     <div id="error"></div>
     <div id="log"></div>
-    <p id="status" style="margin-top:15px;color:#25D366"></p>
+    <p id="status" style="margin-top:15px;color:#25D366;font-size:16px"></p>
 </div>
 
 <div class="sidebar" id="sidebar" style="display:none">
@@ -64,20 +72,52 @@ body{font-family:sans-serif;background:#0a3320;color:#fff;display:flex;height:10
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-const socket=io('https://ai-proxy-production-59b3.up.railway.app');
+let socket;
 let myPhone='',activeChat='';
 
-// عرض الأخطاء
-socket.on('connect_error',(e)=>{
-    showError('فشل الاتصال بالسيرفر: '+e.message);
-});
-socket.on('connect',()=>{
-    console.log('✅ متصل بالسيرفر');
-    log('✅ متصل بالسيرفر');
-});
-socket.on('error',(msg)=>{
-    showError(msg);
-});
+function connectServer(){
+    let server=document.getElementById('serverInput').value.trim();
+    if(!server)return showError('أدخل رابط السيرفر');
+    
+    document.getElementById('log').style.display='block';
+    document.getElementById('log').innerHTML='';
+    log('🔌 جاري الاتصال بـ '+server+'...');
+    
+    if(socket)socket.disconnect();
+    socket=io(server,{transports:['websocket','polling']});
+    
+    socket.on('connect',()=>{
+        log('✅ تم الاتصال!');
+        document.getElementById('serverInput').style.borderColor='#25D366';
+    });
+    socket.on('connect_error',(e)=>{
+        log('❌ فشل: '+e.message);
+        showError('فشل الاتصال: '+e.message);
+        document.getElementById('serverInput').style.borderColor='#ff4444';
+    });
+    socket.on('error',(msg)=>showError(msg));
+    socket.on('pairing-code',(code)=>{
+        document.getElementById('status').innerHTML='🔑 الكود: <b style="font-size:28px;letter-spacing:4px;background:#0d4728;padding:10px 20px;border-radius:8px;display:inline-block;margin:10px">'+code+'</b><br><small style="color:#888">افتح واتساب → الأجهزة المرتبطة → ربط برقم الهاتف</small>';
+        log('🔑 كود: '+code);
+    });
+    socket.on('whatsapp-connected',(phone)=>{
+        myPhone=phone;
+        document.getElementById('loginBox').style.display='none';
+        document.getElementById('sidebar').style.display='block';
+        document.getElementById('main').style.display='flex';
+        document.getElementById('phoneDisplay').textContent='📱 '+phone;
+        refreshContacts();
+    });
+    socket.on('contacts-list',(contacts)=>{
+        document.getElementById('contacts').innerHTML=contacts.map(c=>
+            `<div class="contact" onclick="openChat('${c.jid}','${c.name}')">👤 ${c.name}<br><small style="color:#888">${c.phone}</small></div>`
+        ).join('');
+    });
+    socket.on('chat-message',(msg)=>{
+        if(msg.jid===activeChat||msg.from===activeChat)addMsg(msg);
+    });
+    socket.on('action-done',(m)=>document.getElementById('actionStatus').textContent=m);
+}
 
 function showError(msg){
     let d=document.getElementById('error');
@@ -96,43 +136,11 @@ function log(msg){
 function requestCode(){
     let phone=document.getElementById('phoneInput').value.replace(/\D/g,'');
     if(!phone)return showError('أدخل رقم الهاتف');
+    if(!socket){connectServer();return;}
     document.getElementById('status').textContent='⏳ جاري طلب الكود...';
-    log('📱 طلب كود لـ: '+phone);
-    
     socket.emit('request-pairing',phone);
-    
-    // لو مردش خلال 10 ثواني
-    setTimeout(()=>{
-        if(!document.getElementById('status').textContent.includes('الكود')){
-            showError('السيرفر مش بيرد! تأكد من اتصال Railway');
-        }
-    },10000);
+    log('📱 طلب كود لـ: '+phone);
 }
-
-socket.on('pairing-code',(code)=>{
-    document.getElementById('status').innerHTML='🔑 الكود: <b style="font-size:24px;letter-spacing:3px">'+code+'</b><br><small>افتح واتساب → الأجهزة المرتبطة → ربط برقم الهاتف</small>';
-    log('🔑 تم استلام الكود: '+code);
-});
-
-socket.on('whatsapp-connected',(phone)=>{
-    myPhone=phone;
-    document.getElementById('loginBox').style.display='none';
-    document.getElementById('sidebar').style.display='block';
-    document.getElementById('main').style.display='flex';
-    document.getElementById('phoneDisplay').textContent='📱 '+phone;
-    log('✅ واتساب متصل: '+phone);
-    refreshContacts();
-});
-
-socket.on('contacts-list',(contacts)=>{
-    document.getElementById('contacts').innerHTML=contacts.map(c=>
-        `<div class="contact" onclick="openChat('${c.jid}','${c.name}')">👤 ${c.name}<br><small>${c.phone}</small></div>`
-    ).join('');
-});
-
-socket.on('chat-message',(msg)=>{
-    if(msg.jid===activeChat||msg.from===activeChat)addMsg(msg);
-});
 
 function addMsg(msg){
     let div=document.createElement('div');
@@ -142,14 +150,10 @@ function addMsg(msg){
     document.getElementById('messages').scrollTop=document.getElementById('messages').scrollHeight;
 }
 
-function openChat(jid,name){
-    activeChat=jid;
-    document.getElementById('chatTitle').textContent='💬 '+name;
-    document.getElementById('messages').innerHTML='';
-}
-
-function refreshContacts(){socket.emit('get-contacts')}
+function openChat(jid,name){activeChat=jid;document.getElementById('chatTitle').textContent='💬 '+name;document.getElementById('messages').innerHTML=''}
+function refreshContacts(){if(socket)socket.emit('get-contacts')}
 function sendSpam(){
+    if(!socket)return connectServer();
     let target=document.getElementById('targetInput').value;
     let msg=document.getElementById('msgInput').value;
     let count=parseInt(document.getElementById('countInput').value);
@@ -157,12 +161,12 @@ function sendSpam(){
     socket.emit('send-spam',{target,message:msg,count});
 }
 function addMembers(){
+    if(!socket)return connectServer();
     let group=prompt('معرف الجروب:');
     let nums=prompt('أرقام (بفواصل):');
     if(group&&nums)socket.emit('add-members',{group,numbers:nums.split(',')});
 }
-function getGroups(){socket.emit('get-groups')}
-socket.on('action-done',(m)=>document.getElementById('actionStatus').textContent=m);
+function getGroups(){if(socket)socket.emit('get-groups')}
 </script>
 </body>
 </html>
