@@ -2,8 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Chat + Spam</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>💬 WhatsApp Chat</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:sans-serif;background:#0a0a0a;color:#fff;display:flex;height:100vh}
@@ -20,47 +20,90 @@
         .sender{color:#25D366;font-weight:bold;font-size:14px}
         .text{word-wrap:break-word;margin:5px 0}
         .time{font-size:10px;color:#888}
-        .controls{padding:15px;background:#111;border-top:1px solid #222}
-        .controls input, .controls button{padding:10px;margin:5px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#fff}
-        .controls button{background:#25D366;color:#000;font-weight:bold;cursor:pointer;border:none}
-        .controls button:hover{background:#1ebe57}
-        .row{display:flex;gap:5px;flex-wrap:wrap}
-        .row input{flex:1;min-width:100px}
+        .controls{padding:15px;background:#111;border-top:1px solid #222;display:flex;gap:8px;flex-wrap:wrap}
+        .controls input{flex:1;min-width:100px;padding:10px;background:#1a1a1a;color:#fff;border:1px solid #333;border-radius:8px}
+        .controls button{padding:10px 20px;background:#25D366;color:#000;font-weight:bold;border:none;border-radius:8px;cursor:pointer}
+        .online{display:inline-block;width:8px;height:8px;background:#0f0;border-radius:50%;margin-left:5px}
+        .offline{background:#f00}
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h3>📱 Users</h3>
-        <div id="users"><p style="color:#888">Loading...</p></div>
+        <h3>📱 Online Users</h3>
+        <div id="users"><p style="color:#888">No users connected</p></div>
     </div>
     <div class="main">
         <div class="header">
-            <h2>💬 WhatsApp Chat & Spam</h2>
+            <h2>💬 WhatsApp Chat</h2>
             <p style="color:#888;font-size:14px" id="active">Select a user</p>
         </div>
         <div class="msgs" id="msgs"><p style="color:#888;text-align:center;margin-top:100px">👈 Select a phone</p></div>
         <div class="controls">
-            <div class="row">
-                <input type="text" id="target" placeholder="📱 Target (@user or 2012...)" style="flex:2">
-                <input type="text" id="msgText" placeholder="💬 Message">
-                <input type="number" id="msgCount" placeholder="🔢 Count" value="10" style="max-width:80px">
-            </div>
-            <div class="row">
-                <button onclick="sendSpam()">🚀 Send Spam</button>
-                <button onclick="addMembers()">👥 Add Members</button>
-            </div>
-            <div id="spamStatus" style="margin-top:10px;color:#25D366;font-size:14px"></div>
+            <input type="text" id="target" placeholder="📱 Target">
+            <input type="text" id="msgText" placeholder="💬 Message">
+            <input type="number" id="msgCount" placeholder="🔢" value="10" style="max-width:70px">
+            <button onclick="sendSpam()">🚀 Spam</button>
+            <button onclick="addMembers()">👥 Add</button>
         </div>
     </div>
+
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
-        const socket = io('https://ai-proxy-production-59b3.up.railway.app');
-        let active = null;
-
-        socket.on('message', (d) => {
-            if (active && d.phone === active) addMsg(d);
-            updateUsers();
+        const socket = io('https://ai-proxy-production-59b3.up.railway.app', {
+            transports: ['websocket', 'polling']
         });
+        let active = null;
+        let users = {};
+
+        // الاتصال
+        socket.on('connect', () => {
+            console.log('✅ Connected');
+            fetchUsers();
+        });
+
+        socket.on('disconnect', () => {
+            document.querySelectorAll('.online').forEach(d => d.classList.add('offline'));
+        });
+
+        // استقبال رسالة
+        socket.on('message', (d) => {
+            if (!users[d.phone]) {
+                users[d.phone] = true;
+                updateUsersList();
+            }
+            if (active === d.phone) addMsg(d);
+        });
+
+        // تحديث قائمة المستخدمين
+        function fetchUsers() {
+            fetch('https://ai-proxy-production-59b3.up.railway.app/api/users')
+                .then(r => r.json())
+                .then(u => {
+                    users = {};
+                    u.forEach(p => users[p] = true);
+                    updateUsersList();
+                })
+                .catch(() => {
+                    document.getElementById('users').innerHTML = '<p style="color:#f00">❌ Server offline</p>';
+                });
+        }
+
+        function updateUsersList() {
+            const list = Object.keys(users);
+            document.getElementById('users').innerHTML = list.length === 0
+                ? '<p style="color:#888">No users</p>'
+                : list.map(p =>
+                    `<div class="user ${p===active?'active':''}" onclick="selectUser('${p}')">
+                        📱 ${p} <span class="online"></span>
+                    </div>`
+                ).join('');
+        }
+
+        function selectUser(p) {
+            active = p;
+            document.getElementById('active').textContent = '📱 ' + p;
+            document.getElementById('msgs').innerHTML = '';
+        }
 
         function addMsg(d) {
             const div = document.createElement('div');
@@ -70,65 +113,25 @@
             document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
         }
 
-        function selectUser(p) {
-            active = p;
-            document.getElementById('active').textContent = '📱 Active: ' + p;
-            document.getElementById('msgs').innerHTML = '';
-            fetch('https://ai-proxy-production-59b3.up.railway.app/api/messages')
-                .then(r => r.json())
-                .then(msgs => msgs.filter(m => m.phone === p).forEach(addMsg));
-        }
-
-        function updateUsers() {
-            fetch('https://ai-proxy-production-59b3.up.railway.app/api/users')
-                .then(r => r.json())
-                .then(u => {
-                    document.getElementById('users').innerHTML = u.map(p => 
-                        `<div class="user ${p===active?'active':''}" onclick="selectUser('${p}')">📱 ${p}</div>`
-                    ).join('') || '<p style="color:#888">No users</p>';
-                });
-        }
-
         function sendSpam() {
-            if (!active) return alert('Select a user first!');
-            const target = document.getElementById('target').value.trim();
-            const message = document.getElementById('msgText').value.trim();
-            const count = parseInt(document.getElementById('msgCount').value);
-            
-            if (!target || !message || !count) return alert('Fill all fields!');
-            
-            document.getElementById('spamStatus').textContent = '⏳ Sending ' + count + ' messages...';
-            
-            socket.emit('send-spam', {
-                phone: active,
-                target: target,
-                message: message,
-                count: count
-            });
-            
-            setTimeout(() => {
-                document.getElementById('spamStatus').textContent = '✅ Spam command sent!';
-            }, 1000);
+            const t = document.getElementById('target').value.trim();
+            const m = document.getElementById('msgText').value.trim();
+            const c = parseInt(document.getElementById('msgCount').value);
+            if (!t || !m || !c) return alert('Fill all fields');
+            socket.emit('send-spam', { phone: active, target: t, message: m, count: c });
         }
 
         function addMembers() {
-            if (!active) return alert('Select a user first!');
-            const groupId = document.getElementById('target').value.trim();
-            const numbers = prompt('Enter numbers (comma separated):');
-            
-            if (!groupId || !numbers) return alert('Fill all fields!');
-            
-            socket.emit('add-members', {
-                phone: active,
-                groupId: groupId,
-                numbers: numbers.split(',').map(n => n.trim())
-            });
-            
-            document.getElementById('spamStatus').textContent = '✅ Add members command sent!';
+            const group = prompt('Group ID or @username:');
+            const nums = prompt('Numbers (comma separated):');
+            if (group && nums) {
+                socket.emit('add-members', { phone: active, groupId: group, numbers: nums.split(',') });
+            }
         }
 
-        setInterval(updateUsers, 3000);
-        updateUsers();
+        // تحديث كل 3 ثواني
+        setInterval(fetchUsers, 3000);
+        fetchUsers();
     </script>
 </body>
 </html>
