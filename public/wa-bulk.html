@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>واتساب بالك - لوحة التحكم</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: sans-serif; background: #0d1117; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
+        .box { background: #161b22; padding: 25px; border-radius: 16px; width: 100%; max-width: 450px; border: 1px solid #30363d; }
+        h1 { color: #25D366; text-align: center; margin-bottom: 20px; }
+        .status { background: #0d1117; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: center; border: 1px solid #30363d; }
+        .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #f85149; margin-left: 5px; }
+        .dot.on { background: #25D366; }
+        #qrBox { text-align: center; margin: 15px 0; display: none; }
+        #qrBox img { width: 200px; background: white; padding: 10px; border-radius: 10px; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; color: #fff; font-size: 15px; }
+        textarea { min-height: 70px; resize: vertical; }
+        button { width: 100%; padding: 14px; background: #238636; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:disabled { opacity: 0.5; }
+        #panel { display: none; }
+        #prog { display: none; margin-top: 15px; text-align: center; }
+        #bar { height: 8px; background: #21262d; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+        #fill { height: 100%; width: 0%; background: #25D366; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🚀 واتساب بالك</h1>
+        <div class="status"><span id="statusText">الحالة: غير متصل</span><span class="dot" id="statusDot"></span></div>
+        <div id="qrBox"><img id="qrImg"><p style="margin-top:10px;color:#8b949e;">📱 امسح الكود</p></div>
+        <div id="panel">
+            <input type="text" id="target" placeholder="📱 رقم الهدف (201234567890)">
+            <textarea id="message" placeholder="💬 الرسالة">هاي</textarea>
+            <input type="number" id="count" placeholder="🔢 عدد الرسائل" value="10" min="1" max="500">
+            <button id="sendBtn" onclick="send()">🔥 إرسال</button>
+            <div id="prog"><p id="progText"></p><div id="bar"><div id="fill"></div></div></div>
+        </div>
+    </div>
+    <script>
+        // الصفحة جاهزة - محتاجة API من سيرفر واتساب
+        document.getElementById('statusText').textContent = 'الحالة: يحتاج سيرفر واتساب';
+        document.getElementById('panel').style.display = 'block';
+        
+        function send() {
+            alert('الصفحة جاهزة! بس محتاجة سيرفر واتساب (Render/Glitch)');
+        }
+    </script>
+</body>
+</html>

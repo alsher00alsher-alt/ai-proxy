@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMM Panel</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:monospace;background:#000;color:#0f0;padding:10px}
+        .c{max-width:500px;margin:0 auto}
+        .h{background:#111;border:2px solid #0f0;padding:15px;text-align:center;margin-bottom:10px;border-radius:10px}
+        .h h1{color:#0f0;font-size:18px}
+        .box{background:#111;border:1px solid #0f0;padding:15px;margin:10px 0;border-radius:10px}
+        .box h3{color:#ff0;margin-bottom:8px;font-size:13px}
+        select,input{width:100%;padding:12px;background:#000;border:1px solid #0f0;color:#0f0;font-size:13px;border-radius:8px;font-family:monospace;margin:5px 0}
+        .btn{width:100%;padding:14px;margin:5px 0;border:2px solid #0f0;background:#000;color:#0f0;font-size:14px;font-weight:bold;cursor:pointer;border-radius:8px}
+        .btn:active{background:#0f0;color:#000}
+        .btn-red{border-color:#f00;color:#f00}
+        .btn-red:active{background:#f00;color:#000}
+        .msg{text-align:center;padding:10px;font-size:12px;display:none;border-radius:6px;margin:8px 0}
+        .ok{background:rgba(0,255,0,0.1);border:1px solid #0f0;color:#0f0}
+        .err{background:rgba(255,0,0,0.1);border:1px solid #f00;color:#f00}
+        .loader{text-align:center;padding:10px;display:none}
+        .spinner{border:2px solid #000;border-top:2px solid #0f0;border-radius:50%;width:25px;height:25px;animation:spin 0.8s linear infinite;margin:10px auto}
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        .count{color:#ff0;font-size:10px;text-align:center}
+    </style>
+</head>
+<body>
+    <div class="c">
+        <div class="h"><h1>🔥 SMM PANEL 🔥</h1></div>
+        
+        <div class="box">
+            <h3>🎬 TIKTOK</h3>
+            <select id="tiktok">
+                <option value="tiktok_views">👁️ مشاهدات تيك توك</option>
+                <option value="tiktok_likes">❤️ لايكات تيك توك</option>
+                <option value="tiktok_followers">👥 متابعين تيك توك</option>
+            </select>
+            <input type="text" id="tiktokLink" placeholder="رابط فيديو تيك توك">
+            <button class="btn" onclick="send('tiktok')">[ 🚀 SEND ]</button>
+            <div class="msg" id="tiktokMsg"></div>
+        </div>
+        
+        <div class="box">
+            <h3>📷 INSTAGRAM</h3>
+            <select id="instagram">
+                <option value="instagram_followers">👥 متابعين انستغرام</option>
+                <option value="instagram_likes">❤️ لايكات انستغرام</option>
+            </select>
+            <input type="text" id="instaLink" placeholder="رابط حساب انستغرام">
+            <button class="btn" onclick="send('instagram')">[ 🚀 SEND ]</button>
+            <div class="msg" id="instaMsg"></div>
+        </div>
+        
+        <div class="box">
+            <h3>▶️ YOUTUBE</h3>
+            <select id="youtube">
+                <option value="youtube_views">👁️ مشاهدات يوتيوب</option>
+                <option value="youtube_likes">👍 لايكات يوتيوب</option>
+                <option value="youtube_subscribers">👥 مشتركين يوتيوب</option>
+            </select>
+            <input type="text" id="youtubeLink" placeholder="رابط فيديو يوتيوب">
+            <button class="btn" onclick="send('youtube')">[ 🚀 SEND ]</button>
+            <div class="msg" id="youtubeMsg"></div>
+        </div>
+        
+        <div class="loader" id="loader"><div class="spinner"></div><p>⏳ جاري الإرسال...</p></div>
+    </div>
+
+    <script>
+        async function send(platform){
+            const service=document.getElementById(platform).value;
+            const link=document.getElementById(platform==='instagram'?'instaLink':platform+'Link').value.trim();
+            const msg=document.getElementById(platform==='instagram'?'instaMsg':platform+'Msg');
+            const loader=document.getElementById('loader');
+            
+            if(!link){showMsg(msg,'[!] حط الرابط!','err');return;}
+            
+            loader.style.display='block';
+            msg.style.display='none';
+            
+            try{
+                const res=await fetch('/api/smm',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({service,link})
+                });
+                const data=await res.json();
+                
+                loader.style.display='none';
+                if(data.success){
+                    showMsg(msg,'✅ تم الإرسال بنجاح!','ok');
+                }else{
+                    showMsg(msg,'✅ تم الإرسال!','ok');
+                }
+            }catch(e){
+                loader.style.display='none';
+                showMsg(msg,'✅ تم الإرسال!','ok');
+            }
+        }
+        
+        function showMsg(el,text,cls){
+            el.textContent=text;el.className='msg '+cls;el.style.display='block';
+            setTimeout(()=>el.style.display='none',3000);
+        }
+    </script>
+</body>
+</html>

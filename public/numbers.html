@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 أرقام وهمية</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; padding: 30px 0; }
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header p { color: #aaa; margin-top: 10px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .card h3 { color: #00d2ff; margin-bottom: 15px; }
+        select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            transition: all 0.3s;
+        }
+        select option { background: #1a1a2e; color: #fff; }
+        button {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { transform: scale(1.02); }
+        button.danger { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        button.success { background: linear-gradient(135deg, #00b894, #00a86b); }
+        .result-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            text-align: center;
+            border: 1px dashed rgba(255,255,255,0.2);
+        }
+        .result-box .number {
+            color: #00d2ff;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .result-box .otp {
+            color: #00ff88;
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 0 0 30px rgba(0,255,136,0.3);
+        }
+        .result-box .label { color: #888; font-size: 0.9rem; }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading.active { display: block; }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid #00d2ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .actions button { flex: 1; }
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .status.success { background: rgba(0,255,136,0.1); border: 1px solid #00ff88; color: #00ff88; }
+        .status.error { background: rgba(255,0,0,0.1); border: 1px solid #ff4444; color: #ff4444; }
+        .status.info { background: rgba(0,210,255,0.1); border: 1px solid #00d2ff; color: #00d2ff; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 أرقام وهمية</h1>
+            <p>احصل على أرقام لاستقبال رموز التحقق</p>
+        </div>
+
+        <div class="card">
+            <h3>📋 الخدمة</h3>
+            <select id="serviceSelect">
+                <option value="whatsapp">📱 واتساب</option>
+                <option value="telegram">💬 تليجرام</option>
+                <option value="facebook">📘 فيسبوك</option>
+                <option value="instagram">📸 انستجرام</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <h3>🌍 الدولة</h3>
+            <select id="countrySelect">
+                <option value="DZ">🇩🇿 الجزائر</option>
+                <option value="EG">🇪🇬 مصر</option>
+                <option value="SA">🇸🇦 السعودية</option>
+                <option value="MA">🇲🇦 المغرب</option>
+                <option value="TN">🇹🇳 تونس</option>
+                <option value="QA">🇶🇦 قطر</option>
+                <option value="AE">🇦🇪 الإمارات</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <div class="actions">
+                <button onclick="requestNumber()" class="success">📞 طلب رقم</button>
+                <button onclick="getOtp()" class="danger">🔑 جلب الكود</button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #888;">جاري المعالجة...</p>
+        </div>
+
+        <div class="card hidden" id="resultCard">
+            <h3>📥 النتيجة</h3>
+            <div class="result-box" id="resultBox">
+                <div class="label">📞 الرقم</div>
+                <div class="number" id="resultNumber">---</div>
+                <div class="label" style="margin-top: 15px;">🔑 رمز التحقق</div>
+                <div class="otp" id="resultOtp">---</div>
+            </div>
+        </div>
+
+        <div id="status" class="hidden"></div>
+    </div>
+
+    <script>
+        const API_URL = '/api/numberpanel';
+        let currentNumber = null;
+        let currentService = 'whatsapp';
+        let currentCountry = 'DZ';
+
+        document.getElementById('serviceSelect').addEventListener('change', function() {
+            currentService = this.value;
+        });
+        document.getElementById('countrySelect').addEventListener('change', function() {
+            currentCountry = this.value;
+        });
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            status.classList.remove('hidden');
+            setTimeout(() => status.classList.add('hidden'), 5000);
+        }
+
+        async function requestNumber() {
+            const loading = document.getElementById('loading');
+            const resultCard = document.getElementById('resultCard');
+            
+            loading.classList.add('active');
+            resultCard.classList.add('hidden');
+            
+            try {
+                const response = await fetch(`${API_URL}?action=requestNumber&service=${currentService}&country=${currentCountry}`);
+                const data = await response.json();
+                
+                loading.classList.remove('active');
+                
+                if (data.success && data.number) {
+                    currentNumber = data.number;
+                    document.getElementById('resultNumber').textContent = data.number;
+                    document.getElementById('resultOtp').textContent = '⏳ في الانتظار';
+                    resultCard.classList.remove('hidden');
+                    showStatus('✅ تم الحصول على الرقم!', 'success');
+                } else {
+                    showStatus(`❌ ${data.message || 'فشل طلب الرقم'}`, 'error');
+                }
+            } catch (error) {
+                loading.classList.remove('active');
+                showStatus(`❌ خطأ: ${error.message}`, 'error');
+            }
+        }
+
+        async function getOtp() {
+            if (!currentNumber) {
+                showStatus('❌ الرجاء طلب رقم أولاً', 'error');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const resultCard = document.getElementById('resultCard');
+            
+            loading.classList.add('active');
+            
+            let attempts = 0;
+            const maxAttempts = 20;
+            
+            while (attempts < maxAttempts) {
+                attempts++;
+                try {
+                    const response = await fetch(`${API_URL}?action=getOtp&number=${currentNumber}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.has_otp && data.otp) {
+                        loading.classList.remove('active');
+                        document.getElementById('resultOtp').textContent = data.otp;
+                        resultCard.classList.remove('hidden');
+                        showStatus('✅ تم العثور على الكود!', 'success');
+                        return;
+                    }
+                    
+                    document.getElementById('resultOtp').textContent = `⏳ جاري البحث... (${attempts}/${maxAttempts})`;
+                    resultCard.classList.remove('hidden');
+                    
+                } catch (error) {}
+                
+                await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+            
+            loading.classList.remove('active');
+            document.getElementById('resultOtp').textContent = '⏰ انتهى الوقت';
+            showStatus('⏰ لم يتم العثور على الكود', 'error');
+        }
+    </script>
+</body>
+</html>

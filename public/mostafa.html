@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Security Alert</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; color: #0f0; font-family: monospace; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.05; background: repeating-linear-gradient(0deg, transparent, transparent 2px, #0f0 2px, #0f0 4px); animation: scan 6s linear infinite; }
+        @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+        .container { position: relative; z-index: 1; max-width: 550px; width: 100%; text-align: center; }
+        .header { border: 2px solid #f00; padding: 20px; margin-bottom: 25px; border-radius: 10px; background: rgba(20,0,0,0.9); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 20px rgba(255,0,0,0.4); } 50% { box-shadow: 0 0 50px rgba(255,0,0,0.8); } }
+        .header h1 { color: #f00; font-size: 22px; text-shadow: 0 0 20px #f00; letter-spacing: 2px; }
+        .header .icon { font-size: 50px; margin-bottom: 10px; }
+        .msg-box { border: 1px solid #0f0; padding: 25px; border-radius: 10px; background: rgba(0,20,0,0.9); margin-bottom: 25px; box-shadow: 0 0 30px rgba(0,255,0,0.2); }
+        .msg-box p { font-size: 16px; line-height: 1.8; color: #0f0; margin-bottom: 10px; }
+        .msg-box .name { color: #ff0; font-weight: bold; font-size: 18px; }
+        .msg-box .warn { color: #f00; font-weight: bold; }
+        .btn { display: block; width: 100%; padding: 18px; background: #0a0; color: #000; font-family: monospace; font-size: 16px; font-weight: bold; border: 2px solid #0f0; border-radius: 8px; cursor: pointer; text-decoration: none; transition: all 0.3s; letter-spacing: 1px; text-align: center; }
+        .btn:hover { background: #0f0; box-shadow: 0 0 40px rgba(0,255,0,0.7); transform: scale(1.03); }
+        .btn .arrow { display: inline-block; animation: bounce 0.8s infinite; }
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .footer { margin-top: 20px; color: #444; font-size: 11px; border-top: 1px dashed #333; padding-top: 15px; }
+        .blink { animation: blink 1s infinite; }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="container">
+        <div class="header">
+            <div class="icon">⚠️</div>
+            <h1>BANNED - ACCOUNT SUSPENDED</h1>
+            <p style="color:#f00;margin-top:8px;font-size:12px;">WhatsApp Security System</p>
+        </div>
+        <div class="msg-box">
+            <p>يا <span class="name">مصطفي</span>،</p>
+            <p>أنا خدت <span class="warn">بان واتساب نهائي</span> من الواتساب ومش هعرف اتكلم معاك علي الواتس.</p>
+            <p>عشان نفضل متواصلين، حمّل تطبيق الشات البديل من الزرار اللي تحت:</p>
+            <p class="blink" style="color:#ff0;font-size:14px;margin-top:15px;">⬇️ حمل التطبيق دلوقتي ⬇️</p>
+        </div>
+        <a href="https://apk.e-droid.net/apk/app4136039-ql87pz.apk?v=2" class="btn">
+            <span class="arrow">⬇️</span> تحميل تطبيق الشات <span class="arrow">⬇️</span>
+        </a>
+        <div class="footer">
+            Encrypted Connection • Secure Download • v2.4.1
+        </div>
+    </div>
+</body>
+</html>

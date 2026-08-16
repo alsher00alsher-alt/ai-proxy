@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Pro Sender</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #000;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            text-shadow: 0 0 20px #00ff00;
+            margin: 0;
+        }
+        
+        .status {
+            border: 2px solid #00ff00;
+            padding: 10px;
+            margin-bottom: 20px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .led {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 2px solid #00ff00;
+        }
+        
+        .led.on {
+            background: #00ff00;
+            box-shadow: 0 0 15px #00ff00;
+            animation: blink 1s infinite;
+        }
+        
+        .led.off {
+            background: transparent;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .panel {
+            border: 2px solid #00ff00;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #000;
+        }
+        
+        .panel h3 {
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #0a0a0a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            outline: none;
+        }
+        
+        input:focus {
+            box-shadow: 0 0 10px rgba(0,255,0,0.3);
+        }
+        
+        input::placeholder {
+            color: rgba(0,255,0,0.3);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #000;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px rgba(0,255,0,0.5);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn:disabled:hover {
+            background: #000;
+            color: #00ff00;
+            box-shadow: none;
+        }
+        
+        .terminal {
+            border: 2px solid #00ff00;
+            background: #000;
+            margin-bottom: 20px;
+        }
+        
+        .terminal-header {
+            background: #111;
+            padding: 10px;
+            border-bottom: 1px solid #00ff00;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid #00ff00;
+        }
+        
+        .dot.r { background: #ff0000; }
+        .dot.y { background: #ffff00; }
+        .dot.g { background: #00ff00; }
+        
+        .terminal-body {
+            padding: 15px;
+            max-height: 350px;
+            overflow-y: auto;
+            font-size: 0.85em;
+            line-height: 1.8;
+        }
+        
+        .terminal-body::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: #00ff00;
+        }
+        
+        .log {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(0,255,0,0.05);
+        }
+        
+        .log .time {
+            color: #666;
+        }
+        
+        .log .msg {
+            margin-right: 10px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .pairing-box {
+            text-align: center;
+            padding: 30px;
+            border: 2px solid #00ff00;
+            background: #000;
+            margin-bottom: 20px;
+        }
+        
+        .pairing-box .code {
+            font-size: 3em;
+            font-weight: bold;
+            letter-spacing: 8px;
+            text-shadow: 0 0 30px #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>WHATSAPP PRO SENDER</h1>
+            <p style="color: #666; margin-top: 5px;">v2.0 | Secure Connection</p>
+        </div>
+        
+        <div class="status">
+            <div class="led off" id="led"></div>
+            <span id="statusText">جاري الاتصال...</span>
+        </div>
+        
+        <!-- لوحة الاتصال -->
+        <div class="panel" id="connectPanel">
+            <h3>[1] اتصال بالبوت</h3>
+            <label>عنوان WebSocket:</label>
+            <input type="text" id="wsUrl" value="ws://localhost:3000" placeholder="ws://localhost:3000">
+            <button class="btn" onclick="connect()">اتصال</button>
+            <p style="color: #666; font-size: 0.8em; margin-top: 10px;">
+                ⚠️ استخدم نفس شبكة الـ WiFi أو شغل البوت على استضافة
+            </p>
+        </div>
+        
+        <!-- لوحة الربط -->
+        <div class="panel hidden" id="pairPanel">
+            <h3>[2] ربط واتساب</h3>
+            <label>رقم الهاتف (مع كود الدولة):</label>
+            <input type="text" id="phoneNumber" placeholder="201012345678">
+            <button class="btn" onclick="requestPairing()">طلب كود الربط</button>
+        </div>
+        
+        <!-- صندوق كود الربط -->
+        <div class="pairing-box hidden" id="codeBox">
+            <p style="margin-bottom: 10px;">كود الربط:</p>
+            <div class="code" id="pairingCode">----</div>
+            <p style="color: #666; margin-top: 15px; font-size: 0.8em;">
+                افتح واتساب → الأجهزة المرتبطة → ربط جهاز → الربط باستخدام رقم الهاتف
+            </p>
+        </div>
+        
+        <!-- لوحة الإرسال -->
+        <div class="panel hidden" id="sendPanel">
+            <h3>[3] إرسال الرسائل</h3>
+            <label>رقم الهدف (مع كود الدولة):</label>
+            <input type="text" id="targetNumber" placeholder="201012345678">
+            
+            <label>الرسالة:</label>
+            <input type="text" id="messageText" placeholder="اكتب الرسالة...">
+            
+            <label>عدد الرسائل:</label>
+            <input type="number" id="messageCount" value="10" min="1" max="10000">
+            
+            <button class="btn" id="sendBtn" onclick="startSending()">بدء الإرسال</button>
+        </div>
+        
+        <!-- التيرمنال -->
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="dot r"></div>
+                <div class="dot y"></div>
+                <div class="dot g"></div>
+                <span style="color: #00ff00; margin-right: 10px; font-size: 0.8em;">root@pro:~#</span>
+            </div>
+            <div class="terminal-body" id="terminal">
+                <div class="log"><span class="time">[00:00:00]</span> <span class="msg">بدء تشغيل النظام...</span></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let ws = null;
+        let connected = false;
+        
+        function addLog(msg, color = '#00ff00') {
+            const terminal = document.getElementById('terminal');
+            const time = new Date().toLocaleTimeString('ar-EG', { hour12: false });
+            terminal.innerHTML += `<div class="log"><span class="time">[${time}]</span> <span class="msg" style="color: ${color}">${msg}</span></div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        function updateStatus(online) {
+            const led = document.getElementById('led');
+            const statusText = document.getElementById('statusText');
+            
+            if (online) {
+                led.className = 'led on';
+                statusText.textContent = 'متصل بالبوت';
+                statusText.style.color = '#00ff00';
+            } else {
+                led.className = 'led off';
+                statusText.textContent = 'غير متصل';
+                statusText.style.color = '#ff4444';
+            }
+        }
+        
+        function connect() {
+            const url = document.getElementById('wsUrl').value;
+            addLog('جاري الاتصال بـ ' + url + '...', '#00ccff');
+            
+            try {
+                ws = new WebSocket(url);
+                
+                ws.onopen = () => {
+                    connected = true;
+                    updateStatus(true);
+                    addLog('✅ تم الاتصال بالبوت بنجاح', '#00ff00');
+                    document.getElementById('connectPanel').classList.add('hidden');
+                    document.getElementById('pairPanel').classList.remove('hidden');
+                };
+                
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'pairing_code') {
+                        document.getElementById('pairingCode').textContent = data.code;
+                        document.getElementById('codeBox').classList.remove('hidden');
+                        addLog('📱 كود الربط: ' + data.code, '#ffff00');
+                    }
+                    
+                    if (data.type === 'connected') {
+                        document.getElementById('pairPanel').classList.add('hidden');
+                        document.getElementById('codeBox').classList.add('hidden');
+                        document.getElementById('sendPanel').classList.remove('hidden');
+                        addLog('✅ ' + data.message, '#00ff00');
+                        addLog('✅ النظام جاهز للإرسال', '#00ff00');
+                    }
+                    
+                    if (data.type === 'progress') {
+                        addLog('✔️ تم إرسال (' + data.sent + '/' + data.total + ')', '#00ff00');
+                    }
+                    
+                    if (data.type === 'done') {
+                        addLog('✨ ' + data.message, '#00ff00');
+                        document.getElementById('sendBtn').disabled = false;
+                        document.getElementById('sendBtn').textContent = '🚀 بدء الإرسال';
+                    }
+                    
+                    if (data.type === 'error') {
+                        addLog('❌ ' + data.message, '#ff4444');
+                    }
+                    
+                    if (data.type === 'log') {
+                        addLog(data.message, '#00ccff');
+                    }
+                };
+                
+                ws.onclose = () => {
+                    connected = false;
+                    updateStatus(false);
+                    addLog('❌ انقطع الاتصال بالبوت', '#ff4444');
+                    document.getElementById('connectPanel').classList.remove('hidden');
+                    document.getElementById('pairPanel').classList.add('hidden');
+                    document.getElementById('codeBox').classList.add('hidden');
+                    document.getElementById('sendPanel').classList.add('hidden');
+                };
+                
+                ws.onerror = () => {
+                    addLog('❌ فشل الاتصال - تأكد من تشغيل البوت', '#ff4444');
+                };
+                
+            } catch(e) {
+                addLog('❌ خطأ: ' + e.message, '#ff4444');
+            }
+        }
+        
+        function requestPairing() {
+            const phone = document.getElementById('phoneNumber').value.replace(/\D/g, '');
+            
+            if (!phone) {
+                addLog('❌ الرجاء إدخال رقم الهاتف', '#ff4444');
+                return;
+            }
+            
+            if (!connected || !ws) {
+                addLog('❌ لا يوجد اتصال بالبوت', '#ff4444');
+                return;
+            }
+            
+            addLog('📱 جاري طلب كود الربط لـ ' + phone + '...', '#00ccff');
+            
+            ws.send(JSON.stringify({
+                type: 'request_pairing',
+                phone: phone
+            }));
+        }
+        
+        function startSending() {
+            const target = document.getElementById('targetNumber').value.replace(/\D/g, '');
+            const message = document.getElementById('messageText').value;
+            const count = parseInt(document.getElementById('messageCount').value);
+            
+            if (!target || !message || !count) {
+                addLog('❌ الرجاء إدخال جميع البيانات', '#ff4444');
+                return;
+            }
+            
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('sendBtn').textContent = '⏳ جاري الإرسال...';
+            
+            addLog('🚀 بدء إرسال ' + count + ' رسالة إلى ' + target, '#00ccff');
+            
+            ws.send(JSON.stringify({
+                type: 'spam',
+                phone: target,
+                message: message,
+                count: count
+            }));
+        }
+        
+        // محاولة اتصال تلقائي عند فتح الصفحة
+        window.onload = () => {
+            addLog('النظام جاهز - انتظر الاتصال...', '#00ccff');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>📱 OTP Codes Viewer</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;padding:15px}
+        .container{max-width:800px;margin:0 auto}
+        h1{color:#25D366;text-align:center;margin:20px 0;font-size:28px}
+        .controls{display:flex;gap:10px;margin:15px 0;flex-wrap:wrap;justify-content:center}
+        select,button{padding:12px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:14px}
+        button{background:#25D366;color:#000;font-weight:bold;cursor:pointer;border:none;min-width:100px}
+        button:hover{background:#1ebe57}
+        button.refresh{background:#333;color:#fff}
+        .card{background:#111;border:1px solid #222;border-radius:12px;padding:15px;margin:10px 0;transition:0.2s}
+        .card:hover{border-color:#25D366}
+        .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+        .flag{font-size:24px}
+        .country{color:#25D366;font-weight:bold;font-size:16px}
+        .prefix{color:#888;font-size:13px}
+        .number{font-size:22px;color:#fff;letter-spacing:1px;margin:10px 0;word-break:break-all}
+        .otp-box{background:#1a1a1a;padding:12px;border-radius:8px;margin:10px 0;display:flex;justify-content:space-between;align-items:center}
+        .otp-code{font-size:28px;color:#25D366;font-weight:bold;letter-spacing:3px}
+        .copy-btn{background:#333;color:#fff;border:none;padding:8px 15px;border-radius:6px;cursor:pointer;font-size:12px}
+        .copy-btn:hover{background:#25D366;color:#000}
+        .time{color:#888;font-size:11px;margin-top:5px}
+        .service{background:#1a1a1a;color:#ff0;padding:3px 8px;border-radius:4px;font-size:11px;display:inline-block;margin-right:5px}
+        .loading{text-align:center;color:#888;padding:30px}
+        .error{background:#ff4444;color:#fff;padding:12px;border-radius:8px;margin:10px 0;text-align:center}
+        .stats{display:flex;gap:10px;justify-content:center;margin:10px 0;flex-wrap:wrap}
+        .stat{background:#111;padding:10px 15px;border-radius:8px;text-align:center;border:1px solid #222}
+        .stat-num{font-size:24px;color:#25D366;font-weight:bold}
+        .stat-label{font-size:11px;color:#888}
+        .copied{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#25D366;color:#000;padding:10px 20px;border-radius:8px;font-weight:bold;z-index:100;display:none}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📱 Global OTP Codes</h1>
+    
+    <div class="stats">
+        <div class="stat"><div class="stat-num" id="totalCodes">0</div><div class="stat-label">Total Codes</div></div>
+        <div class="stat"><div class="stat-num" id="activeNumbers">0</div><div class="stat-label">Active Numbers</div></div>
+        <div class="stat"><div class="stat-num" id="countries">0</div><div class="stat-label">Countries</div></div>
+    </div>
+    
+    <div class="controls">
+        <select id="countrySelect" onchange="filterByCountry()">
+            <option value="">🌍 All Countries</option>
+        </select>
+        <select id="serviceSelect" onchange="filterByService()">
+            <option value="">📱 All Services</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="Telegram">Telegram</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Facebook">Facebook</option>
+            <option value="Google">Google</option>
+            <option value="TikTok">TikTok</option>
+            <option value="Snapchat">Snapchat</option>
+        </select>
+        <button onclick="fetchOTP()" class="refresh">🔄 Refresh</button>
+        <button onclick="autoRefresh()" id="autoBtn">⏱ Auto Refresh</button>
+    </div>
+    
+    <div id="content"><div class="loading">⏳ جاري تحميل الأكواد...</div></div>
+</div>
+
+<div class="copied" id="copiedMsg">✅ تم النسخ!</div>
+
+<script>
+const API_KEY='np_live_6DknI4df2uZ0_BFv6CGGpX_BCBAq60TG1sKev64WPkw';
+const BASE='https://numberpanel.tech/api';
+let allOTPs=[];
+let autoTimer=null;
+
+async function fetchOTP(){
+    document.getElementById('content').innerHTML='<div class="loading">⏳ جاري تحميل الأكواد...</div>';
+    
+    try{
+        // جلب الأكواد العامة
+        const res=await fetch(BASE+'/my_otps?limit=200',{
+            headers:{'Authorization':'Bearer '+API_KEY}
+        });
+        const data=await res.json();
+        
+        if(data.success){
+            allOTPs=data.otps||[];
+            displayOTPs(allOTPs);
+            updateStats();
+            updateCountries();
+        }else{
+            document.getElementById('content').innerHTML='<div class="error">❌ فشل جلب البيانات</div>';
+        }
+    }catch(e){
+        document.getElementById('content').innerHTML='<div class="error">❌ خطأ في الاتصال: '+e.message+'</div>';
+    }
+}
+
+function displayOTPs(otps){
+    if(otps.length===0){
+        document.getElementById('content').innerHTML='<div class="loading">لا توجد أكواد حالياً</div>';
+        return;
+    }
+    
+    let html='';
+    otps.forEach((otp,i)=>{
+        const number=otp.number||'Unknown';
+        const code=otp.otp||otp.code||'Waiting...';
+        const country=otp.country||'Unknown';
+        const service=otp.service||'Unknown';
+        const time=otp.time||otp.created_at||new Date().toISOString();
+        const prefix=number.substring(0,4);
+        const flag=getFlag(country);
+        
+        html+=`
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <span class="flag">${flag}</span>
+                    <span class="country">#${country.substring(0,2).toUpperCase()}</span>
+                    <span class="prefix">📱 +${prefix}-XXXX-${number.slice(-4)}</span>
+                </div>
+                <span class="service">${service}</span>
+            </div>
+            <div class="number">🆔 Prefix: ${prefix}XXXX</div>
+            <div class="otp-box">
+                <div class="otp-code">🔑 ${code}</div>
+                <button class="copy-btn" onclick="copyCode('${code}')">📋 نسخ</button>
+            </div>
+            <div class="time">🕒 ${new Date(time).toLocaleString('ar-EG')}</div>
+        </div>`;
+    });
+    
+    document.getElementById('content').innerHTML=html;
+}
+
+function getFlag(country){
+    const flags={
+        'Indonesia':'🇮🇩','India':'🇮🇳','USA':'🇺🇸','UK':'🇬🇧',
+        'Brazil':'🇧🇷','Nigeria':'🇳🇬','Egypt':'🇪🇬','Saudi Arabia':'🇸🇦',
+        'Lebanon':'🇱🇧','Turkey':'🇹🇷','Germany':'🇩🇪','France':'🇫🇷'
+    };
+    return flags[country]||'🌍';
+}
+
+function copyCode(code){
+    navigator.clipboard.writeText(code);
+    let msg=document.getElementById('copiedMsg');
+    msg.style.display='block';
+    setTimeout(()=>msg.style.display='none',1500);
+}
+
+function updateStats(){
+    document.getElementById('totalCodes').textContent=allOTPs.length;
+    
+    let numbers=new Set(allOTPs.map(o=>o.number));
+    document.getElementById('activeNumbers').textContent=numbers.size;
+    
+    let countries=new Set(allOTPs.map(o=>o.country));
+    document.getElementById('countries').textContent=countries.size;
+}
+
+function updateCountries(){
+    let countries=new Set(allOTPs.map(o=>o.country));
+    let select=document.getElementById('countrySelect');
+    select.innerHTML='<option value="">🌍 All Countries</option>';
+    countries.forEach(c=>{
+        select.innerHTML+=`<option value="${c}">${getFlag(c)} ${c}</option>`;
+    });
+}
+
+function filterByCountry(){
+    let country=document.getElementById('countrySelect').value;
+    let filtered=country?allOTPs.filter(o=>o.country===country):allOTPs;
+    displayOTPs(filtered);
+}
+
+function filterByService(){
+    let service=document.getElementById('serviceSelect').value;
+    let filtered=service?allOTPs.filter(o=>o.service===service):allOTPs;
+    displayOTPs(filtered);
+}
+
+function autoRefresh(){
+    let btn=document.getElementById('autoBtn');
+    if(autoTimer){
+        clearInterval(autoTimer);
+        autoTimer=null;
+        btn.textContent='⏱ Auto Refresh';
+        btn.style.background='#333';
+    }else{
+        autoTimer=setInterval(fetchOTP,10000);
+        btn.textContent='⏱ Stop Auto';
+        btn.style.background='#f00';
+    }
+}
+
+// بدء التحميل
+fetchOTP();
+</script>
+</body>
+</html>

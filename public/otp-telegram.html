@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Live - Telegram</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0e1621; --surface: #17212b; --surface2: #242f3d; --border: #111822; --blue: #2b5278; --green: #2e8b57; --gold: #f59e0b; --red: #c75c5c; --text: #fff; --text2: #8c939d; --sky: #64b5f6; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app { width: 100%; max-width: 430px; background: var(--surface); height: 100vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.6); overflow: hidden; }
+        .header { background: var(--surface2); padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); min-height: 55px; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .back-arrow { color: #fff; font-size: 20px; cursor: pointer; display: none; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; border: 1px solid #4e729a; flex-shrink: 0; overflow: hidden; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .title-info h2 { font-size: 15px; color: #fff; font-weight: 600; }
+        .title-info p { font-size: 12px; color: var(--text2); }
+        .menu-icon { color: #fff; font-size: 20px; cursor: pointer; }
+        .screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .screen.hidden { display: none !important; }
+        .main-list { flex: 1; overflow-y: auto; }
+        .chat-row { display: flex; align-items: center; padding: 12px 15px; gap: 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .chat-row:hover { background: rgba(255,255,255,0.03); }
+        .chat-row .avatar { width: 50px; height: 50px; font-size: 20px; }
+        .chat-row .info { flex: 1; min-width: 0; }
+        .chat-row .name { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+        .chat-row .preview { font-size: 13px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
+        .msg-block { background: #182533; border-radius: 10px; padding: 10px 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); font-size: 13px; }
+        .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .msg-user { color: var(--sky); font-weight: 500; }
+        .msg-content { line-height: 1.6; }
+        .msg-content .num { color: #60a5fa; font-weight: 600; }
+        .msg-content .code { background: var(--gold); color: #000; padding: 3px 10px; border-radius: 5px; font-weight: 600; display: inline-block; margin: 5px 0; font-size: 15px; }
+        .time-tag { font-size: 10px; color: var(--text2); margin-top: 6px; }
+        .btn { border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 500; color: #fff; cursor: pointer; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.3); background: var(--blue); }
+        .btn-green { background: var(--green); }
+        .btn-gold { background: var(--gold); color: #000; font-weight: 600; }
+        .btn-row { display: flex; gap: 8px; }
+        .btn-row .btn { flex: 1; }
+        .btn-full { width: 100%; }
+        .btn-area { padding: 10px; border-top: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; gap: 8px; }
+        .footer-locked { background: var(--surface); padding: 12px; text-align: center; border-top: 1px solid var(--border); color: var(--text2); font-size: 13px; }
+        .bottom-nav { background: var(--surface); display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid var(--border); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text2); font-size: 11px; cursor: pointer; gap: 4px; background: none; border: none; flex: 1; }
+        .nav-item.active { color: #5288c1; }
+        .nav-icon { font-size: 20px; }
+        .settings-section, .profile-section { padding: 20px; overflow-y: auto; flex: 1; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        select, input { background: var(--surface2); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; font-size: 14px; outline: none; }
+        .profile-section .avatar { width: 80px; height: 80px; font-size: 35px; margin: 0 auto 15px; }
+        .profile-section h3 { margin-bottom: 15px; text-align: center; }
+        .profile-section input { width: 100%; margin: 10px 0; text-align: center; }
+        ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    </style>
+</head>
+<body>
+    <div class="app" id="app"></div>
+    <script>
+        firebase.initializeApp({apiKey:"AIzaSyA5LuJwdTckc6V2zClBeRiozM_tdMx5fAQ",projectId:"otp-5acda",databaseURL:"https://otp-5acda-default-rtdb.firebaseio.com"});
+        const db=firebase.database();
+        const PROXY='/api/panel';
+        let S=JSON.parse(localStorage.getItem('otp_v3')||'{}');
+        let cur=S.cur||'main',cSvc=S.cSvc||'',cCty=S.cCty||'',curNum=S.curNum||'';
+        let profile=S.profile||{name:'أنا',phone:'+201500972046',avatar:''};
+        let settings=S.settings||{color:'default',lang:'ar'};
+        let known=new Set(),otpTimer=null;
+        function save(){localStorage.setItem('otp_v3',JSON.stringify({cur,cSvc,cCty,curNum,profile,settings}));}
+        function api(p){return fetch(PROXY+p).then(r=>r.json());}
+        function el(id){return document.getElementById(id);}
+        const colors={default:{bg:'#0e1621',surface:'#17212b',surface2:'#242f3d',blue:'#2b5278'},dark:{bg:'#000',surface:'#111',surface2:'#1a1a1a',blue:'#333'},green:{bg:'#0a1a0a',surface:'#0f1f0f',surface2:'#1a2a1a',blue:'#1a4a1a'}};
+        function applyColor(c){const cl=colors[c]||colors.default;Object.entries(cl).forEach(([k,v])=>document.documentElement.style.setProperty('--'+k,v));}
+        applyColor(settings.color);
+        function render(){const app=el('app');if(cur==='main')app.innerHTML=mainHTML();else if(cur==='bot'||cur==='group')app.innerHTML=chatHTML(cur);else if(cur==='settings')app.innerHTML=settingsHTML();else if(cur==='profile')app.innerHTML=profileHTML();bindEvents();}
+        function mainHTML(){return `<div class="screen"><div class="header"><div class="header-left"><div class="avatar">✈️</div><div class="title-info"><h2>OTP Live</h2><p>Number Panel</p></div></div><div class="menu-icon" onclick="openScreen('settings')">⋮</div></div><div class="main-list"><div class="chat-row" onclick="openChat('bot')"><div class="avatar">🤖</div><div class="info"><div class="name">🤖 NUMBER BOT</div><div class="preview">${curNum?'الرقم: '+curNum:'بوت الأرقام'}</div></div></div><div class="chat-row" onclick="openChat('group')"><div class="avatar">👥</div><div class="info"><div class="name">👥 OTP GROUP</div><div class="preview">Live OTP</div></div></div></div><div class="bottom-nav"><button class="nav-item active" onclick="openScreen('main')"><span class="nav-icon">💬</span>محادثات</button><button class="nav-item" onclick="openScreen('profile')"><span class="nav-icon">👤</span>ملف</button><button class="nav-item" onclick="openScreen('settings')"><span class="nav-icon">⚙️</span>إعدادات</button></div></div>`;}
+        function chatHTML(t){const b=t==='bot';return `<div class="screen"><div class="header"><div class="header-left"><div class="back-arrow" style="display:block" onclick="goBack()">←</div><div class="avatar">${b?'🤖':'👥'}</div><div class="title-info"><h2>${b?'🤖 NUMBER BOT':'👥 OTP GROUP'}</h2><p>${b?'online':'live'}</p></div></div><div class="menu-icon" onclick="addContact()">+</div></div><div class="chat-body" id="messages"></div>${b?'<div class="btn-area" id="btnArea"></div>':'<div class="footer-locked">OTP Live - تحديث مستمر</div>'}</div>`;}
+        function settingsHTML(){return `<div class="screen"><div class="header"><div class="header-left"><div class="back-arrow" style="display:block" onclick="goBack()">←</div><div class="title-info"><h2>⚙️ الإعدادات</h2></div></div></div><div class="settings-section"><h3>🎨 اللون</h3><div class="settings-row"><select id="colorSelect" onchange="changeColor(this.value)"><option value="default" ${settings.color==='default'?'selected':''}>افتراضي</option><option value="dark" ${settings.color==='dark'?'selected':''}>داكن</option><option value="green" ${settings.color==='green'?'selected':''}>أخضر</option></select></div></div></div>`;}
+        function profileHTML(){return `<div class="screen"><div class="header"><div class="header-left"><div class="back-arrow" style="display:block" onclick="goBack()">←</div><div class="title-info"><h2>👤 الملف الشخصي</h2></div></div></div><div class="profile-section"><div class="avatar">${profile.avatar?`<img src="${profile.avatar}" onerror="this.style.display='none';this.parentElement.textContent='👤'">`:'👤'}</div><input id="nameInput" placeholder="الاسم" value="${profile.name}"><input id="phoneInput" placeholder="رقم الهاتف" value="${profile.phone}"><input id="avatarInput" placeholder="رابط صورة (URL)"><button class="btn btn-full" onclick="saveProfile()">💾 حفظ</button></div></div>`;}
+        function bindEvents(){
+            if(cur==='bot'){
+                const ms=el('messages');
+                if(curNum){ms.innerHTML=`<div class="msg-block"><div class="msg-content">📱 الرقم: <span class="num">${curNum}</span></div></div>`;el('btnArea').innerHTML=`<div class="btn-row"><button class="btn btn-green" onclick="copyNum('${curNum}')">📋 نسخ</button><button class="btn" onclick="loadServices()">🌍 دولة</button></div><div class="btn-row"><button class="btn" onclick="getNumber('${cCty}','')">🔄 تغيير</button><button class="btn btn-gold" onclick="checkCode('${curNum}')">📩 كود</button></div>`;}else{showStart();}
+            }else if(cur==='group'){
+                el('messages').innerHTML='<div class="msg-block">📡 numberpanel.tech - Live OTP</div>';
+                db.ref('messages').off();db.ref('messages').limitToLast(50).on('child_added',s=>{if(cur==='group')showOTP(s.val())});
+                if(otpTimer)clearInterval(otpTimer);otpTimer=setInterval(fetchOTP,3000);fetchOTP();
+            }
+        }
+        function openScreen(s){cur=s;save();if(otpTimer)clearInterval(otpTimer);render();}
+        function openChat(t){cur=t;save();render();}
+        function goBack(){cur='main';save();if(otpTimer)clearInterval(otpTimer);render();}
+        function showOTP(m){if(cur!=='group')return;const t=new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});const code=m.code||'---';el('messages').innerHTML+=`<div class="msg-block"><div class="msg-header"><span class="msg-user">${m.service||'OTP'}</span></div><div class="msg-content">📱 <span class="num">${m.number||''}</span><br>🔑 <span class="code">${code}</span></div><div class="time-tag">${t}</div><button class="btn btn-gold" style="margin-top:8px;width:100%" onclick="copyCode('${code}')">📋 نسخ الكود</button></div>`;el('messages').scrollTop=el('messages').scrollHeight;}
+        function copyCode(c){navigator.clipboard.writeText(c);alert('✅ تم النسخ!');}
+        function copyNum(n){navigator.clipboard.writeText(n);alert('✅ تم النسخ!');}
+        async function fetchOTP(){try{const d=await api('/api/otp?count=10');if(Array.isArray(d))d.forEach(i=>{const k=i[1]+'-'+i[2];if(!known.has(k)){known.add(k);db.ref('messages').push({type:'otp',service:i[0],number:i[1],code:i[2].match(/\d{4,8}/)?.[0]||i[2]});}});}catch(e){}}
+        function showStart(){el('messages').innerHTML='<div class="msg-block">👋 أهلًا بك في NUMBER BOT!</div>';el('btnArea').innerHTML='<button class="btn btn-green btn-full" onclick="loadServices()">▶️ START</button>';}
+        async function loadServices(){el('btnArea').innerHTML='';try{const d=await api('/api/services');if(d.success){let btns='';d.services.slice(0,8).forEach((s,i)=>{if(i%2===0)btns+='<div class="btn-row">';btns+=`<button class="btn" onclick="loadCountries('${s.key}','${s.name}')">${s.name} (${s.count})</button>`;if(i%2===1||i===d.services.length-1)btns+='</div>';});el('btnArea').innerHTML=btns;}}catch(e){}}
+        async function loadCountries(key,name){cSvc=key;save();el('btnArea').innerHTML='';try{const d=await api('/api/countries?service='+key);if(d.success){let btns='';d.countries.slice(0,10).forEach((c,i)=>{if(i%2===0)btns+='<div class="btn-row">';btns+=`<button class="btn" onclick="getNumber('${c.name}','${c.flag}')">${c.flag} ${c.name} (${c.count})</button>`;if(i%2===1||i===d.countries.length-1)btns+='</div>';});el('btnArea').innerHTML=btns;}}catch(e){}}
+        async function getNumber(country,flag){cCty=country;save();el('btnArea').innerHTML='';try{const d=await api('/api/otp?count=20');if(Array.isArray(d)){const flt=d.filter(i=>i[0].toLowerCase().includes(cSvc.toLowerCase()));if(flt.length>0){curNum=flt[0][1];save();el('messages').innerHTML+=`<div class="msg-block"><div class="msg-content">📱 الرقم: <span class="num">${curNum}</span></div></div>`;el('btnArea').innerHTML=`<div class="btn-row"><button class="btn btn-green" onclick="copyNum('${curNum}')">📋 نسخ</button><button class="btn" onclick="getNumber('${country}','${flag}')">🔄 تغيير</button></div><div class="btn-row"><button class="btn" onclick="loadServices()">🌍 دولة</button><button class="btn btn-gold" onclick="checkCode('${curNum}')">📩 كود</button></div>`;}else{el('btnArea').innerHTML='<button class="btn btn-full" onclick="loadServices()">🔙 رجوع</button>';}}}catch(e){}}
+        async function checkCode(num){try{const d=await api('/api/otp?count=30');if(Array.isArray(d)){const f=d.find(i=>i[1]===num);if(f){const cd=f[2].match(/\d{4,8}/)?.[0]||f[2];el('messages').innerHTML+=`<div class="msg-block"><div class="msg-content">✅ الكود: <span class="code">${cd}</span></div></div>`;}else{alert('⏳ لم يصل بعد');}}}catch(e){}}
+        function addContact(){let n=prompt('📱 رقم الهاتف (مع كود الدولة):');if(n)window.open('https://wa.me/'+n.replace(/\D/g,''),'_blank');}
+        function changeColor(v){settings.color=v;save();applyColor(v);}
+        function saveProfile(){profile.name=el('nameInput').value||'أنا';profile.phone=el('phoneInput').value||'+201500972046';profile.avatar=el('avatarInput').value||'';save();goBack();}
+        window.onload=()=>{if(S.cur==='group'||S.cur==='bot'){cur=S.cur;render();}else render();};
+    </script>
+</body>
+</html>

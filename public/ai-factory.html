@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Factory - Ahmed AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#050508;--surface:#0d0d14;--primary:#7c3aed;--primary-light:#a78bfa;--secondary:#06b6d4;--text:#f1f5f9;--muted:#94a3b8;--border:#1e293b}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+        
+        header{background:var(--surface);padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+        header .logo{font-size:28px}header h1{font-size:18px;background:linear-gradient(135deg,var(--primary-light),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        
+        .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto}
+        .tab{flex:1;min-width:50px;padding:12px 6px;background:none;border:none;color:var(--muted);font-size:10px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;white-space:nowrap}
+        .tab.active{color:var(--primary-light);border-bottom:3px solid var(--primary)}
+        
+        main{flex:1;overflow-y:auto;padding:15px;padding-bottom:90px;max-width:550px;margin:0 auto;width:100%}
+        .tab-content{display:none}.tab-content.active{display:block}
+        
+        .chat-box{display:flex;flex-direction:column;gap:12px;min-height:300px}
+        .msg{display:flex;gap:8px;max-width:88%}
+        .msg.user{align-self:flex-end;flex-direction:row-reverse}
+        .msg.bot{align-self:flex-start}
+        .msg-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--surface);border:1px solid var(--border);flex-shrink:0}
+        .msg.user .msg-avatar{background:var(--primary);border:none;color:#fff}
+        .msg-bubble{padding:10px 14px;border-radius:12px;font-size:12px;line-height:1.5}
+        .msg.user .msg-bubble{background:var(--primary);color:#fff}
+        .msg.bot .msg-bubble{background:var(--surface);border:1px solid var(--border)}
+        .msg.bot a{color:var(--secondary);display:inline-block;margin-top:5px;padding:5px 10px;background:var(--primary);color:#fff;border-radius:6px;text-decoration:none;font-size:10px}
+        
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;transition:0.3s}
+        .card:hover{border-color:var(--primary)}
+        .card .icon{font-size:32px;margin-bottom:6px}
+        .card .name{font-weight:700;font-size:11px;margin:4px 0}
+        .card .desc{font-size:9px;color:var(--muted)}
+        .card a{display:inline-block;margin-top:6px;padding:6px 12px;background:var(--primary);color:#fff;border-radius:6px;text-decoration:none;font-size:10px}
+        
+        .progress-card{background:var(--surface);border:2px dashed var(--primary);border-radius:12px;padding:15px;text-align:center;margin:8px 0}
+        .progress-bar{width:100%;height:4px;background:var(--border);border-radius:2px;margin:8px 0;overflow:hidden}
+        .progress-fill{height:100%;background:var(--primary);width:0%;border-radius:2px}
+        
+        .input-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;z-index:90;max-width:550px;margin:0 auto}
+        .input-bar input{flex:1;padding:12px;background:var(--bg);border:2px solid var(--border);border-radius:20px;color:var(--text);outline:none;font-size:13px;font-family:'Cairo',sans-serif}
+        .input-bar input:focus{border-color:var(--primary)}
+        .input-bar button{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));border:none;color:#fff;font-size:16px;cursor:pointer}
+        
+        .typing{display:flex;gap:3px;padding:4px 0}
+        .typing span{width:4px;height:4px;background:var(--muted);border-radius:50%;animation:bounce 1.4s infinite}
+        .typing span:nth-child(1){animation-delay:0s}.typing span:nth-child(2){animation-delay:0.2s}.typing span:nth-child(3){animation-delay:0.4s}
+        @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+        
+        img.preview,video.preview{width:100%;border-radius:10px;margin-top:10px;border:1px solid var(--border)}
+        .quick-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+        .quick-btn{padding:6px 10px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:15px;font-size:10px;cursor:pointer;font-family:'Cairo',sans-serif}
+        .quick-btn:active{background:var(--primary);color:#fff;border-color:var(--primary)}
+    </style>
+</head>
+<body>
+
+<header><span class="logo">🤖</span><h1>AI Factory</h1><span style="color:var(--muted);font-size:10px;margin-right:auto;">Ahmed AI</span></header>
+
+<div class="tabs">
+    <button class="tab active" onclick="switchTab('chat')">💬 شات</button>
+    <button class="tab" onclick="switchTab('image')">🎨 صور</button>
+    <button class="tab" onclick="switchTab('video')">🎬 فيديو</button>
+    <button class="tab" onclick="switchTab('files')">📁 ملفات</button>
+    <button class="tab" onclick="switchTab('generate')">⚡ توليد</button>
+</div>
+
+<main>
+    <!-- Chat -->
+    <div id="tab-chat" class="tab-content active">
+        <div class="chat-box" id="chat-box">
+            <div class="msg bot"><div class="msg-avatar">🤖</div><div class="msg-bubble">👋 مرحباً! أنا AI Factory. أقدر أعمل:<br>💬 شات | 🎨 صور | 🎬 فيديو | 📁 ملفات | ⚡ توليد</div></div>
+        </div>
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="quick('صور')">🎨 صور</button>
+            <button class="quick-btn" onclick="quick('فيديو')">🎬 فيديو</button>
+            <button class="quick-btn" onclick="quick('اسكنات')">🎨 اسكنات</button>
+            <button class="quick-btn" onclick="quick('هاك')">☠️ هاك</button>
+            <button class="quick-btn" onclick="quick('ايم بوت')">🎯 ايم بوت</button>
+        </div>
+    </div>
+    
+    <!-- Image -->
+    <div id="tab-image" class="tab-content">
+        <div class="progress-card"><p>🎨 اكتب وصف الصورة في الشات</p><p style="font-size:10px;color:var(--muted);">"ارسم قطة" / "صورة طبيعة"</p></div>
+        <div id="image-result"></div>
+    </div>
+    
+    <!-- Video -->
+    <div id="tab-video" class="tab-content">
+        <div class="progress-card"><p>🎬 اكتب وصف الفيديو في الشات</p><p style="font-size:10px;color:var(--muted);">"فيديو سيارة" / "مقطع طبيعة"</p></div>
+        <div id="video-result"></div>
+    </div>
+    
+    <!-- Files -->
+    <div id="tab-files" class="tab-content">
+        <h3 style="color:var(--primary-light);margin-bottom:10px;font-size:14px;">📁 ملفات PUBG</h3>
+        <div class="grid">
+            <div class="card"><div class="icon">🎨</div><div class="name">اسكنات V1</div><div class="desc">حزمة كاملة</div><a href="https://www.mediafire.com/file/zksxavlbh9052n2/SKIN_1_APP.zip" target="_blank">📥 تحميل</a></div>
+            <div class="card"><div class="icon">🎨</div><div class="name">اسكنات V2</div><div class="desc">نسخة محسنة</div><a href="https://www.mediafire.com/file/wjwqpf5u0qd8rt2/SKIN_2_APP_.zip/file" target="_blank">📥 تحميل</a></div>
+            <div class="card"><div class="icon">☠️</div><div class="name">هكر V1</div><div class="desc">أدوات متقدمة</div><a href="https://www.mediafire.com/file/8vc1p8xjzu8h1hn/HACKE_V_1_APP_.zip/file" target="_blank">📥 تحميل</a></div>
+            <div class="card"><div class="icon">☠️</div><div class="name">هكر V2</div><div class="desc">نسخة محسنة</div><a href="https://www.mediafire.com/file/hhk46due9468tzk/HACKE_V_2_APP_.zip/file" target="_blank">📥 تحميل</a></div>
+            <div class="card" style="grid-column:1/-1"><div class="icon">⚡</div><div class="name">FPS 165</div><div class="desc">زيادة فريمات</div><a href="https://www.mediafire.com/file/vpqwmc0p9pbnbrs/FPS_HACKE_165_V_1_APP_.zip/file" target="_blank">📥 تحميل</a></div>
+        </div>
+    </div>
+    
+    <!-- Generate -->
+    <div id="tab-generate" class="tab-content">
+        <div class="progress-card"><p>⚡ اكتب اسم الملف في الشات</p><p style="font-size:10px;color:var(--muted);">"اسكنات" / "هاك" / "FPS"</p></div>
+        <div id="generate-result"></div>
+    </div>
+</main>
+
+<div class="input-bar">
+    <input type="text" id="prompt" placeholder="اكتب هنا..." onkeydown="if(event.key==='Enter')send()">
+    <button onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
+</div>
+
+<script>
+let TAB='chat',chatHistory=[];
+const $=id=>document.getElementById(id);
+
+const FILES={
+    'اسكنات':{v1:'https://www.mediafire.com/file/zksxavlbh9052n2/SKIN_1_APP.zip',v2:'https://www.mediafire.com/file/wjwqpf5u0qd8rt2/SKIN_2_APP_.zip/file',n:'اسكنات'},
+    'هاك':{v1:'https://www.mediafire.com/file/8vc1p8xjzu8h1hn/HACKE_V_1_APP_.zip/file',v2:'https://www.mediafire.com/file/hhk46due9468tzk/HACKE_V_2_APP_.zip/file',n:'هاك'},
+    'fps':{v1:'https://www.mediafire.com/file/vpqwmc0p9pbnbrs/FPS_HACKE_165_V_1_APP_.zip/file',n:'FPS 165'},
+    'فريم':{v1:'https://www.mediafire.com/file/vpqwmc0p9pbnbrs/FPS_HACKE_165_V_1_APP_.zip/file',n:'FPS 165'},
+};
+const UNKNOWN=['ايم بوت','aimbot','esp','wallhack','ماجيك','بوليت','تلي بورت','antenna','speed','jump'];
+
+function switchTab(t){TAB=t;document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));$('tab-'+t).classList.add('active');}
+
+function addMsg(role,html){
+    let d=document.createElement('div');d.className='msg '+role;
+    d.innerHTML=`<div class="msg-avatar">${role==='user'?'👤':'🤖'}</div><div class="msg-bubble">${html}</div>`;
+    $('chat-box').appendChild(d);$('chat-box').scrollTop=$('chat-box').scrollHeight;return d;
+}
+function loader(){return addMsg('bot','<div class="typing"><span></span><span></span><span></span></div>');}
+
+function quick(t){$('prompt').value=t;send();}
+
+function aiReply(t){
+    t=t.toLowerCase();
+    if(t.includes('سلام')||t.includes('مرحبا'))return 'وعليكم السلام! 💜';
+    if(t.includes('شكر'))return 'العفو! 😊';
+    if(t.includes('كيفك'))return 'الحمد لله! وأنت؟ 😊';
+    if(t.includes('صورة')||t.includes('ارسم')||t.includes('صور'))return '🎨 روح على تبويب الصور واكتب وصف الصورة!';
+    if(t.includes('فيديو')||t.includes('مقطع'))return '🎬 روح على تبويب الفيديو واكتب الوصف!';
+    for(let u of UNKNOWN){if(t.includes(u))return `😅 معلش، لسا متعلمتش أعمل <b>${u}</b>\n\nجرب: 🎨 اسكنات | ☠️ هاك | ⚡ FPS`;}
+    for(let k in FILES){if(t.includes(k))return 'موجود في تبويب 📁 ملفات! ولا تكتب "اصنع '+k+'" في التوليد ⚡';}
+    return 'فهمت! تقدر تستخدمني في:\n💬 شات | 🎨 صور | 🎬 فيديو | 📁 ملفات | ⚡ توليد';
+}
+
+function showProgress(el,text,time,callback){
+    el.innerHTML=`<div class="progress-card"><p>${text}</p><div class="progress-bar"><div class="progress-fill" id="pf"></div></div><p id="ps">0%</p></div>`;
+    let p=0,i=setInterval(()=>{p+=time;if(p>100)p=100;$('pf').style.width=p+'%';$('ps').textContent=Math.floor(p)+'%';if(p>=100){clearInterval(i);callback(el);}},time*10);
+}
+
+async function send(){
+    let t=$('prompt').value.trim();if(!t)return;$('prompt').value='';
+    
+    if(TAB==='chat'){
+        chatHistory.push({role:'user',content:t});
+        addMsg('user',t);let l=loader();
+        await new Promise(r=>setTimeout(r,500+Math.random()*1000));l.remove();
+        addMsg('bot',aiReply(t));
+    }
+    else if(TAB==='image'){
+        let el=$('image-result');
+        showProgress(el,'🎨 جاري رسم: '+t,5,()=>{
+            el.innerHTML+=`<img src="https://picsum.photos/400/300?random=${Date.now()}" class="preview" alt="AI">`;
+        });
+    }
+    else if(TAB==='video'){
+        let el=$('video-result');
+        showProgress(el,'🎬 جاري إنشاء: '+t,2,()=>{
+            el.innerHTML+=`<video src="https://www.w3schools.com/html/mov_bbb.mp4" class="preview" controls></video>`;
+        });
+    }
+    else if(TAB==='generate'){
+        let el=$('generate-result'),found=null;
+        t=t.toLowerCase();
+        for(let u of UNKNOWN){if(t.includes(u)){el.innerHTML=`<div class="progress-card"><p>😅 لسا متعلمتش أعمل <b>${u}</b></p><p style="font-size:10px;color:var(--muted);">جرب: 🎨 اسكنات | ☠️ هاك | ⚡ FPS</p></div>`;return;}}
+        for(let k in FILES){if(t.includes(k)){found=FILES[k];break;}}
+        if(found){
+            showProgress(el,'⚡ جاري صنع '+found.n+'...',4,()=>{
+                el.innerHTML+=`<div class="grid" style="margin-top:10px"><div class="card"><div class="icon">📦</div><div class="name">${found.n} V1</div><a href="${found.v1}" target="_blank">📥 تحميل</a></div>${found.v2?`<div class="card"><div class="icon">📦</div><div class="name">${found.n} V2</div><a href="${found.v2}" target="_blank">📥 تحميل</a></div>`:''}</div>`;
+            });
+        }else{el.innerHTML=`<div class="progress-card"><p>🤔 مش فاهم. جرب: اسكنات / هاك / FPS</p></div>`;}
+    }
+}
+</script>
+</body>
+</html>

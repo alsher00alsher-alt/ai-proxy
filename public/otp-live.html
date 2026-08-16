@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>📱 OTP CODES</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;padding:10px}
+        .header{text-align:center;padding:15px;background:#111;border-bottom:2px solid #25D366;position:sticky;top:0;z-index:10}
+        h1{color:#25D366;font-size:20px;margin-bottom:5px}
+        .stats{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font-size:12px}
+        .stats span{background:#1a1a1a;padding:4px 10px;border-radius:6px}
+        .container{max-width:500px;margin:10px auto}
+        .card{background:#111;border:1px solid #222;border-radius:10px;padding:10px 12px;margin:5px 0;display:flex;align-items:center;gap:10px;transition:0.2s}
+        .card:hover{border-color:#25D366}
+        .card-new{border-left:3px solid #25D366}
+        .flag{font-size:28px;min-width:35px;text-align:center}
+        .info{flex:1}
+        .country-row{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+        .country-code{color:#25D366;font-weight:bold;font-size:13px}
+        .number-row{color:#888;font-size:11px}
+        .prefix-row{color:#666;font-size:10px;margin-top:2px}
+        .otp-box{text-align:center;min-width:90px}
+        .otp-code{font-size:22px;color:#25D366;font-weight:bold;letter-spacing:2px;font-family:monospace;background:#1a1a1a;padding:5px 8px;border-radius:6px;display:block}
+        .copy-btn{background:#333;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:10px;margin-top:4px;width:100%}
+        .copy-btn:hover{background:#25D366;color:#000}
+        .controls{display:flex;gap:5px;margin:8px 0;justify-content:center;flex-wrap:wrap}
+        button{padding:8px 12px;border-radius:6px;border:none;font-size:12px;cursor:pointer;font-weight:bold}
+        .btn-start{background:#25D366;color:#000}.btn-stop{background:#f00;color:#fff}.btn-refresh{background:#333;color:#fff}
+        .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#25D366;color:#000;padding:8px 20px;border-radius:20px;font-weight:bold;z-index:100;display:none;font-size:13px}
+        .empty{text-align:center;padding:30px;color:#888}
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📱 OTP CODES LIVE</h1>
+    <div class="stats">
+        <span>📊 <b id="t">0</b></span>
+        <span>🆕 <b id="n">0</b></span>
+        <span>🔄 <b id="u">0</b></span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="controls">
+        <button class="btn-start" onclick="startLive()">▶️ بدء</button>
+        <button class="btn-stop" onclick="stopLive()">⏸️ إيقاف</button>
+        <button class="btn-refresh" onclick="fetchNow()">🔄</button>
+    </div>
+    <div id="content"><div class="empty">⏳ جاري التحميل...</div></div>
+</div>
+
+<div class="toast" id="toast">✅ تم النسخ!</div>
+
+<script>
+let all=[],seen=new Set(),nc=0,uc=0,iv=null;
+
+const FLAGS={
+    'Lebanon':'🇱🇧','Indonesia':'🇮🇩','India':'🇮🇳','USA':'🇺🇸','Brazil':'🇧🇷',
+    'Nigeria':'🇳🇬','Egypt':'🇪🇬','Turkey':'🇹🇷','UK':'🇬🇧','France':'🇫🇷',
+    'Germany':'🇩🇪','Saudi Arabia':'🇸🇦','Morocco':'🇲🇦','Pakistan':'🇵🇰',
+    'Philippines':'🇵🇭','Malaysia':'🇲🇾','Canada':'🇨🇦','Australia':'🇦🇺',
+    'Ukraine':'🇺🇦','Togo':'🇹🇬','Russia':'🇷🇺','China':'🇨🇳','Japan':'🇯🇵',
+    'Spain':'🇪🇸','Italy':'🇮🇹','Netherlands':'🇳🇱','Sweden':'🇸🇪'
+};
+const G=c=>FLAGS[c]||'🌍';
+
+async function fetchOTPs(){
+    try{
+        const r=await fetch('/api/otp-proxy');
+        const d=await r.json();
+        if(d.success)process(d.otps||[]);
+    }catch(e){}
+}
+
+function process(otps){
+    otps.sort((a,b)=>new Date(b.created_at||b.time||0)-new Date(a.created_at||a.time||0));
+    otps.forEach(o=>{
+        const id=(o.number||'')+'_'+(o.otp||o.code||'');
+        if(!seen.has(id)){seen.add(id);nc++;o.isNew=true}
+    });
+    all=otps;uc++;display();updateStats();
+}
+
+function display(){
+    document.getElementById('content').innerHTML=all.length===0
+        ?'<div class="empty">لا توجد أكواد</div>'
+        :all.slice(0,100).map(o=>{
+            const num=o.number||'?';
+            const code=o.otp||o.code||'?';
+            const country=o.country||'?';
+            const prefix=num.length>6?num.substring(0,7):num;
+            const last4=num.length>4?num.slice(-4):'XXXX';
+            
+            // فلترة الكود - يظهر الكود فقط
+            const cleanCode=code.replace(/[^0-9]/g,'');
+            const displayCode=cleanCode.length>=6
+                ?cleanCode.substring(0,3)+'-'+cleanCode.substring(3,6)
+                :cleanCode;
+            
+            return`
+            <div class="card${o.isNew?' card-new':''}">
+                <div class="flag">${G(country)}</div>
+                <div class="info">
+                    <div class="country-row">
+                        <span class="country-code">#${country.substring(0,2).toUpperCase()}</span>
+                        <span style="font-size:11px;color:#888">📱 +${prefix}-XclusoR-${last4}</span>
+                    </div>
+                    <div class="prefix-row">🆔 Prefix: ${prefix}</div>
+                </div>
+                <div class="otp-box">
+                    <div class="otp-code">${displayCode}</div>
+                    <button class="copy-btn" onclick="copyCode('${code}')">📋 نسخ</button>
+                </div>
+            </div>`;
+        }).join('');
+}
+
+function updateStats(){
+    document.getElementById('t').textContent=all.length;
+    document.getElementById('n').textContent=nc;
+    document.getElementById('u').textContent=uc;
+}
+
+function copyCode(c){navigator.clipboard.writeText(c);let t=document.getElementById('toast');t.style.display='block';setTimeout(()=>t.style.display='none',1500)}
+function fetchNow(){fetchOTPs()}
+function startLive(){fetchOTPs();iv=setInterval(fetchOTPs,5000)}
+function stopLive(){if(iv){clearInterval(iv);iv=null}}
+fetchOTPs();
+</script>
+</body>
+</html>

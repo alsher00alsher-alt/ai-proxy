@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>📱 Number Panel OTP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#050510;--surface:#0a0a1a;--gold:#d4af37;--green:#2ed573;--red:#ff4757;--blue:#1e90ff;--text:#fff;--muted:#aaa;--border:#1a1a2e}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:15px}
+        .container{max-width:600px;margin:0 auto}
+        .header{text-align:center;margin-bottom:20px}
+        .header .icon{font-size:50px;margin-bottom:5px}
+        h1{font-size:24px;background:linear-gradient(135deg,var(--gold),#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:5px}
+        .header p{color:var(--muted);font-size:12px}
+        
+        .toolbar{display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap}
+        .toolbar button{flex:1;min-width:80px;padding:12px;border-radius:10px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;transition:0.2s}
+        .btn-refresh{background:var(--blue);color:#fff}
+        .btn-services{background:var(--gold);color:#000}
+        .btn-countries{background:#8b5cf6;color:#fff}
+        .btn-request{background:var(--green);color:#000}
+        .btn:active{transform:scale(0.95)}
+        
+        .stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:15px}
+        .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+        .stat .num{font-size:20px;font-weight:800;color:var(--gold)}
+        .stat .txt{font-size:9px;color:var(--muted)}
+        
+        .section-title{color:var(--gold);font-size:14px;font-weight:700;margin:15px 0 10px;display:flex;justify-content:space-between;align-items:center}
+        .section-title button{background:none;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;font-size:10px;cursor:pointer;font-family:'Cairo',sans-serif}
+        
+        .otp-list{display:grid;gap:8px;max-height:500px;overflow-y:auto}
+        .otp-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;animation:slideIn 0.3s}
+        @keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+        .otp-card.new{animation:glow 1s infinite;border-color:var(--green)}
+        @keyframes glow{0%,100%{box-shadow:0 0 5px rgba(46,213,115,0.3)}50%{box-shadow:0 0 20px rgba(46,213,115,0.6)}}
+        .otp-flag{font-size:28px;flex-shrink:0}
+        .otp-info{flex:1;min-width:0}
+        .otp-service{font-size:12px;font-weight:700;color:var(--text)}
+        .otp-number{font-size:13px;color:var(--muted);direction:ltr;text-align:right;font-weight:600}
+        .otp-code{background:rgba(46,213,115,0.15);border:1px solid var(--green);border-radius:8px;padding:8px 12px;font-size:16px;font-weight:900;color:var(--green);letter-spacing:2px;text-align:center;flex-shrink:0;cursor:pointer;min-width:70px}
+        .otp-code:active{background:var(--green);color:#000}
+        .otp-msg{font-size:10px;color:var(--muted);margin-top:2px;word-break:break-all}
+        
+        .my-numbers{display:grid;gap:8px}
+        .my-number-card{background:var(--surface);border:1px solid var(--green);border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between}
+        .my-number-card .num{font-size:18px;font-weight:700;color:var(--green);direction:ltr}
+        .my-number-card .service{font-size:11px;color:var(--muted)}
+        
+        .services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-bottom:15px}
+        .service-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center;cursor:pointer;font-size:11px}
+        .service-card:hover{border-color:var(--gold)}
+        .service-card .count{color:var(--green);font-weight:700;font-size:16px}
+        
+        .empty{text-align:center;padding:30px;color:var(--muted)}
+        .loading{text-align:center;padding:20px}
+        .spinner{width:30px;height:30px;border:3px solid var(--border);border-top:3px solid var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:10px auto}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--green);color:var(--green);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:999}
+        
+        .tabs{display:flex;gap:4px;margin-bottom:12px}
+        .tab{flex:1;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);font-family:'Cairo',sans-serif}
+        .tab.active{border-color:var(--gold);color:var(--gold)}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="icon">📱</div>
+        <h1>Number Panel</h1>
+        <p>Live OTP Stream · alsher00alsher-alt</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('live')">🔴 مباشر</div>
+        <div class="tab" onclick="switchTab('services')">📋 الخدمات</div>
+        <div class="tab" onclick="switchTab('my')">📱 أرقامي</div>
+    </div>
+
+    <div class="toolbar">
+        <button class="btn btn-refresh" onclick="fetchLiveOTPs()">🔄 تحديث</button>
+        <button class="btn btn-services" onclick="fetchServices()">📋 الخدمات</button>
+        <button class="btn btn-countries" onclick="fetchCountries()">🌍 الدول</button>
+        <button class="btn btn-request" onclick="requestNumber()">📱 اطلب رقم</button>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><div class="num" id="stat-total">0</div><div class="txt">OTPs</div></div>
+        <div class="stat"><div class="num" id="stat-services">0</div><div class="txt">خدمات</div></div>
+        <div class="stat"><div class="num" id="stat-countries">0</div><div class="txt">دول</div></div>
+        <div class="stat"><div class="num" id="stat-my">0</div><div class="txt">أرقامي</div></div>
+    </div>
+
+    <div id="tab-live" class="tab-content">
+        <div class="section-title">🔴 بث مباشر <button onclick="fetchLiveOTPs()">تحديث</button></div>
+        <div class="otp-list" id="otp-list"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+    <div id="tab-services" class="tab-content" style="display:none">
+        <div class="section-title">📋 الخدمات المتاحة</div>
+        <div class="services-grid" id="services-grid"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+    <div id="tab-my" class="tab-content" style="display:none">
+        <div class="section-title">📱 أرقامي النشطة</div>
+        <div class="my-numbers" id="my-numbers"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+</div>
+
+<script>
+const API_KEY='np_live_e0qij8c-R92wnT8_SAqQ9Lcgtp5J8xmILV9Uc9HsYP0';
+const BASE='https://numberpanel.tech';
+let seenIDs=new Set(),allOTPs=[],currentTab='live';
+
+function switchTab(tab){
+    currentTab=tab;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    event.target.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
+    document.getElementById('tab-'+tab).style.display='block';
+    if(tab==='services')fetchServices();
+    if(tab==='my')fetchMyNumbers();
+    if(tab==='live')fetchLiveOTPs();
+}
+
+async function fetchLiveOTPs(){
+    showLoading('otp-list');
+    try{
+        let r=await fetch(BASE+'/api/otp',{headers:{'Authorization':'Bearer '+API_KEY}});
+        let data=await r.json();
+        allOTPs=data.reverse();
+        let newCount=0,countries=new Set(),services=new Set();
+        allOTPs.forEach(o=>{
+            countries.add(getFlag(o.number));
+            services.add(o.service);
+            if(!seenIDs.has(o.id)){seenIDs.add(o.id);newCount++;}
+        });
+        document.getElementById('stat-total').textContent=allOTPs.length;
+        document.getElementById('stat-services').textContent=services.size;
+        document.getElementById('stat-countries').textContent=countries.size;
+        renderOTPs();
+    }catch(e){document.getElementById('otp-list').innerHTML='<div class="empty">❌ فشل الاتصال</div>';}
+}
+
+function renderOTPs(){
+    let list=document.getElementById('otp-list');
+    if(allOTPs.length===0){list.innerHTML='<div class="empty">📭 لا توجد بيانات</div>';return;}
+    list.innerHTML=allOTPs.slice(0,50).map(o=>{
+        let flag=getFlag(o.number),otp=extractOTP(o.message||''),masked=maskNumber(o.number);
+        return`<div class="otp-card">
+            <div class="otp-flag">${flag}</div>
+            <div class="otp-info">
+                <div class="otp-service">${o.service}</div>
+                <div class="otp-number">${masked}</div>
+                <div class="otp-msg">${(o.message||'').substring(0,60)}</div>
+            </div>
+            <div class="otp-code" onclick="copyOTP('${otp}')">${otp}</div>
+        </div>`;
+    }).join('');
+}
+
+async function fetchServices(){
+    showLoading('services-grid');
+    try{
+        let r=await fetch(BASE+'/api/services',{headers:{'Authorization':'Bearer '+API_KEY}});
+        let data=await r.json();
+        let html='';
+        for(let[s,count]of Object.entries(data)){html+=`<div class="service-card"><div class="count">${count}</div>${s}</div>`;}
+        document.getElementById('services-grid').innerHTML=html;
+    }catch(e){document.getElementById('services-grid').innerHTML='<div class="empty">❌ فشل</div>';}
+}
+
+async function fetchCountries(){
+    try{
+        let r=await fetch(BASE+'/api/countries',{headers:{'Authorization':'Bearer '+API_KEY}});
+        let data=await r.json();
+        alert('🌍 الدول المتاحة:\n\n'+JSON.stringify(data).substring(0,500));
+    }catch(e){alert('❌ فشل');}
+}
+
+async function requestNumber(){
+    let service=prompt('📱 ادخل اسم الخدمة (مثلاً: whatsapp):');
+    if(!service)return;
+    let country=prompt('🌍 ادخل رمز الدولة (مثلاً: EG):')||'';
+    try{
+        let body={service:service};if(country)body.country=country;
+        let r=await fetch(BASE+'/api/request_number',{method:'POST',headers:{'Authorization':'Bearer '+API_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+        let data=await r.json();
+        if(data.number){alert('✅ تم طلب الرقم: '+data.number);fetchMyNumbers();}
+        else{alert('❌ فشل: '+JSON.stringify(data));}
+    }catch(e){alert('❌ فشل الاتصال');}
+}
+
+async function fetchMyNumbers(){
+    showLoading('my-numbers');
+    try{
+        let r=await fetch(BASE+'/api/my_numbers',{headers:{'Authorization':'Bearer '+API_KEY}});
+        let data=await r.json();
+        if(!Array.isArray(data)||data.length===0){document.getElementById('my-numbers').innerHTML='<div class="empty">📭 لا توجد أرقام نشطة</div>';return;}
+        document.getElementById('stat-my').textContent=data.length;
+        document.getElementById('my-numbers').innerHTML=data.map(n=>`
+            <div class="my-number-card">
+                <div><div class="num">${n.number}</div><div class="service">${n.service}</div></div>
+                <button class="btn-refresh" style="padding:8px 12px;font-size:11px;" onclick="releaseNumber('${n.number}')">حرر</button>
+            </div>`).join('');
+    }catch(e){document.getElementById('my-numbers').innerHTML='<div class="empty">❌ فشل</div>';}
+}
+
+async function releaseNumber(num){
+    if(!confirm('تأكيد تحرير الرقم: '+num+'؟'))return;
+    try{
+        await fetch(BASE+'/api/release_number',{method:'POST',headers:{'Authorization':'Bearer '+API_KEY,'Content-Type':'application/json'},body:JSON.stringify({number:num})});
+        alert('✅ تم تحرير الرقم');fetchMyNumbers();
+    }catch(e){alert('❌ فشل');}
+}
+
+const COUNTRIES={'1':'🇺🇸','20':'🇪🇬','44':'🇬🇧','91':'🇮🇳','7':'🇷🇺','33':'🇫🇷','49':'🇩🇪','39':'🇮🇹','34':'🇪🇸','55':'🇧🇷','92':'🇵🇰','90':'🇹🇷','52':'🇲🇽','62':'🇮🇩','81':'🇯🇵','86':'🇨🇳'};
+function getFlag(num){let n=num.replace('+','');for(let k of Object.keys(COUNTRIES).sort((a,b)=>b.length-a.length)){if(n.startsWith(k))return COUNTRIES[k];}return'🏳️';}
+function extractOTP(msg){let m=msg.match(/\d{3}[-\s]?\d{3,4}|\d{4,8}/);return m?m[0]:'---';}
+function maskNumber(num){num=num.replace('+','');if(num.length<=6)return num;return num.slice(0,3)+'x'.repeat(num.length-6)+num.slice(-3);}
+function copyOTP(code){navigator.clipboard.writeText(code).then(()=>{let t=document.createElement('div');t.className='toast';t.textContent='✅ تم نسخ: '+code;document.body.appendChild(t);setTimeout(()=>t.remove(),2000);});}
+function showLoading(id){document.getElementById(id).innerHTML='<div class="loading"><div class="spinner"></div></div>';}
+
+fetchLiveOTPs();
+setInterval(fetchLiveOTPs,15000);
+</script>
+</body>
+</html>

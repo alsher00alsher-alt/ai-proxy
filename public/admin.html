@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ Admin Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Courier New',monospace;background:#000;color:#fff;min-height:100vh;padding:16px}
+        .container{max-width:600px;margin:0 auto}
+        h1{color:#ffaa00;text-align:center;font-size:24px;margin-bottom:20px;text-shadow:0 0 20px #ffaa00}
+        .card{background:#0a0a0a;border:2px solid #333;border-radius:12px;padding:20px;margin-bottom:16px}
+        .card h2{color:#ffaa00;font-size:16px;margin-bottom:14px;border-bottom:1px solid #333;padding-bottom:8px}
+        .input-group{margin-bottom:12px;display:flex;gap:8px}
+        .input-group input{flex:1;padding:12px;background:#000;border:1px solid #333;border-radius:6px;color:#fff;font-size:13px;font-family:'Courier New',monospace;outline:none}
+        .input-group input:focus{border-color:#ffaa00}
+        .btn{padding:10px 18px;border-radius:6px;border:none;cursor:pointer;font-family:'Courier New',monospace;font-weight:bold;font-size:13px}
+        .btn-green{background:#0a2a0a;color:#00ff41;border:1px solid #00ff41}
+        .btn-red{background:#2a0a0a;color:#ff0040;border:1px solid #ff0040}
+        .btn-gold{background:#0a0a2a;color:#ffaa00;border:1px solid #ffaa00;width:100%;padding:14px;font-size:15px;margin-top:10px}
+        .btn-sm{padding:4px 10px;font-size:11px}
+        .code-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+        .code-tag{background:#0a0a0a;border:1px solid #00ff41;color:#00ff41;padding:6px 14px;border-radius:20px;font-size:12px;display:flex;align-items:center;gap:8px}
+        .tool-list{display:grid;gap:8px;max-height:400px;overflow-y:auto}
+        .tool-row{background:#050000;border:1px solid #333;border-radius:8px;padding:10px;display:flex;align-items:center;justify-content:space-between}
+        .tool-row.blocked{opacity:0.4;border-color:#ff0040}
+        .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0a0a0a;border:2px solid #ffaa00;color:#ffaa00;padding:12px 24px;border-radius:8px;z-index:999;display:none}
+        .live-indicator{text-align:center;color:#00ff41;font-size:12px;margin-bottom:10px}
+        .live-dot{display:inline-block;width:10px;height:10px;background:#00ff41;border-radius:50%;animation:pulse 1s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🛡️ Admin Panel</h1>
+    <div class="live-indicator"><span class="live-dot"></span> متصل بـ Firebase</div>
+
+    <div class="card">
+        <h2>🔑 إدارة الأكواد</h2>
+        <div class="input-group">
+            <input type="text" id="new-code" placeholder="أدخل كود جديد">
+            <button class="btn btn-green" onclick="addCode()">➕ إضافة</button>
+        </div>
+        <div class="code-list" id="code-list">⏳ جاري التحميل...</div>
+    </div>
+
+    <div class="card">
+        <h2>🛠️ الأدوات - اضغط للإيقاف/التفعيل</h2>
+        <div class="tool-list" id="tool-list">⏳ جاري التحميل...</div>
+    </div>
+
+    <button class="btn btn-gold" onclick="saveAll()">💾 حفظ التغييرات</button>
+    <p style="text-align:center;color:#666;font-size:10px;margin-top:8px;">التغييرات تنعكس فوراً على التطبيق</p>
+    <div class="toast" id="toast"></div>
+</div>
+
+<script>
+var db;
+var codes = {};
+var blocked = [];
+
+firebase.initializeApp({
+    apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+    projectId: "game-a1aca",
+    storageBucket: "game-a1aca.firebasestorage.app",
+    appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+});
+db = firebase.firestore();
+
+function toast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(function(){ t.style.display = 'none'; }, 2000);
+}
+
+async function loadData() {
+    try {
+        var doc = await db.collection('config').doc('settings').get();
+        if (doc.exists) {
+            var data = doc.data();
+            codes = data.codes || {admin:true,elgen:true};
+            blocked = data.blocked_tools || [];
+        } else {
+            codes = {admin:true,elgen:true};
+            blocked = [];
+        }
+        renderCodes();
+        renderTools();
+        toast('✅ تم التحميل من Firebase');
+    } catch(e) {
+        toast('❌ فشل الاتصال بـ Firebase');
+    }
+}
+
+function renderCodes() {
+    var html = '';
+    for (var c in codes) {
+        html += '<div class="code-tag">'+c+' <button class="btn btn-red btn-sm" onclick="deleteCode(\''+c+'\')">✕</button></div>';
+    }
+    document.getElementById('code-list').innerHTML = html || '<p style="color:#666;">لا توجد أكواد</p>';
+}
+
+function addCode() {
+    var code = document.getElementById('new-code').value.trim().toLowerCase();
+    if (!code) return toast('⚠️ اكتب كود');
+    if (codes[code]) return toast('⚠️ الكود موجود بالفعل');
+    codes[code] = true;
+    document.getElementById('new-code').value = '';
+    renderCodes();
+    toast('✅ تمت إضافة: ' + code);
+}
+
+function deleteCode(code) {
+    if (code === 'admin' || code === 'elgen') return toast('⚠️ لا يمكن حذف الكود الأساسي');
+    delete codes[code];
+    renderCodes();
+    toast('🗑️ تم حذف: ' + code);
+}
+
+function renderTools() {
+    var tools = [
+        {page:'photo-front.html',name:'صور أمامية',icon:'📸'},
+        {page:'photo-back.html',name:'صور خلفية',icon:'📷'},
+        {page:'mm.html',name:'فيديو أمامي',icon:'🎥'},
+        {page:'video-back.html',name:'فيديو خلفي',icon:'📹'},
+        {page:'location.html',name:'GPS موقع',icon:'📍'},
+        {page:'audio.html',name:'تسجيل صوت',icon:'🎙️'},
+        {page:'g.html',name:'شحن PUBG',icon:'🔫'},
+        {page:'freefire.html',name:'شحن فري فاير',icon:'🎯'},
+        {page:'fifa.html',name:'نقاط FUT',icon:'⚽'},
+        {page:'discord.html',name:'Nitro مجاني',icon:'💎'},
+        {page:'fb.html',name:'فيسبوك',icon:'📘'},
+        {page:'insta.html',name:'انستجرام',icon:'📷'},
+        {page:'whatsapp.html',name:'واتساب',icon:'💬'},
+        {page:'twitter.html',name:'تويتر/X',icon:'𝕏'},
+        {page:'snapchat.html',name:'سناب شات',icon:'👻'},
+        {page:'tiktok.html',name:'تيك توك',icon:'🎵'},
+        {page:'spotify.html',name:'Spotify',icon:'🎧'},
+        {page:'netflix.html',name:'Netflix',icon:'📺'},
+        {page:'paypal.html',name:'PayPal',icon:'💳'},
+        {page:'vodafone.html',name:'فودافون كاش',icon:'🏦'},
+        {page:'iphone.html',name:'iPhone 15',icon:'📱'},
+        {page:'recharge.html',name:'شحن مجاني',icon:'📡'},
+        {page:'scan.html',name:'رفع 10 صور',icon:'📁'},
+        {page:'clipboard.html',name:'سحب الحافظة',icon:'📋'},
+        {page:'live.html',name:'كاميرا مباشر',icon:'🎥'}
+    ];
+    var html = '';
+    for (var i=0;i<tools.length;i++) {
+        var t = tools[i];
+        var isBlocked = blocked.indexOf(t.page) !== -1;
+        html += '<div class="tool-row'+(isBlocked?' blocked':'')+'">';
+        html += '<span>'+t.icon+' '+t.name+'</span>';
+        html += '<button class="btn '+(isBlocked?'btn-green':'btn-red')+'" onclick="toggleTool(\''+t.page+'\')">'+(isBlocked?'تفعيل':'إيقاف')+'</button>';
+        html += '</div>';
+    }
+    document.getElementById('tool-list').innerHTML = html;
+}
+
+function toggleTool(page) {
+    var idx = blocked.indexOf(page);
+    if (idx === -1) {
+        blocked.push(page);
+        toast('⛔ تم إيقاف: ' + page);
+    } else {
+        blocked.splice(idx, 1);
+        toast('✅ تم تفعيل: ' + page);
+    }
+    renderTools();
+}
+
+async function saveAll() {
+    try {
+        await db.collection('config').doc('settings').set({
+            codes: codes,
+            blocked_tools: blocked
+        }, {merge: true});
+        toast('💾 تم الحفظ! التغييرات فورية');
+    } catch(e) {
+        toast('❌ فشل الحفظ: ' + e.message);
+    }
+}
+
+loadData();
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual Screen</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#000;height:100vh;overflow:hidden}
+        .container{display:flex;flex-direction:column;height:100vh}
+        
+        .toolbar{display:flex;gap:8px;padding:8px;background:#111;flex-shrink:0;flex-wrap:wrap}
+        .toolbar button{padding:10px 15px;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:monospace}
+        .btn-swap{background:#f59e0b}
+        .btn-toggle{background:#06b6d4}
+        .btn-close{background:#ef4444}
+        
+        .frames-container{flex:1;display:flex;flex-direction:column;overflow:hidden}
+        .frame-box{flex:1;overflow:hidden;position:relative}
+        .frame-box iframe{width:100%;height:100%;border:none}
+        .frame-box .label{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.8);color:#fff;padding:4px 10px;border-radius:5px;font-size:10px;z-index:10;font-family:monospace}
+        .frame-box .close-btn{position:absolute;top:8px;right:8px;background:rgba(239,68,68,0.8);color:#fff;border:none;width:22px;height:22px;border-radius:50%;font-size:10px;cursor:pointer;z-index:10}
+        
+        .divider{height:3px;background:#8b5cf6;cursor:row-resize;flex-shrink:0}
+        .hidden{display:none!important}
+        .full{flex:1!important}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <button class="btn-swap" onclick="swap()">🔃 تبديل</button>
+            <button class="btn-toggle" onclick="toggleTop()">🔝 العلوي</button>
+            <button class="btn-toggle" onclick="toggleBottom()">🔽 السفلي</button>
+        </div>
+        
+        <div class="frames-container">
+            <div class="frame-box" id="topBox">
+                <span class="label">🔝</span>
+                <button class="close-btn" onclick="toggleTop()">✕</button>
+                <iframe id="topFrame" src="https://ai-undress.ai/ar"></iframe>
+            </div>
+            
+            <div class="divider" id="divider"></div>
+            
+            <div class="frame-box" id="bottomBox">
+                <span class="label">🔽</span>
+                <button class="close-btn" onclick="toggleBottom()">✕</button>
+                <iframe id="bottomFrame" src="https://moakt.com/ar/inbox"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function swap(){
+            let t=document.getElementById('topFrame').src;
+            let b=document.getElementById('bottomFrame').src;
+            document.getElementById('topFrame').src=b;
+            document.getElementById('bottomFrame').src=t;
+        }
+        function toggleTop(){
+            document.getElementById('topBox').classList.toggle('hidden');
+            document.getElementById('divider').classList.toggle('hidden');
+            if(document.getElementById('topBox').classList.contains('hidden')){
+                document.getElementById('bottomBox').classList.add('full');
+            }else{
+                document.getElementById('bottomBox').classList.remove('full');
+            }
+        }
+        function toggleBottom(){
+            document.getElementById('bottomBox').classList.toggle('hidden');
+            document.getElementById('divider').classList.toggle('hidden');
+            if(document.getElementById('bottomBox').classList.contains('hidden')){
+                document.getElementById('topBox').classList.add('full');
+            }else{
+                document.getElementById('topBox').classList.remove('full');
+            }
+        }
+        
+        // سحب الفاصل
+        let isDragging=false;
+        document.getElementById('divider').addEventListener('mousedown',()=>isDragging=true);
+        document.getElementById('divider').addEventListener('touchstart',()=>isDragging=true);
+        document.addEventListener('mousemove',e=>{
+            if(!isDragging)return;
+            let t=document.getElementById('topBox'),b=document.getElementById('bottomBox');
+            t.style.flex='none';t.style.height=Math.max(50,e.clientY)+'px';
+            b.style.flex='1';
+        });
+        document.addEventListener('touchmove',e=>{
+            if(!isDragging)return;
+            let t=document.getElementById('topBox'),b=document.getElementById('bottomBox');
+            t.style.flex='none';t.style.height=Math.max(50,e.touches[0].clientY)+'px';
+            b.style.flex='1';
+        });
+        document.addEventListener('mouseup',()=>isDragging=false);
+        document.addEventListener('touchend',()=>isDragging=false);
+    </script>
+</body>
+</html>

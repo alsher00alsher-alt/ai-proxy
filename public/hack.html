@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>⚠️ DATABASE ACCESS</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0a0a0a;color:#0f0;font-family:'Courier New',monospace;padding:20px;min-height:100vh;display:flex;align-items:center;justify-content:center}
+        .screen{background:#000;border:2px solid #0f0;border-radius:10px;padding:30px;max-width:500px;width:100%;box-shadow:0 0 30px rgba(0,255,0,0.3)}
+        h2{color:#f00;text-align:center;margin-bottom:20px;font-size:24px}
+        input{width:100%;padding:12px;background:#111;color:#0f0;border:1px solid #0f0;border-radius:5px;font-size:18px;text-align:center;font-family:monospace}
+        button{width:100%;padding:12px;margin-top:10px;background:#f00;color:#fff;border:none;border-radius:5px;font-size:18px;font-weight:bold;cursor:pointer}
+        #output{display:none;margin-top:20px;font-size:14px;line-height:1.8}
+        .error{color:#f00}
+        .info{color:#ff0}
+        .success{color:#0f0}
+        .blink{animation:blink 1s infinite}
+        @keyframes blink{50%{opacity:0}}
+    </style>
+</head>
+<body>
+<div class="screen">
+    <h2>⚠️ DATABASE ACCESS</h2>
+    <input type="text" id="phone" placeholder="أدخل رقم الهاتف..." autofocus>
+    <button onclick="start()">اتصال</button>
+    <div id="output"></div>
+</div>
+
+<script>
+function getTime(){return new Date().toLocaleTimeString('en-US',{hour12:false})}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+
+async function start(){
+    let phone=document.getElementById('phone').value;
+    if(!phone)return alert('أدخل الرقم');
+    
+    let out=document.getElementById('output');
+    out.style.display='block';
+    out.innerHTML='<div class="blink" style="color:#ff0;text-align:center">⏳ جاري الاتصال بالقاعدة...</div>';
+    document.querySelector('button').style.display='none';
+    document.querySelector('input').disabled=true;
+    
+    await sleep(2000);
+    out.innerHTML+=`<div class="info">[${getTime()}] محاولة اتصال بالخادم الرئيسي...</div>`;
+    await sleep(1000);
+    out.innerHTML+=`<div class="error">[${getTime()}] ERROR: Connection refused (0x8F2A)</div>`;
+    await sleep(500);
+    out.innerHTML+=`<div class="info">[${getTime()}] إعادة المحاولة عبر بروكسي...</div>`;
+    await sleep(1000);
+    out.innerHTML+=`<div class="info">[${getTime()}] تم الاتصال بالقاعدة بنجاح</div>`;
+    await sleep(500);
+    out.innerHTML+=`<div class="info">[${getTime()}] جاري فحص السجلات...</div>`;
+    await sleep(800);
+    out.innerHTML+=`<div class="error">[${getTime()}] ERROR 403: PAYMENT REQUIRED</div>`;
+    await sleep(500);
+    out.innerHTML+=`<div class="error">[${getTime()}] فشل المصادقة - الرصيد غير كافٍ</div>`;
+    await sleep(700);
+    
+    out.innerHTML+=`
+        <hr style="border-color:#333;margin:15px 0">
+        <div class="error"><b>⚠️ لم تكتمل دفعة القاعدة</b></div>
+        <br>
+        <div>المبلغ المطلوب: <span class="error">2,700 USD</span></div>
+        <br>
+        <div class="info">تفاصيل الدفعات:</div>
+        <div>✅ الدفعة الأولى: <span class="success">3,000 USD</span></div>
+        <div>❌ المتبقي: <span class="error">2,700 USD</span></div>
+        <br>
+        <div>• <span class="error">2,000 USD</span> - باقي القاعدة</div>
+        <div>• <span class="error">700 USD</span> - عمولة التقسيط</div>
+        <br>
+        <div class="info">خيارات الدفع:</div>
+        <div>📅 شهري: 675 USD × 4 شهور</div>
+        <div>📅 أسبوعي: 193 USD × 14 أسبوع</div>
+        <div>📅 يومي: 90 USD × 30 يوم</div>
+        <div>💳 دفع كامل: <span class="error">2,700 USD</span></div>
+        <br>
+        <div class="blink" style="color:#f00;text-align:center">⚠️ يرجى الدفع لبدء استخدام القاعدة</div>
+    `;
+}
+</script>
+</body>
+</html>

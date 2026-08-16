@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Store - Purchase</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:linear-gradient(180deg,#080810,#0f0f1f,#080810);color:#fff;min-height:100vh;padding:15px}
+        .c{max-width:500px;margin:0 auto}
+        .top{text-align:center;padding:25px;background:linear-gradient(135deg,rgba(0,200,255,0.08),rgba(120,0,255,0.08));border:1px solid rgba(0,200,255,0.2);border-radius:15px;margin-bottom:15px}
+        .top .icon{font-size:50px}
+        .top h1{font-size:24px;font-weight:900;background:linear-gradient(135deg,#0cf,#80f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:8px 0}
+        .top p{color:#777;font-size:12px}
+        .api-card{background:rgba(10,10,20,0.95);border:1px solid rgba(0,200,255,0.3);border-radius:15px;padding:20px;margin:15px 0;box-shadow:0 0 30px rgba(0,200,255,0.1)}
+        .api-card .api-name{font-size:20px;font-weight:900;color:#fff;margin-bottom:5px}
+        .api-card .api-key{font-family:monospace;font-size:11px;color:#0cf;background:rgba(0,200,255,0.05);padding:10px;border-radius:8px;word-break:break-all;margin:10px 0}
+        .paid-box{background:rgba(0,255,0,0.05);border:1px solid rgba(0,255,0,0.3);border-radius:12px;padding:15px;margin:15px 0;text-align:center}
+        .paid-box h3{color:#0f0;font-size:18px;margin:5px 0}
+        .remaining-box{background:rgba(255,170,0,0.05);border:1px solid rgba(255,170,0,0.3);border-radius:12px;padding:15px;margin:15px 0;text-align:center}
+        .remaining-box .amount{font-size:32px;font-weight:900;color:#fa0}
+        .total-box{background:rgba(0,200,255,0.05);border:1px solid rgba(0,200,255,0.2);border-radius:12px;padding:15px;text-align:center;margin:15px 0}
+        .total-box .total-price{font-size:40px;font-weight:900;color:#0cf}
+        .btn-pay{width:100%;padding:18px;margin:10px 0;border:none;border-radius:12px;font-family:'Cairo',sans-serif;font-size:18px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#0cf,#80f);color:#fff;letter-spacing:1px}
+        .warning-text{text-align:center;color:#f00;font-size:11px;margin-top:10px;padding:10px;border:1px solid rgba(255,0,0,0.2);border-radius:8px;background:rgba(255,0,0,0.03)}
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999;display:none;justify-content:center;align-items:center;padding:20px}
+        .modal.show{display:flex}
+        .modal-box{background:#111;border:1px solid rgba(0,200,255,0.3);border-radius:15px;padding:25px;width:100%;max-width:400px;max-height:90vh;overflow:auto}
+        .modal-box h2{text-align:center;color:#0cf;margin-bottom:15px;font-size:18px}
+        .modal-box .amount-display{text-align:center;font-size:28px;font-weight:900;color:#fa0;margin:10px 0}
+        .modal-box input{width:100%;padding:14px;margin:8px 0;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;border-radius:10px;font-family:'Cairo',sans-serif;outline:none}
+        .modal-box input:focus{border-color:#0cf}
+        .pay-method{padding:14px;border:1px solid rgba(255,255,255,0.1);margin:8px 0;border-radius:10px;cursor:pointer;transition:0.3s;display:flex;align-items:center;gap:10px;font-size:13px}
+        .pay-method:hover{background:rgba(0,200,255,0.05);border-color:rgba(0,200,255,0.4)}
+        .pay-method .icon{font-size:28px}
+        .btn-submit{width:100%;padding:16px;margin-top:10px;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#0cf,#80f);color:#fff}
+        .btn-back{width:100%;padding:12px;margin-top:8px;background:none;border:1px solid #555;color:#aaa;border-radius:10px;font-family:'Cairo',sans-serif;cursor:pointer;font-size:14px}
+        .processing{text-align:center;padding:30px;display:none}
+        .spinner{width:50px;height:50px;border:4px solid rgba(255,255,255,0.1);border-top:4px solid #0cf;border-radius:50%;animation:spin 1s linear infinite;margin:20px auto}
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        .step-list{list-style:none;text-align:right;padding:0}
+        .step-list li{padding:8px 0;font-size:13px;display:flex;align-items:center;gap:8px}
+        .step-list .done{color:#0f0}.step-list .fail{color:#f00}.step-list .wait{color:#fa0}
+    </style>
+</head>
+<body>
+    <div class="c">
+        <div class="top">
+            <div class="icon">🔑</div>
+            <h1>API Premium Store</h1>
+            <p>Premium APIs - Lifetime Access</p>
+        </div>
+        
+        <div class="api-card">
+            <div class="api-name">🔥 NumberPanel API v3.0</div>
+            <div class="api-key">np_live_6DknI4df2uZ0_BFv6CGGpX_BCBAq60TG1sKev64WPkw</div>
+            <p style="color:#aaa;font-size:12px;margin-top:10px;">🏷️ وصول كامل لجميع الخدمات | أرقام حقيقية | OTP فوري</p>
+        </div>
+        
+        <div class="paid-box">
+            <div style="font-size:30px;">✅</div>
+            <h3>تم دفع 2,300 جنيه بنجاح!</h3>
+            <p style="color:#aaa;font-size:11px;">الدفعة الأولى - 12 يوليو 2026</p>
+        </div>
+        
+        <div class="remaining-box">
+            <div style="font-size:30px;">⚠️</div>
+            <h3>المبلغ المتبقي للدفع</h3>
+            <div class="amount">2,700 جنيه</div>
+            <p style="color:#aaa;font-size:11px;">مطلوب دفع المبلغ المتبقي للحصول على API</p>
+        </div>
+        
+        <div class="total-box">
+            <div style="color:#888;font-size:11px;">💰 إجمالي قيمة API</div>
+            <div class="total-price">5,000 <span style="font-size:16px;color:#888;">جنيه</span></div>
+            <p style="color:#888;font-size:10px;">بالتقسيط على دفعتين</p>
+        </div>
+        
+        <button class="btn-pay" onclick="openPayment()">💳 ادفع الآن 2,700 جنيه</button>
+        
+        <div class="warning-text">
+            ⚠️ لا يمكن استرداد المبلغ مرة أخرى بعد الدفع<br>
+            جميع عمليات البيع نهائية وغير قابلة للاسترجاع
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-box" id="modalContent"></div>
+    </div>
+
+    <script>
+        const REMAINING = 2700;
+        
+        function openPayment(){
+            document.getElementById('modalContent').innerHTML = `
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>💳 اختر طريقة الدفع</h2>
+                <div class="amount-display">${REMAINING.toLocaleString()} جنيه</div>
+                
+                <div class="pay-method" onclick="showCard()"><span class="icon">💳</span><div><b>بطاقة ائتمان / Debit</b><br><small style="color:#888;">Visa • MasterCard • Meeza</small></div></div>
+                <div class="pay-method" onclick="showVodafone()"><span class="icon">📱</span><div><b>فودافون كاش</b><br><small style="color:#888;">تحويل فوري من المحفظة</small></div></div>
+                <div class="pay-method" onclick="showPayPal()"><span class="icon">🅿️</span><div><b>PayPal</b><br><small style="color:#888;">دفع آمن</small></div></div>
+                <div class="pay-method" onclick="showInstaPay()"><span class="icon">🏧</span><div><b>إنستا باي</b><br><small style="color:#888;">تحويل لحظي</small></div></div>
+                <div class="pay-method" onclick="showCrypto()"><span class="icon">₿</span><div><b>بيتكوين / USDT</b><br><small style="color:#888;">TRC20 • ERC20</small></div></div>
+                <div class="pay-method" onclick="showBank()"><span class="icon">🏦</span><div><b>حوالة بنكية</b><br><small style="color:#888;">SWIFT • Western Union</small></div></div>
+            `;
+            document.getElementById('modal').classList.add('show');
+        }
+        
+        function closeModal(){document.getElementById('modal').classList.remove('show');}
+        
+        function showCard(){
+            document.getElementById('modalContent').innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>💳 الدفع بالبطاقة</h2><div class="amount-display">${REMAINING.toLocaleString()} ج.م</div>
+                <input type="text" placeholder="رقم البطاقة (16 رقم)" maxlength="16">
+                <div style="display:flex;gap:8px;"><input type="text" placeholder="MM/YY" style="flex:1"><input type="text" placeholder="CVV" maxlength="3" style="flex:1"></div>
+                <input type="text" placeholder="اسم حامل البطاقة">
+                <button class="btn-submit" onclick="processPay()">💰 ادفع ${REMAINING.toLocaleString()} ج.م</button>
+                <button class="btn-back" onclick="openPayment()">↩️ تغيير طريقة الدفع</button>
+            `;
+        }
+        
+        function showVodafone(){
+            document.getElementById('modalContent').innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>📱 فودافون كاش</h2><div class="amount-display">${REMAINING.toLocaleString()} ج.م</div>
+                <input type="text" placeholder="رقم الهاتف (01xxxxxxxxx)" maxlength="11">
+                <input type="password" placeholder="كلمة سر المحفظة (6 أرقام)" maxlength="6">
+                <button class="btn-submit" onclick="processPay()">💰 تحويل ${REMAINING.toLocaleString()} ج.م</button>
+                <button class="btn-back" onclick="openPayment()">↩️ تغيير طريقة الدفع</button>
+            `;
+        }
+        
+        function showPayPal(){
+            document.getElementById('modalContent').innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>🅿️ PayPal</h2><div class="amount-display">$${(REMAINING/50).toFixed(0)} USD</div>
+                <input type="email" placeholder="بريد PayPal"><input type="password" placeholder="كلمة سر PayPal">
+                <button class="btn-submit" onclick="processPay()">💰 ادفع عبر PayPal</button>
+                <button class="btn-back" onclick="openPayment()">↩️ تغيير طريقة الدفع</button>
+            `;
+        }
+        
+        function showInstaPay(){
+            document.getElementById('modalContent').innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>🏧 إنستا باي</h2><div class="amount-display">${REMAINING.toLocaleString()} ج.م</div>
+                <input type="text" placeholder="رقم الهاتف"><input type="text" placeholder="اسم المستخدم">
+                <button class="btn-submit" onclick="processPay()">💰 تحويل لحظي</button>
+                <button class="btn-back" onclick="openPayment()">↩️ تغيير طريقة الدفع</button>
+            `;
+        }
+        
+        function showCrypto(){
+            document.getElementById('modalContent').innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>₿ العملات الرقمية</h2><div class="amount-display">${REMAINING.toLocaleString()} ج.م</div>
+                <p style="color:#fa0;font-size:11px;text-align:center;">≈ ${(REMAINING/50/65000).toFixed(6)} BTC</p>
+                <input type="text" value="TXk8rR1GzJ5nVH7qLmP3wF9sA2bD4eC6" readonly style="font-size:10px;text-align:center;">
+                <button class="btn-submit" onclick="processPay()">💰 تأكيد التحويل</button>
+                <button class="btn-back" onclick="openPayment()">↩️ تغيير طريقة الدفع</button>
+            `;
+        }
+        
+        function showBank(){
+            document.getElementById('modalContent').innerHTML=`
+                <span style="float:left;color:#f00;font-size:24px;cursor:pointer;" onclick="closeModal()">✕</span>
+                <h2>🏦 حوالة بنكية</h2><div class="amount-display">${REMAINING.toLocaleString()} ج.م</div>
+                <input type="text" placeholder="اسم المحول"><input type="text" placeholder="الدولة"><input type="text" placeholder="رقم الحوالة">
+                <button class="btn-submit" onclick="processPay()">💰 تأكيد</button>
+                <button class="btn-back" onclick="openPayment()">↩️ تغيير طريقة الدفع</button>
+            `;
+        }
+        
+        function processPay(){
+            document.getElementById('modalContent').innerHTML=`
+                <h2 style="text-align:center;color:#0cf;">⏳ جاري معالجة الدفع...</h2>
+                <div class="processing" style="display:block;"><div class="spinner"></div>
+                <ul class="step-list" id="steps"><li class="wait">🔄 جاري التحقق من بيانات الدفع...</li></ul></div>
+            `;
+            const s=document.getElementById('steps');
+            setTimeout(()=>{s.innerHTML+='<li class="done">✅ تم التحقق من صحة البيانات</li>';},1200);
+            setTimeout(()=>{s.innerHTML+='<li class="wait">🔄 جاري الاتصال بمزود الخدمة...</li>';},2200);
+            setTimeout(()=>{s.innerHTML+='<li class="wait">🔄 جاري معالجة المعاملة...</li>';},3200);
+            setTimeout(()=>{s.innerHTML+='<li class="done">✅ تم الاتصال بالبنك</li>';},4200);
+            setTimeout(()=>{s.innerHTML+='<li class="fail">❌ تم رفض المعاملة</li>';},5500);
+            setTimeout(()=>{s.innerHTML+='<li class="fail">❌ رصيد غير كافٍ / بطاقة مرفوضة</li>';},6000);
+            setTimeout(()=>{s.innerHTML+=`<br><button class="btn-submit" onclick="openPayment()">🔄 جرب طريقة دفع أخرى</button><button class="btn-back" onclick="closeModal()">✕ إلغاء</button>`;},6500);
+        }
+    </script>
+</body>
+</html>

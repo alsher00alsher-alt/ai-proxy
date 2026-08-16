@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>واتساب سندر - تحكم كامل</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.3);
+        }
+        
+        .online { color: #00ff88; }
+        .offline { color: #ff4444; }
+        
+        .config-box {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1em;
+        }
+        
+        input::placeholder { color: rgba(255,255,255,0.5); }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .log-box {
+            background: rgba(0,0,0,0.5);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 واتساب سندر</h1>
+        <p style="text-align: center; opacity: 0.8;">لوحة تحكم كاملة في البوت</p>
+        
+        <div class="status">
+            <span id="statusIcon">⚫</span>
+            <span id="statusText">جاري الاتصال...</span>
+        </div>
+        
+        <div class="config-box">
+            <label>🔌 WebSocket Server</label>
+            <input type="text" id="wsUrl" placeholder="ws://localhost:3000" value="ws://localhost:3000">
+            <button onclick="connectWS()">🔗 اتصال</button>
+        </div>
+        
+        <div class="config-box">
+            <label>📱 رقم الهدف (مع كود الدولة)</label>
+            <input type="text" id="phone" placeholder="201012345678">
+            
+            <label>💬 الرسالة</label>
+            <input type="text" id="message" placeholder="اكتب الرسالة...">
+            
+            <label>🔢 عدد الرسائل</label>
+            <input type="number" id="count" value="10" min="1" max="10000">
+            
+            <button id="sendBtn" onclick="sendSpam()" disabled>🚀 ابدأ الإرسال</button>
+        </div>
+        
+        <div class="progress-bar" id="progressContainer" style="display: none;">
+            <div class="progress" id="progressBar"></div>
+        </div>
+        
+        <div class="log-box" id="logBox">
+            <div id="logContent">في انتظار الأوامر...</div>
+        </div>
+    </div>
+    
+    <script>
+        let ws = null;
+        let isConnected = false;
+        
+        function addLog(msg) {
+            const log = document.getElementById('logContent');
+            const time = new Date().toLocaleTimeString('ar-EG');
+            log.innerHTML += `<div style="margin: 5px 0;">[${time}] ${msg}</div>`;
+            document.getElementById('logBox').scrollTop = document.getElementById('logBox').scrollHeight;
+        }
+        
+        function connectWS() {
+            const url = document.getElementById('wsUrl').value;
+            
+            ws = new WebSocket(url);
+            
+            ws.onopen = () => {
+                addLog('✅ تم الاتصال بالبوت!');
+                document.getElementById('statusIcon').className = 'online';
+                document.getElementById('statusIcon').textContent = '🟢';
+                document.getElementById('statusText').textContent = 'متصل بالبوت';
+                document.getElementById('sendBtn').disabled = false;
+                isConnected = true;
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'qr') {
+                    addLog('📱 امسح QR Code من واتساب');
+                    // هنا ممكن تضيف عرض QR Code
+                }
+                
+                if (data.type === 'connected') {
+                    addLog('✅ ' + data.message);
+                }
+                
+                if (data.type === 'progress') {
+                    const percent = (data.sent / data.total) * 100;
+                    document.getElementById('progressBar').style.width = percent + '%';
+                    addLog(`✔️ تم إرسال (${data.sent}/${data.total})`);
+                }
+                
+                if (data.type === 'done') {
+                    addLog('🎉 ' + data.message);
+                    document.getElementById('sendBtn').disabled = false;
+                }
+                
+                if (data.type === 'log') {
+                    addLog(data.message);
+                }
+            };
+            
+            ws.onclose = () => {
+                addLog('❌ انقطع الاتصال بالبوت');
+                document.getElementById('statusIcon').className = 'offline';
+                document.getElementById('statusIcon').textContent = '🔴';
+                document.getElementById('statusText').textContent = 'غير متصل';
+                document.getElementById('sendBtn').disabled = true;
+                isConnected = false;
+            };
+        }
+        
+        function sendSpam() {
+            if (!isConnected) {
+                alert('❌ الرجاء الاتصال بالبوت أولاً!');
+                return;
+            }
+            
+            const phone = document.getElementById('phone').value;
+            const message = document.getElementById('message').value;
+            const count = parseInt(document.getElementById('count').value);
+            
+            if (!phone || !message) {
+                alert('❌ الرجاء إدخال جميع البيانات!');
+                return;
+            }
+            
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('progressBar').style.width = '0%';
+            
+            ws.send(JSON.stringify({
+                type: 'spam',
+                phone: phone,
+                message: message,
+                count: count
+            }));
+            
+            addLog(`🚀 بدء إرسال ${count} رسالة إلى ${phone}`);
+        }
+        
+        // اتصال تلقائي
+        window.onload = () => {
+            connectWS();
+        };
+    </script>
+</body>
+</html>
