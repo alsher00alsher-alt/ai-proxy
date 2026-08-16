@@ -3,163 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>📱 AHMED ALSHAER PANEL</title>
+    <title>📱 الأجهزة المتصلة</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;padding:20px}
-        .page{display:none}
-        .page.active{display:block}
         h1{color:#25D366;text-align:center;margin:20px 0;font-size:28px}
-        h2{color:#25D366;text-align:center;margin:15px 0;font-size:22px}
-        
-        /* صفحة الأجهزة */
-        .devices{max-width:600px;margin:0 auto}
-        .device{background:#111;border:2px solid #222;border-radius:15px;padding:20px;margin:15px 0;cursor:pointer;transition:0.3s;display:flex;align-items:center;gap:15px}
-        .device:hover{border-color:#25D366;transform:scale(1.02);box-shadow:0 0 20px rgba(37,211,102,0.3)}
-        .device .icon{font-size:40px}
-        .device .info{flex:1}
-        .device .name{font-size:18px;font-weight:bold;color:#25D366}
-        .device .details{font-size:12px;color:#888;margin-top:5px}
-        .device .arrow{font-size:24px;color:#25D366}
-        
-        /* أزرار التنقل */
-        .tabs{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px 0}
-        .tab{padding:15px 25px;background:#1a1a1a;border:2px solid #333;border-radius:10px;cursor:pointer;font-size:16px;transition:0.2s;font-weight:bold}
-        .tab:hover{background:#222}.tab.active{background:#25D366;color:#000;border-color:#25D366}
-        .back{background:#333;color:#fff;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;margin:10px}
-        .back:hover{background:#444}
-        
-        /* المحتوى */
-        .content{max-width:800px;margin:0 auto}
-        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:15px}
-        .file{background:#111;border:1px solid #222;border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:0.2s}
-        .file:hover{border-color:#25D366;transform:scale(1.05)}
-        .file img{width:100%;height:110px;object-fit:cover;border-radius:8px}
-        .file .icon{font-size:45px;margin:10px 0}
-        .file .name{font-size:11px;word-break:break-all;color:#ccc;margin-top:5px}
-        .file .size{font-size:10px;color:#25D366;margin-top:3px}
-        
-        /* الشاشة */
-        .screen-box{text-align:center}
-        .screen-box img{max-width:100%;border-radius:15px;border:3px solid #25D366}
-        
-        .loading{text-align:center;color:#888;padding:50px;font-size:18px}
-        .empty{text-align:center;color:#888;padding:30px}
+        .devices{max-width:500px;margin:0 auto}
+        .device{background:#111;border:2px solid #25D366;border-radius:15px;padding:20px;margin:15px 0;cursor:pointer;transition:0.3s;display:flex;align-items:center;gap:15px}
+        .device:hover{transform:scale(1.02);box-shadow:0 0 20px rgba(37,211,102,0.4)}
+        .icon{font-size:40px}
+        .info{flex:1}
+        .name{font-size:18px;font-weight:bold;color:#25D366}
+        .details{font-size:12px;color:#888;margin-top:5px}
+        .status{display:inline-block;width:10px;height:10px;background:#0f0;border-radius:50%;margin-left:5px;animation:pulse 2s infinite}
+        @keyframes pulse{50%{opacity:0.3}}
+        .empty{text-align:center;color:#888;padding:50px;font-size:18px}
+        .refresh{display:block;margin:20px auto;background:#25D366;color:#000;padding:12px 30px;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
     </style>
 </head>
 <body>
-
-<!-- صفحة الأجهزة -->
-<div class="page active" id="devicesPage">
-    <h1>📱 AHMED ALSHAER PANEL</h1>
-    <div class="devices">
-        <div class="device" onclick="enterDevice('Infinix GT 50 Pro')">
-            <div class="icon">📱</div>
-            <div class="info">
-                <div class="name">Infinix GT 50 Pro</div>
-                <div class="details">Android 14 | 12GB RAM | 512GB</div>
-                <div class="details">🟢 Online</div>
-            </div>
-            <div class="arrow">←</div>
-        </div>
-        
-        <div class="device" onclick="enterDevice('Samsung A16')">
-            <div class="icon">📱</div>
-            <div class="info">
-                <div class="name">Samsung A16</div>
-                <div class="details">Android 13 | 4GB RAM | 64GB</div>
-                <div class="details">🔴 Offline</div>
-            </div>
-            <div class="arrow">←</div>
-        </div>
+    <h1>📱 الأجهزة المتصلة</h1>
+    <div class="devices" id="devices">
+        <div class="empty">⏳ جاري البحث عن أجهزة...</div>
     </div>
-</div>
+    <button class="refresh" onclick="loadDevices()">🔄 تحديث</button>
 
-<!-- صفحة الملفات -->
-<div class="page" id="filesPage">
-    <button class="back" onclick="backToDevices()">→ رجوع</button>
-    <h2 id="deviceTitle">📱 الجهاز</h2>
-    
-    <div class="tabs">
-        <div class="tab active" onclick="showTab('photos',this)">📸 صور</div>
-        <div class="tab" onclick="showTab('videos',this)">🎥 فيديوهات</div>
-        <div class="tab" onclick="showTab('data',this)">📊 البيانات</div>
-        <div class="tab" onclick="showTab('files',this)">📁 ملفات</div>
-        <div class="tab" onclick="showTab('screen',this)">🖥️ الشاشة</div>
-    </div>
-    
-    <div class="content" id="content">
-        <div class="loading">⏳ جاري التحميل...</div>
-    </div>
-</div>
+    <script>
+        function loadDevices() {
+            document.getElementById('devices').innerHTML = '<div class="empty">⏳ جاري البحث...</div>';
+            
+            fetch('/api/devices')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.devices.length === 0) {
+                        document.getElementById('devices').innerHTML = '<div class="empty">❌ لا توجد أجهزة متصلة حالياً</div>';
+                    } else {
+                        document.getElementById('devices').innerHTML = data.devices.map(d => `
+                            <div class="device" onclick="openDevice('${d.name}')">
+                                <div class="icon">📱</div>
+                                <div class="info">
+                                    <div class="name">${d.name} <span class="status"></span></div>
+                                    <div class="details">📱 ${d.phone}</div>
+                                    <div class="details">🟢 Online - آخر ظهور: الآن</div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                });
+        }
 
-<script>
-let currentDevice = '';
+        function openDevice(name) {
+            alert('📱 ' + name + '\n\nجاري فتح لوحة التحكم...');
+        }
 
-function enterDevice(name) {
-    currentDevice = name;
-    document.getElementById('devicesPage').classList.remove('active');
-    document.getElementById('filesPage').classList.add('active');
-    document.getElementById('deviceTitle').textContent = '📱 ' + name;
-    showTab('photos', document.querySelector('.tab'));
-}
-
-function backToDevices() {
-    document.getElementById('filesPage').classList.remove('active');
-    document.getElementById('devicesPage').classList.add('active');
-}
-
-function showTab(tab, el) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    
-    const content = document.getElementById('content');
-    content.innerHTML = '<div class="loading">⏳ جاري التحميل...</div>';
-    
-    if (tab === 'photos') {
-        fetch('/api/photos').then(r => r.json()).then(data => {
-            content.innerHTML = data.files && data.files.length ? 
-                '<div class="grid">' + data.files.map(f => `
-                    <div class="file" onclick="window.open('${f.url}')">
-                        <img src="${f.url}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-                        <div class="icon" style="display:none">📸</div>
-                        <div class="name">${f.name}</div>
-                        <div class="size">${f.size}</div>
-                    </div>
-                `).join('') + '</div>' : '<div class="empty">لا توجد صور</div>';
-        });
-    } else if (tab === 'videos') {
-        fetch('/api/videos').then(r => r.json()).then(data => {
-            content.innerHTML = data.files && data.files.length ? 
-                '<div class="grid">' + data.files.map(f => `
-                    <div class="file" onclick="window.open('${f.url}')">
-                        <div class="icon">🎥</div>
-                        <div class="name">${f.name}</div>
-                        <div class="size">${f.size}</div>
-                    </div>
-                `).join('') + '</div>' : '<div class="empty">لا توجد فيديوهات</div>';
-        });
-    } else if (tab === 'data') {
-        content.innerHTML = '<div class="loading">📊 بيانات الجهاز:</div>' +
-            '<div class="screen-box">' +
-            '<p>📱 ' + currentDevice + '</p>' +
-            '<p>🤖 Android 14</p>' +
-            '<p>💾 RAM: 12GB</p>' +
-            '<p>📦 التخزين: 512GB</p>' +
-            '<p>🔋 البطارية: 85%</p>' +
-            '</div>';
-    } else if (tab === 'files') {
-        fetch('/api/files').then(r => r.json()).then(data => {
-            content.innerHTML = data.files ? '<ul class="apps">' + data.files.map(f => `<li>📄 ${f}</li>`).join('') + '</ul>' : '<div class="empty">لا توجد ملفات</div>';
-        });
-    } else if (tab === 'screen') {
-        content.innerHTML = '<div class="screen-box"><img src="/api/screenshot" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22400%22%3E%3Crect fill=%22%23111%22 width=%22200%22 height=%22400%22/%3E%3Ctext fill=%22%23fff%22 x=%2250%22 y=%22200%22%3EScreen%3C/text%3E%3C/svg%3E\'"><br><button onclick="refreshScreen()">🔄 تحديث</button></div>';
-    }
-}
-
-function refreshScreen() {
-    document.querySelector('#content img').src = '/api/screenshot?t=' + Date.now();
-}
-</script>
+        // تحميل أول مرة
+        loadDevices();
+        // تحديث كل 5 ثواني
+        setInterval(loadDevices, 5000);
+    </script>
 </body>
 </html>
