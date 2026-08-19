@@ -9,19 +9,30 @@ export default async function handler(req, res) {
     if (!url) return res.json({ success: false, error: 'الرابط مطلوب' });
     
     try {
-        const apiResponse = await fetch('https://yt-dlp-api.vercel.app/api/download', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url, format: mode === 'mp3' ? 'mp3' : 'mp4', quality: 'best' })
-        });
-        const data = await apiResponse.json();
+        const apis = [
+            'https://yt-dlp-api-omega.vercel.app/api/download',
+            'https://social-downloader-api.vercel.app/api/download',
+            'https://yt-downloader-api.vercel.app/api/download'
+        ];
         
-        if (data.success) {
-            res.json({ success: true, downloadUrl: data.downloadUrl, title: data.title, thumbnail: data.thumbnail });
-        } else {
-            res.json({ success: false, error: data.error || 'فشل التحميل' });
+        for (const api of apis) {
+            try {
+                const response = await fetch(api, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url, format: mode })
+                });
+                const data = await response.json();
+                
+                const downloadUrl = data.download_url || data.url || data.downloadUrl;
+                if (downloadUrl) {
+                    return res.json({ success: true, downloadUrl, title: data.title || 'تم' });
+                }
+            } catch(e) {}
         }
+        
+        res.json({ success: false, error: 'الخدمة مشغولة - جرب تاني' });
     } catch(e) {
-        res.json({ success: false, error: 'الخدمة غير متاحة' });
+        res.json({ success: false, error: 'خطأ' });
     }
 }
