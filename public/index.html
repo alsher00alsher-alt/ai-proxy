@@ -3,26 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أداة التحميل الاحترافية</title>
+    <title>أداة التحميل المباشر</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; background-color: #121212; color: white; }
-        input { padding: 15px; width: 80%; border-radius: 10px; border: none; margin-bottom: 20px; }
-        button { padding: 15px 30px; border-radius: 10px; border: none; background: #0070f3; color: white; cursor: pointer; }
+        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #1a1a1a; color: #fff; }
+        input { padding: 15px; width: 90%; max-width: 400px; border-radius: 10px; border: 1px solid #444; background: #333; color: white; margin-bottom: 20px; }
+        button { padding: 15px 30px; border-radius: 10px; border: none; background: #ff4500; color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-    <h1>مُحمل الملفات السريع</h1>
+    <h2>🚀 أداة التحميل المباشر</h2>
     <input type="text" id="url" placeholder="ضع رابط الفيديو أو الأغنية هنا...">
     <br>
-    <button onclick="download()">تحميل الملف</button>
+    <button onclick="goDownload()">بدء التحميل الآن</button>
+
     <script>
-        function download() {
+        function goDownload() {
             var url = document.getElementById('url').value;
-            if(url) {
-                window.open('https://loader.to/api/button/?url=' + encodeURIComponent(url), '_blank');
-            } else {
-                alert('الرجاء وضع الرابط أولاً');
-            }
+            if(!url) { alert('ضع الرابط أولاً!'); return; }
+            window.location.href = 'https://loader.to/api/button/?url=' + encodeURIComponent(url);
         }
     </script>
 </body>
