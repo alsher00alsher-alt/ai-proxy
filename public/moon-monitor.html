@@ -7,6 +7,8 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0a0a;color:#0f0;font-family:'Courier New',monospace;padding:15px;min-height:100vh}
+.page{display:none}
+.page.active{display:block}
 h1{text-align:center;color:#8b5cf6;font-size:22px;margin-bottom:10px}
 h2{text-align:center;color:#8b5cf6;font-size:16px;margin-bottom:15px}
 .total-box{text-align:center;margin:15px auto;padding:20px;background:#111;border:2px solid #8b5cf6;border-radius:15px;max-width:300px}
@@ -17,40 +19,61 @@ h2{text-align:center;color:#8b5cf6;font-size:16px;margin-bottom:15px}
 .card{background:#111;border:2px solid #8b5cf6;border-radius:15px;padding:15px;text-align:center}
 .card .name{color:#8b5cf6;font-size:12px;font-weight:bold}
 .card .score{font-size:28px;font-weight:bold;color:#22c55e;margin:8px 0}
-.buy-box{max-width:500px;margin:20px auto;padding:25px;background:#111;border:2px solid #8b5cf6;border-radius:20px;text-align:center}
+.btn{display:block;margin:15px auto;padding:15px 30px;background:#8b5cf6;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;width:80%;max-width:300px}
+.btn:hover{background:#7c3aed}
+.buy-box{max-width:400px;margin:20px auto;padding:25px;background:#111;border:2px solid #8b5cf6;border-radius:20px;text-align:center}
 .buy-box input{width:100%;padding:14px;background:#1a1a1a;border:1px solid #333;border-radius:10px;color:#fff;font-size:14px;margin:8px 0;outline:none}
 .buy-box input:focus{border-color:#8b5cf6}
-.buy-box button{width:100%;padding:15px;background:#8b5cf6;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:10px}
-.buy-box button:hover{background:#7c3aed}
 .result{margin:15px 0;padding:15px;border-radius:10px;display:none}
 .success{background:rgba(34,197,94,.15);color:#22c55e}
 .error{background:rgba(239,68,68,.15);color:#ef4444}
+.back-btn{background:#333;color:#fff;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;margin-top:10px}
+.balance{color:#888;font-size:12px;margin-bottom:10px}
+.balance span{color:#22c55e;font-size:16px;font-weight:bold}
 </style>
 </head>
 <body>
-<h1>🌙 MOON CONTROL PANEL</h1>
 
-<div class="total-box">
-    <div class="label">💰 إجمالي النقاط</div>
-    <div class="total-score" id="totalScore">0</div>
-    <div class="total-followers" id="totalFollowers">= 0 متابع</div>
+<div class="page active" id="monitorPage">
+    <h1>🌙 MOON CONTROL PANEL</h1>
+    <div class="total-box">
+        <div class="label">💰 إجمالي النقاط</div>
+        <div class="total-score" id="totalScore">0</div>
+        <div class="total-followers" id="totalFollowers">= 0 متابع</div>
+    </div>
+    <h2>📊 نقاط الحسابات</h2>
+    <div class="stats" id="stats"></div>
+    <button class="btn" onclick="showBuyPage()">🛒 شراء متابعين</button>
 </div>
 
-<h2>📊 نقاط الحسابات</h2>
-<div class="stats" id="stats"></div>
-
-<h2>🛒 شراء متابعين</h2>
-<div class="buy-box">
-    <input type="text" id="targetUser" placeholder="يوزرنيم الهدف (@username)">
-    <input type="number" id="amount" placeholder="عدد المتابعين (مثال: 100)">
-    <button onclick="buy()">🛒 شراء</button>
-    <div class="result" id="result"></div>
+<div class="page" id="buyPage">
+    <h1>🛒 شراء متابعين</h1>
+    <div class="buy-box">
+        <p class="balance">💰 الرصيد: <span id="buyBalance">0</span> نقطة</p>
+        <input type="text" id="targetUser" placeholder="يوزرنيم الهدف (@username)">
+        <input type="number" id="amount" placeholder="عدد المتابعين">
+        <button class="btn" onclick="buy()">🛒 شراء</button>
+        <div class="result" id="result"></div>
+        <button class="back-btn" onclick="showMonitorPage()">← رجوع</button>
+    </div>
 </div>
 
 <script>
 const BASE = 'https://ai-proxy-production-59b3.up.railway.app';
 const accounts = ['ahmed.alsher0','zoor579','ahmedppl','mmjjk','mmjjjk','mmjjjjk','aappi','aappii','aappmm'];
 let totalPoints = 0;
+
+function showBuyPage() {
+    document.getElementById('monitorPage').classList.remove('active');
+    document.getElementById('buyPage').classList.add('active');
+    document.getElementById('buyBalance').textContent = totalPoints;
+}
+
+function showMonitorPage() {
+    document.getElementById('buyPage').classList.remove('active');
+    document.getElementById('monitorPage').classList.add('active');
+    refresh();
+}
 
 function renderCards() {
     document.getElementById('stats').innerHTML = accounts.map((acc, i) => `
@@ -67,11 +90,8 @@ async function refresh() {
         const data = await res.json();
         totalPoints = data.total || 0;
         document.getElementById('totalScore').textContent = totalPoints;
-        
-        // 100 نقطة = 20 متابع
         const maxFollowers = Math.floor(totalPoints / 5);
         document.getElementById('totalFollowers').textContent = `= ${maxFollowers} متابع`;
-        
         accounts.forEach((acc, i) => {
             document.getElementById('s' + i).textContent = data.scores?.[acc] || 0;
         });
@@ -105,6 +125,7 @@ async function buy() {
         if (data.success) {
             resultEl.className = 'result success';
             resultEl.textContent = `✅ ${data.message}`;
+            refresh();
         } else {
             resultEl.className = 'result error';
             resultEl.textContent = `❌ ${data.error}`;
@@ -113,9 +134,7 @@ async function buy() {
         resultEl.className = 'result error';
         resultEl.textContent = '❌ فشل الاتصال';
     }
-    
     resultEl.style.display = 'block';
-    refresh();
 }
 
 renderCards();
