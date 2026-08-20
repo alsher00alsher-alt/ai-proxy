@@ -12,7 +12,7 @@ OP_IDS = {"LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b2
 ACCOUNTS = ["ahmed.alsher0","zoor579","ahmedppl","mmjjk","mmjjjk","mmjjjjk","aappi","aappii","aappmm","o785769","appmmm","pubg.ameeer"]
 scores = {acc: 0 for acc in ACCOUNTS}
 tokens = {}
-active_orders = {}  # تتبع الطلبات النشطة
+active_orders = {}
 
 def add_cors(res):
     res.headers['Access-Control-Allow-Origin'] = '*'
@@ -59,14 +59,11 @@ def farm(u,t,c):
             _,d=gql(q,"GetOrders",t,c)
             orders=d.get("data",{}).get("getOrders",[])
             
-            # تحديث تتبع الطلبات
             for order in orders:
-                if order.get("_id") in active_orders:
-                    active_orders[order["_id"]] = {
-                        "fulfilled": order.get("fulfilled",0),
-                        "amount": order.get("amount",0),
-                        "status": order.get("status","pending")
-                    }
+                oid=order.get("_id")
+                if oid in active_orders:
+                    active_orders[oid]["fulfilled"]=order.get("fulfilled",0)
+                    active_orders[oid]["status"]=order.get("status","pending")
             
             pending=[o["_id"] for o in orders if o.get("status")=="pending"]
             if not pending:
@@ -77,19 +74,14 @@ def farm(u,t,c):
             
             for task in pending[:5]:
                 rnd=random.randint(3000,4500)
-                q={"operationName":"ActionOrder","variables":{"orderId":task,"validationData":{"attempts":1,"initialNumber":float(rnd),"timeSpent":float(random.randint(2000,4000)),"actualCount":rnd+1,"source":"CLIENT_CRONET"}},"query":"mutation ActionOrder($orderId:ID!,$validationData:ValidationDataInput!){actionOrder(orderId:$orderId,validationData:$validationData){score taskProgress{count startTime taskProgressLimit}}}"}
+                q={"operationName":"ActionOrder","variables":{"orderId":task,"validationData":{"attempts":1,"initialNumber":float(rnd),"timeSpent":float(random.randint(2000,4000)),"actualCount":rnd+1,"source":"CLIENT_CRONET"}},"query":"mutation ActionOrder($orderId:ID!,$validationData:ValidationDataInput!){actionOrder(orderId:$orderId,validationData:$validationData){score taskProgress{count taskProgressLimit}}}"}
                 _,r=gql(q,"ActionOrder",t,c)
                 if "errors" not in r:
                     s=get_score(t,c)
                     if s>scores[u]: scores[u]=s
-                    # تحديث progress
                     progress=r.get("data",{}).get("actionOrder",{}).get("taskProgress",{})
                     if progress:
-                        active_orders[task] = {
-                            "fulfilled": progress.get("count",0),
-                            "limit": progress.get("taskProgressLimit",0),
-                            "status": "in_progress"
-                        }
+                        active_orders[task]={"fulfilled":progress.get("count",0),"limit":progress.get("taskProgressLimit",0),"status":"in_progress","target":active_orders.get(task,{}).get("target","")}
                 time.sleep(random.uniform(0.3,0.5))
         except: time.sleep(3)
 
@@ -100,14 +92,9 @@ def create_order(account, target_user, amount):
     q={"operationName":"CreateOrder","variables":{"type":"followers","amount":amount,"tiktokerUsername":target_user,"avatar":avatar,"initialCount":followers},"query":"mutation CreateOrder($type: Action!, $amount: Int!, $tiktokerUsername: String, $avatar: String, $initialCount: Int){createOrder(orderInput:{type:$type amount:$amount tiktokerUsername:$tiktokerUsername avatar:$avatar initialCount:$initialCount}){_id status fulfilled amount}}"}
     _,d=gql(q,"CreateOrder",t,c)
     if "errors" not in d:
-        order_data=d["data"]["createOrder"]
-        active_orders[order_data["_id"]] = {
-            "fulfilled": order_data.get("fulfilled",0),
-            "amount": order_data.get("amount",amount),
-            "status": order_data.get("status","pending"),
-            "target": target_user
-        }
-        return {"success":True,"order_id":order_data["_id"]}
+        o=d["data"]["createOrder"]
+        active_orders[o["_id"]]={"fulfilled":o.get("fulfilled",0),"limit":o.get("amount",amount),"status":o.get("status","pending"),"target":target_user}
+        return {"success":True}
     return {"success":False,"error":d.get('errors',[{}])[0].get('message','')}
 
 @app.route('/score/<account>')
@@ -125,29 +112,23 @@ def buy_followers():
     target=data.get('target','').replace('@','')
     amount=data.get('amount',0)
     if not target or amount<=0: return add_cors(jsonify({"success":False,"error":"بيانات ناقصة"}))
-    
     points_needed=(amount/20)*100
     total_points=sum(scores.values())
-    if points_needed>total_points: return add_cors(jsonify({"success":False,"error":f"نقاط غير كافية! تحتاج {int(points_needed)}"}))
-    
-    used_accounts=[]; remaining=points_needed
+    if points_needed>total_points: return add_cors(jsonify({"success":False,"error":f"نقاط غير كافية"}))
+    used=[];remaining=points_needed
     for account in ACCOUNTS:
         if remaining<=0: break
         if scores.get(account,0)>=100:
-            orders_count=min(int(scores[account]//100), int(remaining//100))
-            if orders_count>0:
-                order_amount=orders_count*20
-                result=create_order(account,target,order_amount)
-                if result["success"]:
-                    used_accounts.append({"account":account,"amount":order_amount})
-                    remaining-=orders_count*100
-                    scores[account]-=orders_count*100
-    
-    if used_accounts:
-        order_record={"target":target,"amount":amount,"time":time.strftime("%Y-%m-%d %H:%M:%S"),"used_accounts":used_accounts,"progress":{"fulfilled":0,"amount":amount,"status":"in_progress"}}
-        requests.put(f"{FIREBASE_URL}/orders/{int(time.time()*1000)}.json", json=order_record)
+            cnt=min(int(scores[account]//100), int(remaining//100))
+            if cnt>0:
+                amt=cnt*20
+                if create_order(account,target,amt)["success"]:
+                    used.append({"account":account,"amount":amt})
+                    remaining-=cnt*100
+                    scores[account]-=cnt*100
+    if used:
         return add_cors(jsonify({"success":True,"message":f"تم طلب {amount} متابع لـ @{target}"}))
-    return add_cors(jsonify({"success":False,"error":"فشل تنفيذ الطلب"}))
+    return add_cors(jsonify({"success":False,"error":"فشل"}))
 
 @app.route('/orders')
 def get_orders():
@@ -157,7 +138,7 @@ def get_orders():
 def ping():
     return "pong"
 
-print("MOON FARMER V4 - With Tracking",flush=True)
+print("MOON FARMER V4",flush=True)
 
 def start():
     for a in ACCOUNTS:
