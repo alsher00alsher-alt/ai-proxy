@@ -5,18 +5,16 @@ import requests,hmac,hashlib,time,uuid,json,random
 app = Flask(__name__)
 
 FIREBASE_URL = "https://otp-5acda-default-rtdb.firebaseio.com"
-
 PASSWORD = "d02d5189"
 DEVINFO = '{"d":"61393235613366373261636533656632","n":"494e46494e495820496e66696e6978205836383733","o":"16","t":"d","v":"2.2.9","s":"0,0"}'
 KEY = bytes([b ^ 0x43 for b in [0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31,0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31]])
-OP_IDS = {"LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b29a24a17c43","AttestDevice":"bfaf5a72aeb9a337811da6a6d13e0b73680a18ffde0c59a23701e55b98ac2515","FetchScore":"88d30eeca55c0538539ad8217dfefd52b2f47015200cdbb7cb6ea5a765381d69","CreateOrder":"ad7a6397c3970b1e7601f69d24989bff330e256ee5e39321a8d1ad3fe3879b48","GetUsers":"41454e2194d7c30f1c6e11c2c246bcc0377da65a8bf06276ca5ea9ec9ff538b6"}
+OP_IDS = {"LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b29a24a17c43","FetchScore":"88d30eeca55c0538539ad8217dfefd52b2f47015200cdbb7cb6ea5a765381d69"}
 ACCOUNTS = ["ahmed.alsher0","zoor579","ahmedppl","mmjjk","mmjjjk","mmjjjjk","aappi","aappii","aappmm","o785769","appmmm","pubg.ameeer"]
 scores = {acc: 0 for acc in ACCOUNTS}
 tokens = {}
 
 def save_order(order):
-    try:
-        requests.put(f"{FIREBASE_URL}/orders/{int(time.time()*1000)}.json", json=order)
+    try: requests.put(f"{FIREBASE_URL}/orders/{int(time.time()*1000)}.json", json=order)
     except: pass
 
 def load_orders():
@@ -25,7 +23,7 @@ def load_orders():
         data = r.json()
         if data:
             orders = list(data.values())
-            orders.sort(key=lambda x: x.get('time', ''), reverse=True)
+            orders.sort(key=lambda x: x.get('time',''), reverse=True)
             return orders
     except: pass
     return []
@@ -50,22 +48,19 @@ def gql(query,op,token=None,csrf=None):
     except:return None,{"error":"conn"}
 
 def login(u):
-    q={"operationName":"LoginAccount","variables":{"data":{"id":"","uniqueId":u,"nickname":"","avatarMedium":"","followerCount":0,"followingCount":0,"videoCount":0,"privateAccount":False,"diggCount":0,"authMethod":"local","password":PASSWORD}},"query":"mutation LoginAccount($data: TiktokInfo){loginTiktok(data:$data){accessToken user{username score avatar followerCount}}}"}
+    q={"operationName":"LoginAccount","variables":{"data":{"id":"","uniqueId":u,"nickname":"","avatarMedium":"","followerCount":0,"followingCount":0,"videoCount":0,"privateAccount":False,"diggCount":0,"authMethod":"local","password":PASSWORD}},"query":"mutation LoginAccount($data: TiktokInfo){loginTiktok(data:$data){accessToken user{username score}}}"}
     for _ in range(3):
         r,d=gql(q,"LoginAccount")
         if r and "errors" not in d:
             t=d['data']['loginTiktok']['accessToken']
             c=r.headers.get("x-csrf-token","")
-            user=d['data']['loginTiktok']['user']
-            scores[u]=user.get('score',0)
-            tokens[u]={"token":t,"csrf":c,"avatar":user.get('avatar',''),"followers":user.get('followerCount',0)}
+            s=d['data']['loginTiktok']['user'].get('score',0)
+            scores[u]=s
+            tokens[u]={"token":t,"csrf":c}
+            print(f"[✓] {u} - Score: {s}",flush=True)
             return t,c
-        time.sleep(5)
+        time.sleep(3)
     return None,None
-
-def attest(t,c):
-    q={"operationName":"AttestDevice","variables":{"integrityToken":"test","requestHash":"test"},"query":"mutation AttestDevice($integrityToken:String!,$requestHash:String!){attestDevice(integrityToken:$integrityToken,requestHash:$requestHash){ok}}"}
-    gql(q,"AttestDevice",t,c)
 
 def get_score(t,c):
     q={"operationName":"FetchScore","variables":{},"query":"query FetchScore{fetchScore}"}
@@ -79,27 +74,27 @@ def farm(u,t,c):
             _,d=gql(q,"GetOrders",t,c)
             orders=d.get("data",{}).get("getOrders",[])
             pending=[o["_id"] for o in orders if o.get("status")=="pending"]
-            if not pending:time.sleep(8);continue
+            if not pending:
+                # جيب النقاط الحالية
+                s=get_score(t,c)
+                if s>scores[u]:
+                    scores[u]=s
+                    print(f"[{u}] ✓ {s}",flush=True)
+                time.sleep(5)
+                continue
             for task in pending[:5]:
                 rnd=random.randint(3000,4500)
                 q={"operationName":"ActionOrder","variables":{"orderId":task,"validationData":{"attempts":1,"initialNumber":float(rnd),"timeSpent":float(random.randint(2000,4000)),"actualCount":rnd+1,"source":"CLIENT_CRONET"}},"query":"mutation ActionOrder($orderId:ID!,$validationData:ValidationDataInput!){actionOrder(orderId:$orderId,validationData:$validationData){score}}"}
                 _,r=gql(q,"ActionOrder",t,c)
                 if "errors" not in r:
                     s=get_score(t,c)
-                    scores[u]=s
+                    if s>scores[u]:
+                        scores[u]=s
+                        print(f"[{u}] ✓ {s}",flush=True)
                 time.sleep(random.uniform(0.3,0.5))
-        except:time.sleep(5)
-
-def create_order(account, target_user, amount):
-    if account not in tokens:
-        return {"success": False, "error": "الحساب مش متصل"}
-    t=tokens[account]["token"];c=tokens[account]["csrf"]
-    avatar=tokens[account]["avatar"];followers=tokens[account]["followers"]
-    q={"operationName":"CreateOrder","variables":{"type":"followers","amount":amount,"tiktokerUsername":target_user,"avatar":avatar,"initialCount":followers},"query":"mutation CreateOrder($type: Action!, $amount: Int!, $tiktokerUsername: String, $avatar: String, $initialCount: Int){createOrder(orderInput:{type:$type amount:$amount tiktokerUsername:$tiktokerUsername avatar:$avatar initialCount:$initialCount}){_id status}}"}
-    _,d=gql(q,"CreateOrder",t,c)
-    if "errors" not in d:
-        return {"success": True}
-    return {"success": False, "error": d.get('errors',[{}])[0].get('message','')}
+        except Exception as e:
+            print(f"[!] {u} error: {e}",flush=True)
+            time.sleep(3)
 
 @app.route('/score/<account>')
 def score(account):
@@ -109,43 +104,6 @@ def score(account):
 def all_scores():
     return add_cors(jsonify({"scores": scores, "total": sum(scores.values())}))
 
-@app.route('/buy-followers', methods=['POST', 'OPTIONS'])
-def buy_followers():
-    if request.method == 'OPTIONS':
-        return add_cors(jsonify({}))
-    data=request.json
-    target=data.get('target','').replace('@','')
-    amount=data.get('amount',0)
-    if not target or amount<=0:
-        return add_cors(jsonify({"success":False,"error":"بيانات ناقصة"}))
-    
-    points_needed=(amount/20)*100
-    total_points=sum(scores.values())
-    
-    if points_needed>total_points:
-        return add_cors(jsonify({"success":False,"error":f"نقاط غير كافية! تحتاج {int(points_needed)}","needed":int(points_needed),"total":total_points}))
-    
-    used_accounts=[]
-    remaining_points=points_needed
-    for account in ACCOUNTS:
-        if remaining_points<=0:break
-        if scores.get(account,0)>=100:
-            account_orders=min(int(scores[account]//100), int(remaining_points//100))
-            if account_orders>0:
-                order_amount=account_orders*20
-                result=create_order(account,target,order_amount)
-                if result["success"]:
-                    used_accounts.append({"account":account,"amount":order_amount,"points":account_orders*100})
-                    remaining_points-=account_orders*100
-                    scores[account]-=account_orders*100
-    
-    if used_accounts:
-        order_record={"target":target,"amount":amount,"time":time.strftime("%Y-%m-%d %H:%M:%S"),"used_accounts":used_accounts}
-        save_order(order_record)
-        return add_cors(jsonify({"success":True,"message":f"تم طلب {amount} متابع لـ @{target}","order":order_record}))
-    
-    return add_cors(jsonify({"success":False,"error":"فشل تنفيذ الطلب"}))
-
 @app.route('/orders')
 def get_orders():
     return add_cors(jsonify({"orders": load_orders()}))
@@ -154,15 +112,14 @@ def get_orders():
 def ping():
     return "pong"
 
-print("MOON CONTROL PANEL 24/7",flush=True)
+print("MOON FARMER V3 - FAST + SAFE",flush=True)
 
 def start():
     for a in ACCOUNTS:
         t,c=login(a)
         if t:
-            attest(t,c)
             threading.Thread(target=farm,args=(a,t,c),daemon=True).start()
-            time.sleep(5)
+            time.sleep(3)
 
 threading.Thread(target=start,daemon=True).start()
 
