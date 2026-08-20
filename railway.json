@@ -1,8 +1,9 @@
 {
   "build": {
-    "builder": "NIXPACKS"
+    "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "python moon.py"
+    "startCommand": "python moon.py",
+    "restartPolicyType": "ON_FAILURE"
   }
 }
