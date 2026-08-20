@@ -36,8 +36,8 @@ function log(msg, color) {
     const d = document.createElement('div');
     d.style.color = color || '#0f0';
     d.textContent = `[${new Date().toLocaleTimeString('ar-EG')}] ${msg}`;
-    document.getElementById('log').appendChild(d);
     const l = document.getElementById('log');
+    l.appendChild(d);
     l.scrollTop = l.scrollHeight;
 }
 
@@ -53,7 +53,7 @@ async function refresh() {
             log(`✅ ${accounts[i]}: ${data.score}`, '#22c55e');
         } catch(e) {
             el.textContent = '❌';
-            log(`⚠️ ${accounts[i]}: خطأ`, '#f59e0b');
+            log(`⚠️ ${accounts[i]}: ${e.message}`, '#f59e0b');
         }
     }
 }
