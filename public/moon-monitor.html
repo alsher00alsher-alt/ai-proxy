@@ -11,7 +11,7 @@ body{background:#000;color:#0f0;font-family:'Courier New',monospace;min-height:1
 @keyframes scan{0%{top:0}100%{top:100vh}}
 .page{display:none}.page.active{display:block}
 .header{text-align:center;margin:20px 0}
-.header h1{font-size:26px;color:#f00;text-shadow:0 0 20px #f00;letter-spacing:3px}
+.header h1{font-size:26px;color:#f00;text-shadow:0 0 20px #f00}
 .header .sub{color:#0f0;font-size:11px;margin-top:5px}
 .total-box{text-align:center;margin:15px auto;padding:20px;background:rgba(0,20,0,.8);border:2px solid #0f0;border-radius:15px;max-width:350px}
 .total-box .label{color:#0f0;font-size:14px}
@@ -21,8 +21,8 @@ body{background:#000;color:#0f0;font-family:'Courier New',monospace;min-height:1
 .card{background:rgba(0,20,0,.8);border:1px solid #0f0;border-radius:10px;padding:12px;text-align:center}
 .card .name{color:#0f0;font-size:11px;font-weight:bold;word-break:break-all}
 .card .score{font-size:26px;font-weight:bold;color:#0f0;margin:8px 0}
-.btn{display:block;margin:20px auto;padding:18px 40px;background:rgba(255,0,0,.1);border:2px solid #f00;border-radius:10px;color:#f00;font-size:18px;font-weight:bold;cursor:pointer;letter-spacing:2px}
-.btn:hover{background:#f00;color:#000;box-shadow:0 0 40px #f00}
+.btn{display:block;margin:20px auto;padding:18px 40px;background:rgba(255,0,0,.1);border:2px solid #f00;border-radius:10px;color:#f00;font-size:18px;font-weight:bold;cursor:pointer;width:80%;max-width:300px}
+.btn:hover{background:#f00;color:#000}
 .input-box{max-width:400px;margin:20px auto;padding:25px;background:rgba(0,20,0,.8);border:2px solid #0f0;border-radius:15px;text-align:center}
 .input-box input{width:100%;padding:14px;background:#000;border:1px solid #0f0;border-radius:10px;color:#0f0;font-size:14px;margin:8px 0;outline:none;font-family:monospace}
 .result{margin:15px 0;padding:15px;border-radius:10px;display:none}
@@ -49,9 +49,7 @@ body{background:#000;color:#0f0;font-family:'Courier New',monospace;min-height:1
 </div>
 
 <div class="page" id="buyPage">
-    <div class="header">
-        <h1>💉 شراء متابعين</h1>
-    </div>
+    <div class="header"><h1>💉 شراء متابعين</h1></div>
     <div class="input-box">
         <p style="color:#0f0;margin-bottom:10px">💰 الرصيد: <span id="buyBalance" style="color:#f00;font-size:20px">0</span></p>
         <input type="text" id="targetUser" placeholder="🎯 يوزرنيم الهدف">
@@ -68,7 +66,7 @@ const accounts=['ahmed.alsher0','zoor579','ahmedppl','mmjjk','mmjjjk','mmjjjjk',
 let totalPoints=0;
 
 function showBuyPage(){document.getElementById('monitorPage').classList.remove('active');document.getElementById('buyPage').classList.add('active');document.getElementById('buyBalance').textContent=totalPoints;}
-function goBack(){document.getElementById('buyPage').classList.remove('active');document.getElementById('monitorPage').classList.add('active');}
+function goBack(){document.getElementById('buyPage').classList.remove('active');document.getElementById('monitorPage').classList.add('active');refresh();}
 
 function renderCards(){document.getElementById('stats').innerHTML=accounts.map((acc,i)=>`<div class="card"><div class="name">👤 ${acc}</div><div class="score" id="s${i}">--</div></div>`).join('');}
 
