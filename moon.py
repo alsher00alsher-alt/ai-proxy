@@ -8,11 +8,25 @@ FIREBASE_URL = "https://otp-5acda-default-rtdb.firebaseio.com"
 PASSWORD = "d02d5189"
 DEVINFO = '{"d":"61393235613366373261636533656632","n":"494e46494e495820496e66696e6978205836383733","o":"16","t":"d","v":"2.2.9","s":"0,0"}'
 KEY = bytes([b ^ 0x43 for b in [0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31,0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31]])
-OP_IDS = {"LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b29a24a17c43","AttestDevice":"bfaf5a72aeb9a337811da6a6d13e0b73680a18ffde0c59a23701e55b98ac2515","FetchScore":"88d30eeca55c0538539ad8217dfefd52b2f47015200cdbb7cb6ea5a765381d69","CreateOrder":"ad7a6397c3970b1e7601f69d24989bff330e256ee5e39321a8d1ad3fe3879b48","GetUsers":"41454e2194d7c30f1c6e11c2c246bcc0377da65a8bf06276ca5ea9ec9ff538b6"}
-ACCOUNTS = ["ahmed.alsher0","zoor579","ahmedppl","mmjjk","mmjjjk","mmjjjjk","aappi","aappii","aappmm","o785769","appmmm","pubg.ameeer"]
+OP_IDS = {"LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b29a24a17c43","AttestDevice":"bfaf5a72aeb9a337811da6a6d13e0b73680a18ffde0c59a23701e55b98ac2515","FetchScore":"88d30eeca55c0538539ad8217dfefd52b2f47015200cdbb7cb6ea5a765381d69","CreateOrder":"ad7a6397c3970b1e7601f69d24989bff330e256ee5e39321a8d1ad3fe3879b48"}
+
+# تحميل الحسابات من Firebase أو استخدام الافتراضية
+def load_accounts():
+    try:
+        r = requests.get(f"{FIREBASE_URL}/accounts.json")
+        data = r.json()
+        if data:
+            return data
+    except: pass
+    return ["ahmed.alsher0","zoor579","ahmedppl","mmjjk","mmjjjk","mmjjjjk","aappi","aappii","aappmm","o785769","appmmm","pubg.ameeer"]
+
+def save_accounts():
+    requests.put(f"{FIREBASE_URL}/accounts.json", json=ACCOUNTS)
+
+ACCOUNTS = load_accounts()
 scores = {acc: 0 for acc in ACCOUNTS}
 tokens = {}
-paused = {}  # الحسابات الموقوفة
+paused = {}
 
 def add_cors(res):
     res.headers['Access-Control-Allow-Origin'] = '*'
@@ -33,8 +47,9 @@ def gql(query,op,token=None,csrf=None):
         return r,r.json()
     except:return None,{"error":"conn"}
 
-def login(u):
-    q={"operationName":"LoginAccount","variables":{"data":{"id":"","uniqueId":u,"nickname":"","avatarMedium":"","followerCount":0,"followingCount":0,"videoCount":0,"privateAccount":False,"diggCount":0,"authMethod":"local","password":PASSWORD}},"query":"mutation LoginAccount($data: TiktokInfo){loginTiktok(data:$data){accessToken user{username score avatar followerCount}}}"}
+def login(u, password=None):
+    pw = password or PASSWORD
+    q={"operationName":"LoginAccount","variables":{"data":{"id":"","uniqueId":u,"nickname":"","avatarMedium":"","followerCount":0,"followingCount":0,"videoCount":0,"privateAccount":False,"diggCount":0,"authMethod":"local","password":pw}},"query":"mutation LoginAccount($data: TiktokInfo){loginTiktok(data:$data){accessToken user{username score avatar followerCount}}}"}
     for _ in range(3):
         r,d=gql(q,"LoginAccount")
         if r and "errors" not in d:
@@ -54,7 +69,7 @@ def get_score(t,c):
 
 def farm(u,t,c):
     while True:
-        if paused.get(u, False):
+        if paused.get(u,False):
             time.sleep(5)
             continue
         try:
@@ -85,15 +100,55 @@ def score(account):
 def all_scores():
     return add_cors(jsonify({"scores": scores, "total": sum(scores.values())}))
 
+@app.route('/accounts-list')
+def accounts_list():
+    return add_cors(jsonify({"accounts": ACCOUNTS}))
+
 @app.route('/toggle-pause', methods=['POST','OPTIONS'])
 def toggle_pause():
     if request.method=='OPTIONS': return add_cors(jsonify({}))
     data=request.json
     account=data.get('account','')
-    is_paused=data.get('paused',False)
-    paused[account]=is_paused
-    print(f"[{'PAUSED' if is_paused else 'RESUMED'}] {account}",flush=True)
-    return add_cors(jsonify({"success":True,"paused":is_paused}))
+    paused[account]=data.get('paused',False)
+    return add_cors(jsonify({"success":True}))
+
+@app.route('/delete-account', methods=['POST','OPTIONS'])
+def delete_account():
+    if request.method=='OPTIONS': return add_cors(jsonify({}))
+    data=request.json
+    account=data.get('account','')
+    if account in ACCOUNTS:
+        ACCOUNTS.remove(account)
+        scores.pop(account,None)
+        tokens.pop(account,None)
+        paused.pop(account,None)
+        save_accounts()
+        return add_cors(jsonify({"success":True,"message":f"تم حذف {account}"}))
+    return add_cors(jsonify({"success":False,"error":"الحساب مش موجود"}))
+
+@app.route('/add-account', methods=['POST','OPTIONS'])
+def add_account():
+    if request.method=='OPTIONS': return add_cors(jsonify({}))
+    data=request.json
+    username=data.get('username','').strip()
+    password=data.get('password','')
+    
+    if not username:
+        return add_cors(jsonify({"success":False,"error":"اكتب اليوزرنيم"}))
+    
+    if username in ACCOUNTS:
+        return add_cors(jsonify({"success":False,"error":"الحساب موجود بالفعل"}))
+    
+    pw = password or PASSWORD
+    t,c = login(username, pw)
+    
+    if t:
+        ACCOUNTS.append(username)
+        save_accounts()
+        threading.Thread(target=farm,args=(username,t,c),daemon=True).start()
+        return add_cors(jsonify({"success":True,"message":f"تم إضافة {username}!"}))
+    else:
+        return add_cors(jsonify({"success":False,"error":"فشل تسجيل الدخول - تأكد من البيانات"}))
 
 @app.route('/create-order', methods=['POST','OPTIONS'])
 def create_order_api():
@@ -102,11 +157,12 @@ def create_order_api():
     target=data.get('target','').replace('@','')
     amount=data.get('amount',0)
     if not target or amount<=0: return add_cors(jsonify({"success":False,"error":"بيانات ناقصة"}))
+    
     points_needed=amount*5
     total_points=sum(scores.values())
     if points_needed>total_points: return add_cors(jsonify({"success":False,"error":f"نقاط غير كافية! تحتاج {int(points_needed)}"}))
     
-    used=[];remaining=amount;remaining_points=points_needed
+    used=[];remaining=amount
     for account in ACCOUNTS:
         if remaining<=0: break
         if paused.get(account,False): continue
@@ -133,7 +189,7 @@ def create_order_api():
 @app.route('/ping')
 def ping(): return "pong"
 
-print("MOON PANEL V2 - With Pause",flush=True)
+print("MOON PANEL V3",flush=True)
 
 def start():
     for a in ACCOUNTS:
