@@ -1,5 +1,5 @@
 import threading
-from flask import Flask, jsonify, make_response
+from flask import Flask, jsonify
 import requests,hmac,hashlib,time,uuid,json,random
 
 app = Flask(__name__)
@@ -8,13 +8,11 @@ PASSWORD = "d02d5189"
 DEVINFO = '{"d":"61393235613366373261636533656632","n":"494e46494e495820496e66696e6978205836383733","o":"16","t":"d","v":"2.2.9","s":"0,0"}'
 KEY = bytes([b ^ 0x43 for b in [0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31,0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31]])
 OP_IDS = {"LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b29a24a17c43","AttestDevice":"bfaf5a72aeb9a337811da6a6d13e0b73680a18ffde0c59a23701e55b98ac2515","FetchScore":"88d30eeca55c0538539ad8217dfefd52b2f47015200cdbb7cb6ea5a765381d69"}
-ACCOUNTS = ["ahmed.alsher0","zoor579","ahmedppl"]
-scores = {"ahmed.alsher0": 194, "zoor579": 160, "ahmedppl": 272}
+ACCOUNTS = ["ahmed.alsher0","zoor579","ahmedppl","mmjjk","mmjjjk","mmjjjjk"]
+scores = {acc: 0 for acc in ACCOUNTS}
 
 def add_cors(res):
     res.headers['Access-Control-Allow-Origin'] = '*'
-    res.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-    res.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     return res
 
 def sig(ts,nonce,payload):return hmac.new(KEY,f"{ts}-{nonce}-{payload}".encode(),hashlib.sha256).hexdigest()
@@ -31,7 +29,6 @@ def gql(query,op,token=None,csrf=None):
     except:return None,{"error":"conn"}
 
 def login(u):
-    print(f"[*] Logging in: {u}...",flush=True)
     q={"operationName":"LoginAccount","variables":{"data":{"id":"","uniqueId":u,"nickname":"","avatarMedium":"","followerCount":0,"followingCount":0,"videoCount":0,"privateAccount":False,"diggCount":0,"authMethod":"local","password":PASSWORD}},"query":"mutation LoginAccount($data: TiktokInfo){loginTiktok(data:$data){accessToken user{username score}}}"}
     for _ in range(3):
         r,d=gql(q,"LoginAccount")
@@ -42,7 +39,7 @@ def login(u):
             scores[u]=s
             print(f"[✓] {u} - Score: {s}",flush=True)
             return t,c
-        time.sleep(5)
+        time.sleep(3)
     return None,None
 
 def attest(t,c):
@@ -55,14 +52,13 @@ def get_score(t,c):
     return d.get("data",{}).get("fetchScore",0) if "errors" not in d else 0
 
 def farm(u,t,c):
-    print(f"[~] Farming {u}...",flush=True)
     while True:
         try:
             q={"operationName":"GetOrders","variables":{},"query":"query GetOrders{getOrders{_id status}}"}
             _,d=gql(q,"GetOrders",t,c)
             orders=d.get("data",{}).get("getOrders",[])
             pending=[o["_id"] for o in orders if o.get("status")=="pending"]
-            if not pending:time.sleep(10);continue
+            if not pending:time.sleep(8);continue
             for task in pending:
                 rnd=random.randint(3000,4500)
                 q={"operationName":"ActionOrder","variables":{"orderId":task,"validationData":{"attempts":1,"initialNumber":float(rnd),"timeSpent":float(random.randint(2000,4000)),"actualCount":rnd+1,"source":"CLIENT_CRONET"}},"query":"mutation ActionOrder($orderId:ID!,$validationData:ValidationDataInput!){actionOrder(orderId:$orderId,validationData:$validationData){score}}"}
@@ -70,8 +66,8 @@ def farm(u,t,c):
                 if "errors" not in r:
                     s=get_score(t,c)
                     scores[u]=s
-                    print(f"[{u}] ✓ Score: {s}",flush=True)
-                time.sleep(random.uniform(2,3))
+                    print(f"[{u}] ✓ {s}",flush=True)
+                time.sleep(random.uniform(1.5,2.5))
         except:time.sleep(5)
 
 @app.route('/score/<account>')
@@ -86,17 +82,17 @@ def all_scores():
 def ping():
     return "pong"
 
-print("MOON FARMER 24/7",flush=True)
+print("MOON 6 ACCOUNTS FARMER",flush=True)
 
-# تشغيل الفارمر في الخلفية
-def start_farmer():
+def start():
     for a in ACCOUNTS:
         t,c=login(a)
         if t:
             attest(t,c)
             threading.Thread(target=farm,args=(a,t,c),daemon=True).start()
+            time.sleep(2)
 
-threading.Thread(target=start_farmer,daemon=True).start()
+threading.Thread(target=start,daemon=True).start()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)

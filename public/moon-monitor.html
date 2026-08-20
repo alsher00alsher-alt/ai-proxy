@@ -8,56 +8,44 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0a0a;color:#0f0;font-family:'Courier New',monospace;padding:15px}
 h1{text-align:center;color:#8b5cf6;font-size:22px;margin-bottom:15px}
-.stats{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:15px 0}
-.card{background:#111;border:2px solid #8b5cf6;border-radius:15px;padding:18px;min-width:150px;text-align:center}
-.name{color:#8b5cf6;font-size:14px;font-weight:bold}
-.score{font-size:38px;font-weight:bold;color:#22c55e;margin:8px 0}
-.terminal{background:#000;border:1px solid #333;border-radius:10px;padding:15px;max-width:600px;margin:15px auto;height:300px;overflow-y:auto;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-width:800px;margin:15px auto}
+.card{background:#111;border:2px solid #8b5cf6;border-radius:15px;padding:18px;text-align:center}
+.name{color:#8b5cf6;font-size:13px;font-weight:bold}
+.score{font-size:32px;font-weight:bold;color:#22c55e;margin:8px 0}
 button{display:block;margin:15px auto;padding:12px 30px;background:#8b5cf6;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:bold}
 </style>
 </head>
 <body>
-<h1>🌙 MOON MONITOR</h1>
-
-<div class="stats">
-    <div class="card"><div class="name">ahmed.alsher0</div><div class="score" id="s0">--</div></div>
-    <div class="card"><div class="name">zoor579</div><div class="score" id="s1">--</div></div>
-    <div class="card"><div class="name">ahmedppl</div><div class="score" id="s2">--</div></div>
-</div>
-
-<div class="terminal" id="log"></div>
+<h1>🌙 MOON MONITOR - 6 Accounts</h1>
+<div class="stats" id="stats"></div>
 <button onclick="refresh()">🔄 تحديث</button>
 
 <script>
 const BASE = 'https://ai-proxy-production-59b3.up.railway.app';
-const accounts = ['ahmed.alsher0', 'zoor579', 'ahmedppl'];
+const accounts = ['ahmed.alsher0','zoor579','ahmedppl','mmjjk','mmjjjk','mmjjjjk'];
 
-function log(msg, color) {
-    const d = document.createElement('div');
-    d.style.color = color || '#0f0';
-    d.textContent = `[${new Date().toLocaleTimeString('ar-EG')}] ${msg}`;
-    const l = document.getElementById('log');
-    l.appendChild(d);
-    l.scrollTop = l.scrollHeight;
+function renderCards() {
+    document.getElementById('stats').innerHTML = accounts.map((acc, i) => `
+        <div class="card">
+            <div class="name">👤 ${acc}</div>
+            <div class="score" id="s${i}">--</div>
+        </div>
+    `).join('');
 }
 
 async function refresh() {
-    log('🔄 تحديث...', '#8b5cf6');
-    
     for (let i = 0; i < accounts.length; i++) {
-        const el = document.getElementById('s' + i);
         try {
             const res = await fetch(`${BASE}/score/${accounts[i]}`);
             const data = await res.json();
-            el.textContent = data.score;
-            log(`✅ ${accounts[i]}: ${data.score}`, '#22c55e');
+            document.getElementById('s' + i).textContent = data.score;
         } catch(e) {
-            el.textContent = '❌';
-            log(`⚠️ ${accounts[i]}: ${e.message}`, '#f59e0b');
+            document.getElementById('s' + i).textContent = '❌';
         }
     }
 }
 
+renderCards();
 refresh();
 setInterval(refresh, 1000);
 </script>
