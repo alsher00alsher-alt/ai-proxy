@@ -74,21 +74,42 @@ def farm(u,t,c):
         except: time.sleep(5)
 
 def create_order(account, order_type, target, amount):
-    if account not in tokens: return {"success":False}
+    """نظام موحد لكل الخدمات"""
+    if account not in tokens: return {"success":False,"error":"الحساب مش متصل"}
     t=tokens[account]["token"];c=tokens[account]["csrf"]
     avatar=tokens[account]["avatar"];followers=tokens[account]["followers"]
-    vars_data={"type":order_type,"amount":amount}
-    if order_type=="followers":
-        vars_data["tiktokerUsername"]=target
-        vars_data["avatar"]=avatar
-        vars_data["initialCount"]=followers
-    elif order_type=="likes" or order_type=="views":
-        vars_data["videoLink"]=target
-    elif order_type=="comments":
-        vars_data["videoLink"]=target
-    q={"operationName":"CreateOrder","variables":vars_data,"query":"mutation CreateOrder($type:Action!,$amount:Int!,$tiktokerUsername:String,$videoLink:String,$avatar:String,$initialCount:Int){createOrder(orderInput:{type:$type amount:$amount tiktokerUsername:$tiktokerUsername videoLink:$videoLink avatar:$avatar initialCount:$initialCount}){_id status}}"}
-    _,d=gql(q,"CreateOrder",t,c)
-    return {"success":"errors" not in d}
+    
+    # بناء المتغيرات حسب نوع الخدمة
+    vars_data = {"type": order_type, "amount": amount}
+    
+    if order_type == "followers":
+        vars_data["tiktokerUsername"] = target
+        vars_data["avatar"] = avatar
+        vars_data["initialCount"] = followers
+    elif order_type in ["likes", "comments"]:
+        vars_data["videoLink"] = target
+        vars_data["tiktokerUsername"] = ""
+        vars_data["avatar"] = avatar
+        vars_data["initialCount"] = 0
+    elif order_type == "views":
+        vars_data["videoLink"] = target
+        vars_data["tiktokerUsername"] = ""
+        vars_data["avatar"] = ""
+        vars_data["initialCount"] = 0
+    
+    q = {
+        "operationName": "CreateOrder",
+        "variables": vars_data,
+        "query": "mutation CreateOrder($type: Action!, $amount: Int!, $tiktokerUsername: String, $videoLink: String, $avatar: String, $initialCount: Int) { createOrder(orderInput: { type: $type amount: $amount tiktokerUsername: $tiktokerUsername videoLink: $videoLink avatar: $avatar initialCount: $initialCount } ) { _id status } }"
+    }
+    
+    _,d = gql(q, "CreateOrder", t, c)
+    
+    if "errors" not in d:
+        return {"success": True}
+    else:
+        err = d.get('errors',[{}])[0].get('message','')
+        return {"success": False, "error": err}
 
 @app.route('/score/<account>')
 def score(account): return add_cors(jsonify({"score":scores.get(account,0)}))
@@ -103,31 +124,47 @@ def create_order_api():
     service=data.get('service','followers')
     target=data.get('target','').strip()
     amount=data.get('amount',0)
-    if not target or amount<=0: return add_cors(jsonify({"success":False,"error":"بيانات ناقصة"}))
+    
+    if not target or amount<=0:
+        return add_cors(jsonify({"success":False,"error":"بيانات ناقصة"}))
     
     # حساب النقاط
     points_map={"followers":5,"likes":2,"views":1,"comments":3}
     points_needed=amount*points_map.get(service,5)
     total_points=sum(scores.values())
-    if points_needed>total_points: return add_cors(jsonify({"success":False,"error":f"نقاط غير كافية! تحتاج {int(points_needed)}"}))
     
-    used=[]
+    if points_needed>total_points:
+        return add_cors(jsonify({"success":False,"error":f"نقاط غير كافية! تحتاج {int(points_needed)} نقطة"}))
+    
+    used=[];remaining_amount=amount;remaining_points=points_needed
+    
     for account in ACCOUNTS:
-        if points_needed<=0: break
-        if scores.get(account,0)>=points_map.get(service,5):
-            amt=min(amount,int(scores[account]//points_map.get(service,5)))
-            if amt>0:
-                if create_order(account,service,target,amt)["success"]:
-                    used.append({"account":account,"amount":amt})
-                    scores[account]-=amt*points_map.get(service,5)
-                    points_needed-=amt*points_map.get(service,5)
-                    amount-=amt
+        if remaining_amount<=0: break
+        cost_per_unit=points_map.get(service,5)
+        if scores.get(account,0)>=cost_per_unit:
+            max_units=int(scores[account]//cost_per_unit)
+            units=min(remaining_amount,max_units)
+            if units>0:
+                result=create_order(account,service,target,units)
+                if result["success"]:
+                    used.append({"account":account,"amount":units})
+                    scores[account]-=units*cost_per_unit
+                    remaining_amount-=units
+                    remaining_points-=units*cost_per_unit
     
     if used:
-        order_record={"service":service,"target":target,"amount":sum(u["amount"] for u in used),"time":time.strftime("%Y-%m-%d %H:%M:%S"),"used_accounts":used}
+        total_ordered=sum(u["amount"] for u in used)
+        order_record={
+            "service":service,
+            "target":target,
+            "amount":total_ordered,
+            "time":time.strftime("%Y-%m-%d %H:%M:%S"),
+            "used_accounts":used
+        }
         requests.put(f"{FIREBASE_URL}/orders/{int(time.time()*1000)}.json",json=order_record)
-        return add_cors(jsonify({"success":True,"message":"تم الطلب!"}))
-    return add_cors(jsonify({"success":False,"error":"فشل"}))
+        return add_cors(jsonify({"success":True,"message":f"تم طلب {total_ordered} {service}!"}))
+    
+    return add_cors(jsonify({"success":False,"error":"فشل تنفيذ الطلب - جرب كمية أقل"}))
 
 @app.route('/orders')
 def get_orders():
@@ -141,7 +178,7 @@ def get_orders():
 @app.route('/ping')
 def ping(): return "pong"
 
-print("MOON SERVICES PANEL",flush=True)
+print("MOON ALL SERVICES",flush=True)
 
 def start():
     for a in ACCOUNTS:
