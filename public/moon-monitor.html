@@ -6,80 +6,60 @@
 <title>🌙 MOON MONITOR</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#0f0;font-family:'Courier New',monospace;padding:15px;min-height:100vh}
-.header{text-align:center;margin-bottom:20px}
-.header h1{color:#8b5cf6;font-size:24px}
-.header p{color:#666;font-size:12px}
+body{background:#0a0a0a;color:#0f0;font-family:'Courier New',monospace;padding:15px}
+h1{text-align:center;color:#8b5cf6;font-size:22px;margin-bottom:15px}
 .stats{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:15px 0}
 .card{background:#111;border:2px solid #8b5cf6;border-radius:15px;padding:18px;min-width:150px;text-align:center}
-.card .name{color:#8b5cf6;font-size:14px;font-weight:bold}
-.card .score{font-size:35px;font-weight:bold;color:#22c55e;margin:8px 0}
-.card .status{font-size:11px;color:#22c55e}
-.terminal{background:#000;border:1px solid #333;border-radius:10px;padding:15px;max-width:800px;margin:15px auto;height:350px;overflow-y:auto;font-size:12px}
-.refresh-btn{display:block;margin:15px auto;padding:12px 30px;background:#8b5cf6;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer}
-.live-dot{display:inline-block;width:10px;height:10px;background:#22c55e;border-radius:50%;animation:pulse 1.5s infinite;margin-left:5px}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.name{color:#8b5cf6;font-size:14px;font-weight:bold}
+.score{font-size:38px;font-weight:bold;color:#22c55e;margin:8px 0}
+.terminal{background:#000;border:1px solid #333;border-radius:10px;padding:15px;max-width:600px;margin:15px auto;height:300px;overflow-y:auto;font-size:12px}
+button{display:block;margin:15px auto;padding:12px 30px;background:#8b5cf6;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:bold}
 </style>
 </head>
 <body>
-<div class="header">
-    <h1>🌙 MOON MONITOR <span class="live-dot"></span></h1>
-    <p>Live Points</p>
-</div>
+<h1>🌙 MOON MONITOR</h1>
 
 <div class="stats">
-    <div class="card">
-        <div class="name">👤 ahmed.alsher0</div>
-        <div class="score" id="score-0">--</div>
-        <div class="status">🟢</div>
-    </div>
-    <div class="card">
-        <div class="name">👤 zoor579</div>
-        <div class="score" id="score-1">--</div>
-        <div class="status">🟢</div>
-    </div>
-    <div class="card">
-        <div class="name">👤 ahmedppl</div>
-        <div class="score" id="score-2">--</div>
-        <div class="status">🟢</div>
-    </div>
+    <div class="card"><div class="name">ahmed.alsher0</div><div class="score" id="s0">--</div></div>
+    <div class="card"><div class="name">zoor579</div><div class="score" id="s1">--</div></div>
+    <div class="card"><div class="name">ahmedppl</div><div class="score" id="s2">--</div></div>
 </div>
 
 <div class="terminal" id="log"></div>
-<button class="refresh-btn" onclick="fetchData()">🔄 تحديث</button>
+<button onclick="refresh()">🔄 تحديث</button>
 
 <script>
-const RAILWAY = 'https://ai-proxy-production-59b3.up.railway.app';
+const BASE = 'https://ai-proxy-production-59b3.up.railway.app';
 const accounts = ['ahmed.alsher0', 'zoor579', 'ahmedppl'];
 
-function addLog(msg, color) {
-    const log = document.getElementById('log');
-    const div = document.createElement('div');
-    div.style.color = color || '#0f0';
-    div.textContent = `[${new Date().toLocaleTimeString('ar-EG')}] ${msg}`;
-    log.appendChild(div);
-    log.scrollTop = log.scrollHeight;
+function log(msg, color) {
+    const d = document.createElement('div');
+    d.style.color = color || '#0f0';
+    d.textContent = `[${new Date().toLocaleTimeString('ar-EG')}] ${msg}`;
+    document.getElementById('log').appendChild(d);
+    const l = document.getElementById('log');
+    l.scrollTop = l.scrollHeight;
 }
 
-async function fetchData() {
-    addLog('🔄 جاري التحديث...', '#8b5cf6');
+async function refresh() {
+    log('🔄 تحديث...', '#8b5cf6');
     
     for (let i = 0; i < accounts.length; i++) {
+        const el = document.getElementById('s' + i);
         try {
-            // نستخدم API السيرفر
-            const res = await fetch(`${RAILWAY}/score/${accounts[i]}`);
+            const res = await fetch(`${BASE}/score/${accounts[i]}`);
             const data = await res.json();
-            document.getElementById('score-' + i).textContent = data.score || '--';
-            addLog(`✅ ${accounts[i]}: ${data.score}`, '#22c55e');
+            el.textContent = data.score;
+            log(`✅ ${accounts[i]}: ${data.score}`, '#22c55e');
         } catch(e) {
-            document.getElementById('score-' + i).textContent = '❌';
-            addLog(`⚠️ ${accounts[i]}: سيرفر غير متاح`, '#f59e0b');
+            el.textContent = '❌';
+            log(`⚠️ ${accounts[i]}: خطأ`, '#f59e0b');
         }
     }
 }
 
-fetchData();
-setInterval(fetchData, 15000);
+refresh();
+setInterval(refresh, 10000);
 </script>
 </body>
 </html>
