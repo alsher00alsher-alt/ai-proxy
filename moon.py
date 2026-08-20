@@ -4,6 +4,8 @@ import requests,hmac,hashlib,time,uuid,json,random
 
 app = Flask(__name__)
 
+FIREBASE_URL = "https://otp-5acda-default-rtdb.firebaseio.com"
+
 PASSWORD = "d02d5189"
 DEVINFO = '{"d":"61393235613366373261636533656632","n":"494e46494e495820496e66696e6978205836383733","o":"16","t":"d","v":"2.2.9","s":"0,0"}'
 KEY = bytes([b ^ 0x43 for b in [0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31,0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31]])
@@ -11,7 +13,22 @@ OP_IDS = {"LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b2
 ACCOUNTS = ["ahmed.alsher0","zoor579","ahmedppl","mmjjk","mmjjjk","mmjjjjk","aappi","aappii","aappmm"]
 scores = {acc: 0 for acc in ACCOUNTS}
 tokens = {}
-orders_history = []  # سجل الطلبات
+
+def save_order(order):
+    try:
+        requests.put(f"{FIREBASE_URL}/orders/{int(time.time()*1000)}.json", json=order)
+    except: pass
+
+def load_orders():
+    try:
+        r = requests.get(f"{FIREBASE_URL}/orders.json")
+        data = r.json()
+        if data:
+            orders = list(data.values())
+            orders.sort(key=lambda x: x.get('time', ''), reverse=True)
+            return orders
+    except: pass
+    return []
 
 def add_cors(res):
     res.headers['Access-Control-Allow-Origin'] = '*'
@@ -108,7 +125,6 @@ def buy_followers():
     if points_needed>total_points:
         return add_cors(jsonify({"success":False,"error":f"نقاط غير كافية! تحتاج {int(points_needed)}","needed":int(points_needed),"total":total_points}))
     
-    # توزيع على الحسابات
     used_accounts=[]
     remaining_points=points_needed
     for account in ACCOUNTS:
@@ -125,20 +141,20 @@ def buy_followers():
     
     if used_accounts:
         order_record={"target":target,"amount":amount,"time":time.strftime("%Y-%m-%d %H:%M:%S"),"used_accounts":used_accounts}
-        orders_history.append(order_record)
+        save_order(order_record)
         return add_cors(jsonify({"success":True,"message":f"تم طلب {amount} متابع لـ @{target}","order":order_record}))
     
     return add_cors(jsonify({"success":False,"error":"فشل تنفيذ الطلب"}))
 
 @app.route('/orders')
 def get_orders():
-    return add_cors(jsonify({"orders": orders_history}))
+    return add_cors(jsonify({"orders": load_orders()}))
 
 @app.route('/ping')
 def ping():
     return "pong"
 
-print("MOON CONTROL PANEL",flush=True)
+print("MOON CONTROL PANEL 24/7",flush=True)
 
 def start():
     for a in ACCOUNTS:
