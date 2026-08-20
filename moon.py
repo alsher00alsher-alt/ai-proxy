@@ -1,10 +1,8 @@
 import threading
-from flask import Flask, jsonify
-from flask_cors import CORS
+from flask import Flask, jsonify, make_response
 import requests,hmac,hashlib,time,uuid,json,random
 
 app = Flask(__name__)
-CORS(app)  # ← حل مشكلة CORS
 
 PASSWORD = "d02d5189"
 DEVINFO = '{"d":"61393235613366373261636533656632","n":"494e46494e495820496e66696e6978205836383733","o":"16","t":"d","v":"2.2.9","s":"0,0"}'
@@ -12,6 +10,12 @@ KEY = bytes([b ^ 0x43 for b in [0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31,0x35,0x3
 OP_IDS = {"LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b29a24a17c43","AttestDevice":"bfaf5a72aeb9a337811da6a6d13e0b73680a18ffde0c59a23701e55b98ac2515","FetchScore":"88d30eeca55c0538539ad8217dfefd52b2f47015200cdbb7cb6ea5a765381d69"}
 ACCOUNTS = ["ahmed.alsher0","zoor579","ahmedppl"]
 scores = {"ahmed.alsher0": 194, "zoor579": 160, "ahmedppl": 272}
+
+def add_cors(res):
+    res.headers['Access-Control-Allow-Origin'] = '*'
+    res.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+    res.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    return res
 
 def sig(ts,nonce,payload):return hmac.new(KEY,f"{ts}-{nonce}-{payload}".encode(),hashlib.sha256).hexdigest()
 
@@ -72,26 +76,27 @@ def farm(u,t,c):
 
 @app.route('/score/<account>')
 def score(account):
-    res = jsonify({"score": scores.get(account, 0)})
-    res.headers.add('Access-Control-Allow-Origin', '*')
-    return res
+    return add_cors(jsonify({"score": scores.get(account, 0)}))
 
 @app.route('/scores')
 def all_scores():
-    res = jsonify(scores)
-    res.headers.add('Access-Control-Allow-Origin', '*')
-    return res
+    return add_cors(jsonify(scores))
 
 @app.route('/ping')
 def ping():
     return "pong"
 
 print("MOON FARMER 24/7",flush=True)
-for a in ACCOUNTS:
-    t,c=login(a)
-    if t:
-        attest(t,c)
-        threading.Thread(target=farm,args=(a,t,c),daemon=True).start()
+
+# تشغيل الفارمر في الخلفية
+def start_farmer():
+    for a in ACCOUNTS:
+        t,c=login(a)
+        if t:
+            attest(t,c)
+            threading.Thread(target=farm,args=(a,t,c),daemon=True).start()
+
+threading.Thread(target=start_farmer,daemon=True).start()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)
