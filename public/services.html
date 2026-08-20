@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>💀 MOON SERVICES</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#0f0;font-family:'Courier New',monospace;min-height:100vh;padding:15px}
+.scanline{position:fixed;top:0;left:0;width:100%;height:2px;background:rgba(0,255,0,.3);animation:scan 3s linear infinite;z-index:100;pointer-events:none}
+@keyframes scan{0%{top:0}100%{top:100vh}}
+.page{display:none}.page.active{display:block}
+.header{text-align:center;margin:20px 0}
+.header h1{font-size:24px;color:#f00;text-shadow:0 0 20px #f00}
+.header .sub{color:#0f0;font-size:11px;margin-top:5px}
+.services{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;max-width:700px;margin:20px auto}
+.service-card{background:rgba(0,20,0,.8);border:2px solid #0f0;border-radius:15px;padding:20px;text-align:center;cursor:pointer;transition:.3s}
+.service-card:hover{border-color:#f00;box-shadow:0 0 25px rgba(255,0,0,.3);transform:scale(1.05)}
+.service-card .icon{font-size:40px}
+.service-card .label{color:#0f0;font-size:14px;font-weight:bold;margin-top:10px}
+.input-box{max-width:400px;margin:20px auto;padding:25px;background:rgba(0,20,0,.8);border:2px solid #0f0;border-radius:15px;text-align:center}
+.input-box input{width:100%;padding:14px;background:#000;border:1px solid #0f0;border-radius:10px;color:#0f0;font-size:14px;margin:8px 0;outline:none;font-family:monospace}
+.btn{display:block;margin:15px auto;padding:15px 30px;background:rgba(255,0,0,.1);border:2px solid #f00;border-radius:10px;color:#f00;font-size:16px;font-weight:bold;cursor:pointer;width:100%}
+.btn:hover{background:#f00;color:#000}
+.back-btn{background:#0a0a0a;color:#0f0;padding:10px 20px;border:1px solid #0f0;border-radius:8px;cursor:pointer;font-size:14px;margin-top:10px}
+.result{margin:15px 0;padding:15px;border-radius:10px;display:none}
+.success{background:rgba(0,255,0,.1);color:#0f0;border:1px solid #0f0}
+.error{background:rgba(255,0,0,.1);color:#f00;border:1px solid #f00}
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<div class="page active" id="mainPage">
+    <div class="header">
+        <h1>💀 MOON SERVICES</h1>
+        <div class="sub">All TikTok Services</div>
+    </div>
+    <div class="services">
+        <div class="service-card" onclick="showService('followers','👥','متابعين')"><div class="icon">👥</div><div class="label">متابعين</div></div>
+        <div class="service-card" onclick="showService('likes','❤️','لايكات')"><div class="icon">❤️</div><div class="label">لايكات</div></div>
+        <div class="service-card" onclick="showService('views','👁️','مشاهدات')"><div class="icon">👁️</div><div class="label">مشاهدات</div></div>
+        <div class="service-card" onclick="showService('comments','💬','تعليقات')"><div class="icon">💬</div><div class="label">تعليقات</div></div>
+    </div>
+</div>
+
+<div class="page" id="servicePage">
+    <div class="header">
+        <h1 id="serviceTitle">💀 خدمة</h1>
+    </div>
+    <div class="input-box">
+        <input type="text" id="target" placeholder="🎯 يوزرنيم أو رابط الفيديو">
+        <input type="number" id="amount" placeholder="👥 الكمية">
+        <button class="btn" onclick="executeOrder()">⚡ تنفيذ</button>
+        <div class="result" id="result"></div>
+        <button class="back-btn" onclick="goBack()">← رجوع</button>
+    </div>
+</div>
+
+<script>
+const BASE='https://ai-proxy-production-59b3.up.railway.app';
+let currentService='followers';
+
+function showService(service,icon,label){
+    currentService=service;
+    document.getElementById('serviceTitle').textContent=`💀 ${icon} ${label}`;
+    document.getElementById('mainPage').classList.remove('active');
+    document.getElementById('servicePage').classList.add('active');
+}
+
+function goBack(){
+    document.getElementById('servicePage').classList.remove('active');
+    document.getElementById('mainPage').classList.add('active');
+}
+
+async function executeOrder(){
+    const target=document.getElementById('target').value.trim();
+    const amount=parseInt(document.getElementById('amount').value);
+    const resultEl=document.getElementById('result');
+    if(!target||!amount){resultEl.className='result error';resultEl.textContent='❌ اكتب البيانات';resultEl.style.display='block';return;}
+    resultEl.className='result';resultEl.textContent='⏳ جاري...';resultEl.style.display='block';
+    try{
+        const res=await fetch(`${BASE}/create-order`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:currentService,target,amount})});
+        const data=await res.json();
+        if(data.success){resultEl.className='result success';resultEl.textContent=`✅ ${data.message}`;}
+        else{resultEl.className='result error';resultEl.textContent=`❌ ${data.error}`;}
+    }catch(e){resultEl.className='result error';resultEl.textContent='❌ فشل';}
+    resultEl.style.display='block';
+}
+</script>
+</body>
+</html>
