@@ -7,16 +7,11 @@ app = Flask(__name__)
 PASSWORD = "d02d5189"
 DEVINFO = '{"d":"61393235613366373261636533656632","n":"494e46494e495820496e66696e6978205836383733","o":"16","t":"d","v":"2.2.9","s":"0,0"}'
 KEY = bytes([b ^ 0x43 for b in [0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31,0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31]])
-OP_IDS = {
-    "LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b29a24a17c43",
-    "AttestDevice":"bfaf5a72aeb9a337811da6a6d13e0b73680a18ffde0c59a23701e55b98ac2515",
-    "FetchScore":"88d30eeca55c0538539ad8217dfefd52b2f47015200cdbb7cb6ea5a765381d69",
-    "CreateOrder":"ad7a6397c3970b1e7601f69d24989bff330e256ee5e39321a8d1ad3fe3879b48",
-    "GetUsers":"41454e2194d7c30f1c6e11c2c246bcc0377da65a8bf06276ca5ea9ec9ff538b6"
-}
+OP_IDS = {"LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b29a24a17c43","AttestDevice":"bfaf5a72aeb9a337811da6a6d13e0b73680a18ffde0c59a23701e55b98ac2515","FetchScore":"88d30eeca55c0538539ad8217dfefd52b2f47015200cdbb7cb6ea5a765381d69","CreateOrder":"ad7a6397c3970b1e7601f69d24989bff330e256ee5e39321a8d1ad3fe3879b48","GetUsers":"41454e2194d7c30f1c6e11c2c246bcc0377da65a8bf06276ca5ea9ec9ff538b6"}
 ACCOUNTS = ["ahmed.alsher0","zoor579","ahmedppl","mmjjk","mmjjjk","mmjjjjk","aappi","aappii","aappmm"]
 scores = {acc: 0 for acc in ACCOUNTS}
 tokens = {}
+orders_history = []  # سجل الطلبات
 
 def add_cors(res):
     res.headers['Access-Control-Allow-Origin'] = '*'
@@ -47,7 +42,6 @@ def login(u):
             user=d['data']['loginTiktok']['user']
             scores[u]=user.get('score',0)
             tokens[u]={"token":t,"csrf":c,"avatar":user.get('avatar',''),"followers":user.get('followerCount',0)}
-            print(f"[✓] {u} - Score: {scores[u]}",flush=True)
             return t,c
         time.sleep(5)
     return None,None
@@ -76,80 +70,75 @@ def farm(u,t,c):
                 if "errors" not in r:
                     s=get_score(t,c)
                     scores[u]=s
-                    print(f"[{u}] ✓ {s}",flush=True)
                 time.sleep(random.uniform(1.5,2.5))
         except:time.sleep(5)
 
 def create_order(account, target_user, amount):
-    """طلب متابعين باستخدام نقاط حساب معين"""
     if account not in tokens:
         return {"success": False, "error": "الحساب مش متصل"}
-    
-    t = tokens[account]["token"]
-    c = tokens[account]["csrf"]
-    avatar = tokens[account]["avatar"]
-    followers = tokens[account]["followers"]
-    
+    t=tokens[account]["token"];c=tokens[account]["csrf"]
+    avatar=tokens[account]["avatar"];followers=tokens[account]["followers"]
     q={"operationName":"CreateOrder","variables":{"type":"followers","amount":amount,"tiktokerUsername":target_user,"avatar":avatar,"initialCount":followers},"query":"mutation CreateOrder($type: Action!, $amount: Int!, $tiktokerUsername: String, $avatar: String, $initialCount: Int){createOrder(orderInput:{type:$type amount:$amount tiktokerUsername:$tiktokerUsername avatar:$avatar initialCount:$initialCount}){_id status}}"}
     _,d=gql(q,"CreateOrder",t,c)
-    
     if "errors" not in d:
-        return {"success": True, "order": d.get("data",{}).get("createOrder",{})}
-    else:
-        return {"success": False, "error": d.get('errors',[{}])[0].get('message','')}
+        return {"success": True}
+    return {"success": False, "error": d.get('errors',[{}])[0].get('message','')}
 
-# API Routes
 @app.route('/score/<account>')
 def score(account):
     return add_cors(jsonify({"score": scores.get(account, 0)}))
 
 @app.route('/scores')
 def all_scores():
-    total = sum(scores.values())
-    return add_cors(jsonify({"scores": scores, "total": total}))
+    return add_cors(jsonify({"scores": scores, "total": sum(scores.values())}))
 
 @app.route('/buy-followers', methods=['POST', 'OPTIONS'])
 def buy_followers():
     if request.method == 'OPTIONS':
         return add_cors(jsonify({}))
+    data=request.json
+    target=data.get('target','').replace('@','')
+    amount=data.get('amount',0)
+    if not target or amount<=0:
+        return add_cors(jsonify({"success":False,"error":"بيانات ناقصة"}))
     
-    data = request.json
-    target = data.get('target', '').replace('@','')
-    amount = data.get('amount', 0)
+    points_needed=(amount/20)*100
+    total_points=sum(scores.values())
     
-    if not target or amount <= 0:
-        return add_cors(jsonify({"success": False, "error": "بيانات ناقصة"}))
+    if points_needed>total_points:
+        return add_cors(jsonify({"success":False,"error":f"نقاط غير كافية! تحتاج {int(points_needed)}","needed":int(points_needed),"total":total_points}))
     
-    # حساب النقاط المطلوبة (100 نقطة = 20 متابع)
-    points_needed = (amount / 20) * 100
-    total_points = sum(scores.values())
-    
-    if points_needed > total_points:
-        return add_cors(jsonify({
-            "success": False,
-            "error": f"نقاط غير كافية! تحتاج {int(points_needed)} نقطة",
-            "points_needed": int(points_needed),
-            "total_points": total_points
-        }))
-    
-    # نطلب من أول حساب عنده نقاط
+    # توزيع على الحسابات
+    used_accounts=[]
+    remaining_points=points_needed
     for account in ACCOUNTS:
-        if scores.get(account, 0) >= 100:
-            result = create_order(account, target, amount)
-            if result["success"]:
-                return add_cors(jsonify({
-                    "success": True,
-                    "message": f"تم طلب {amount} متابع لـ @{target}",
-                    "account": account
-                }))
+        if remaining_points<=0:break
+        if scores.get(account,0)>=100:
+            account_orders=min(int(scores[account]//100), int(remaining_points//100))
+            if account_orders>0:
+                order_amount=account_orders*20
+                result=create_order(account,target,order_amount)
+                if result["success"]:
+                    used_accounts.append({"account":account,"amount":order_amount,"points":account_orders*100})
+                    remaining_points-=account_orders*100
+                    scores[account]-=account_orders*100
     
-    return add_cors(jsonify({"success": False, "error": "فشل الطلب"}))
+    if used_accounts:
+        order_record={"target":target,"amount":amount,"time":time.strftime("%Y-%m-%d %H:%M:%S"),"used_accounts":used_accounts}
+        orders_history.append(order_record)
+        return add_cors(jsonify({"success":True,"message":f"تم طلب {amount} متابع لـ @{target}","order":order_record}))
+    
+    return add_cors(jsonify({"success":False,"error":"فشل تنفيذ الطلب"}))
+
+@app.route('/orders')
+def get_orders():
+    return add_cors(jsonify({"orders": orders_history}))
 
 @app.route('/ping')
 def ping():
     return "pong"
 
-print("MOON CONTROL PANEL 24/7",flush=True)
+print("MOON CONTROL PANEL",flush=True)
 
 def start():
     for a in ACCOUNTS:
