@@ -2,79 +2,96 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>🌙 MOON CONTROL PANEL</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>💀 MOON HACKER PANEL</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:'Cairo',sans-serif;padding:15px;min-height:100vh}
+body{background:#000;color:#0f0;font-family:'Courier New',monospace;min-height:100vh;padding:15px;overflow-x:hidden}
+.scanline{position:fixed;top:0;left:0;width:100%;height:2px;background:rgba(0,255,0,.3);animation:scan 3s linear infinite;z-index:100;pointer-events:none}
+@keyframes scan{0%{top:0}100%{top:100vh}}
 .page{display:none}.page.active{display:block}
-h1{text-align:center;color:#8b5cf6;font-size:28px;margin:15px 0}
-.total-box{text-align:center;margin:15px auto;padding:25px;background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #8b5cf6;border-radius:20px;max-width:350px}
-.total-box .label{color:#888;font-size:16px}
-.total-box .total-score{font-size:60px;font-weight:bold;color:#22c55e;margin:10px 0}
-.total-box .total-followers{font-size:18px;color:#f59e0b;font-weight:bold}
-.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-width:800px;margin:15px auto}
-.card{background:#111;border:2px solid #8b5cf6;border-radius:15px;padding:15px;text-align:center}
-.card .name{color:#8b5cf6;font-size:14px;font-weight:bold}
-.card .score{font-size:32px;font-weight:bold;color:#22c55e;margin:8px 0}
-.btn{display:block;margin:20px auto;padding:18px 40px;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;border:none;border-radius:15px;font-size:20px;font-weight:bold;cursor:pointer;width:80%;max-width:350px}
-.btn:hover{transform:scale(1.05);box-shadow:0 10px 30px rgba(139,92,246,.4)}
-.buy-box{max-width:450px;margin:20px auto;padding:30px;background:#111;border:2px solid #8b5cf6;border-radius:25px;text-align:center}
-.balance{font-size:20px;margin-bottom:20px;color:#888}
-.balance span{color:#22c55e;font-size:28px;font-weight:bold}
-.buy-box input{width:100%;padding:16px;background:#1a1a1a;border:2px solid #333;border-radius:15px;color:#fff;font-size:18px;margin:10px 0;outline:none;text-align:center}
-.buy-box input:focus{border-color:#8b5cf6}
-.result{margin:15px 0;padding:20px;border-radius:15px;display:none;font-size:16px}
-.success{background:rgba(34,197,94,.15);color:#22c55e}
-.error{background:rgba(239,68,68,.15);color:#ef4444}
-.back-btn{background:#333;color:#fff;padding:12px 25px;border:none;border-radius:10px;cursor:pointer;font-size:16px;margin-top:15px}
+.header{text-align:center;margin:20px 0}
+.header h1{font-size:26px;color:#f00;text-shadow:0 0 20px #f00;letter-spacing:3px}
+.header .sub{color:#0f0;font-size:11px;margin-top:5px}
+.total-box{text-align:center;margin:15px auto;padding:20px;background:rgba(0,20,0,.8);border:2px solid #0f0;border-radius:15px;max-width:350px}
+.total-box .label{color:#0f0;font-size:14px}
+.total-box .total-score{font-size:55px;font-weight:bold;color:#f00;text-shadow:0 0 30px #f00;margin:10px 0}
+.total-box .total-followers{font-size:14px;color:#ff0}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;max-width:900px;margin:15px auto}
+.card{background:rgba(0,20,0,.8);border:1px solid #0f0;border-radius:10px;padding:12px;text-align:center}
+.card .name{color:#0f0;font-size:11px;font-weight:bold;word-break:break-all}
+.card .score{font-size:26px;font-weight:bold;color:#0f0;margin:8px 0}
+.services{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;max-width:700px;margin:20px auto}
+.service-card{background:rgba(0,20,0,.8);border:2px solid #0f0;border-radius:15px;padding:20px;text-align:center;cursor:pointer;transition:.3s}
+.service-card:hover{border-color:#f00;box-shadow:0 0 25px rgba(255,0,0,.3);transform:scale(1.05)}
+.service-card .icon{font-size:40px}
+.service-card .label{color:#0f0;font-size:14px;font-weight:bold;margin-top:10px}
+.btn{display:block;margin:20px auto;padding:18px 40px;background:rgba(255,0,0,.1);border:2px solid #f00;border-radius:10px;color:#f00;font-size:18px;font-weight:bold;cursor:pointer;letter-spacing:2px}
+.btn:hover{background:#f00;color:#000;box-shadow:0 0 40px #f00}
+.input-box{max-width:400px;margin:20px auto;padding:25px;background:rgba(0,20,0,.8);border:2px solid #0f0;border-radius:15px;text-align:center}
+.input-box input{width:100%;padding:14px;background:#000;border:1px solid #0f0;border-radius:10px;color:#0f0;font-size:14px;margin:8px 0;outline:none;font-family:monospace}
+.result{margin:15px 0;padding:15px;border-radius:10px;display:none}
+.success{background:rgba(0,255,0,.1);color:#0f0;border:1px solid #0f0}
+.error{background:rgba(255,0,0,.1);color:#f00;border:1px solid #f00}
+.back-btn{background:#0a0a0a;color:#0f0;padding:10px 20px;border:1px solid #0f0;border-radius:8px;cursor:pointer;font-size:14px;margin-top:10px}
 .orders-box{max-width:500px;margin:20px auto}
-.order-card{background:#111;border:1px solid #333;border-radius:15px;padding:15px;margin:10px 0}
-.order-card .order-time{color:#888;font-size:12px}
-.order-card .order-target{color:#8b5cf6;font-size:18px;font-weight:bold}
-.order-card .order-amount{color:#22c55e;font-size:16px}
-.order-card .used-accounts{font-size:12px;color:#888;margin-top:5px}
+.order-card{background:rgba(0,20,0,.8);border:1px solid #0f0;border-radius:10px;padding:15px;margin:10px 0}
+.order-card .order-time{color:#333;font-size:11px}
+.order-card .order-target{color:#f00;font-size:16px;font-weight:bold}
+.order-card .order-amount{color:#0f0;font-size:14px;margin:5px 0}
+.order-card .used{font-size:11px;color:#666}
 </style>
 </head>
 <body>
+<div class="scanline"></div>
 
 <div class="page active" id="monitorPage">
-    <h1>🌙 MOON CONTROL PANEL</h1>
+    <div class="header">
+        <h1>💀 MOON HACKER PANEL</h1>
+        <div class="sub">12 Accounts | 24/7 | All Services</div>
+    </div>
     <div class="total-box">
-        <div class="label">💰 إجمالي النقاط</div>
+        <div class="label">⚡ إجمالي النقاط</div>
         <div class="total-score" id="totalScore">0</div>
         <div class="total-followers" id="totalFollowers">= 0 متابع</div>
     </div>
-    <h2 style="text-align:center;color:#888;margin:10px">📊 نقاط الحسابات</h2>
     <div class="stats" id="stats"></div>
-    <button class="btn" onclick="showBuyPage()">🛒 شراء متابعين</button>
+    
+    <h2 style="text-align:center;color:#0f0;margin:15px">🛠️ الخدمات</h2>
+    <div class="services">
+        <div class="service-card" onclick="showService('followers','👥','متابعين')"><div class="icon">👥</div><div class="label">متابعين</div></div>
+        <div class="service-card" onclick="showService('likes','❤️','لايكات')"><div class="icon">❤️</div><div class="label">لايكات</div></div>
+        <div class="service-card" onclick="showService('views','👁️','مشاهدات')"><div class="icon">👁️</div><div class="label">مشاهدات</div></div>
+        <div class="service-card" onclick="showService('comments','💬','تعليقات')"><div class="icon">💬</div><div class="label">تعليقات</div></div>
+    </div>
 </div>
 
-<div class="page" id="buyPage">
-    <h1>🛒 شراء متابعين</h1>
-    <div class="buy-box">
-        <p class="balance">💰 الرصيد: <span id="buyBalance">0</span> نقطة</p>
-        <input type="text" id="targetUser" placeholder="يوزرنيم الهدف (@username)">
-        <input type="number" id="amount" placeholder="عدد المتابعين">
-        <button class="btn" onclick="buy()">🛒 شراء</button>
+<div class="page" id="servicePage">
+    <div class="header"><h1 id="serviceTitle">💀 خدمة</h1></div>
+    <div class="input-box">
+        <input type="text" id="target" placeholder="🎯 يوزرنيم أو رابط الفيديو">
+        <input type="number" id="amount" placeholder="👥 الكمية">
+        <button class="btn" onclick="executeOrder()">⚡ تنفيذ</button>
         <div class="result" id="result"></div>
-        <button class="back-btn" onclick="showMonitorPage()">← رجوع</button>
+        <button class="back-btn" onclick="goBack()">← رجوع</button>
     </div>
-    <h2 style="text-align:center;color:#888;margin:15px">📋 سجل الطلبات</h2>
-    <div class="orders-box" id="ordersList"></div>
 </div>
 
 <script>
 const BASE='https://ai-proxy-production-59b3.up.railway.app';
-const accounts=['ahmed.alsher0','zoor579','ahmedppl','mmjjk','mmjjjk','mmjjjjk','aappi','aappii','aappmm','o785769','appmmm','pubg.ameeer'];;
+const accounts=['ahmed.alsher0','zoor579','ahmedppl','mmjjk','mmjjjk','mmjjjjk','aappi','aappii','aappmm','o785769','appmmm','pubg.ameeer'];
+let currentService='followers';
 let totalPoints=0;
 
-function showBuyPage(){document.getElementById('monitorPage').classList.remove('active');document.getElementById('buyPage').classList.add('active');document.getElementById('buyBalance').textContent=totalPoints;loadOrders();}
-function showMonitorPage(){document.getElementById('buyPage').classList.remove('active');document.getElementById('monitorPage').classList.add('active');refresh();}
-
-function renderCards(){
-    document.getElementById('stats').innerHTML=accounts.map((acc,i)=>`<div class="card"><div class="name">👤 ${acc}</div><div class="score" id="s${i}">--</div></div>`).join('');
+function showService(service,icon,label){
+    currentService=service;
+    document.getElementById('serviceTitle').textContent=`💀 ${icon} ${label}`;
+    document.getElementById('monitorPage').classList.remove('active');
+    document.getElementById('servicePage').classList.add('active');
 }
+function goBack(){document.getElementById('servicePage').classList.remove('active');document.getElementById('monitorPage').classList.add('active');}
+
+function renderCards(){document.getElementById('stats').innerHTML=accounts.map((acc,i)=>`<div class="card"><div class="name">👤 ${acc}</div><div class="score" id="s${i}">--</div></div>`).join('');}
 
 async function refresh(){
     try{
@@ -87,42 +104,19 @@ async function refresh(){
     }catch(e){}
 }
 
-async function buy(){
-    const target=document.getElementById('targetUser').value.replace('@','').trim();
+async function executeOrder(){
+    const target=document.getElementById('target').value.trim();
     const amount=parseInt(document.getElementById('amount').value);
     const resultEl=document.getElementById('result');
-    if(!target||!amount){resultEl.className='result error';resultEl.textContent='❌ اكتب اليوزرنيم والعدد';resultEl.style.display='block';return;}
-    resultEl.className='result';resultEl.textContent='⏳ جاري الشراء...';resultEl.style.display='block';
+    if(!target||!amount){resultEl.className='result error';resultEl.textContent='❌ اكتب البيانات';resultEl.style.display='block';return;}
+    resultEl.className='result';resultEl.textContent='⏳ جاري...';resultEl.style.display='block';
     try{
-        const res=await fetch(`${BASE}/buy-followers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target,amount})});
+        const res=await fetch(`${BASE}/create-order`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:currentService,target,amount})});
         const data=await res.json();
-        if(data.success){
-            resultEl.className='result success';
-            resultEl.textContent=`✅ ${data.message}`;
-            document.getElementById('buyBalance').textContent=data.order?totalPoints-amount*5:totalPoints;
-            loadOrders();
-        }else{
-            resultEl.className='result error';
-            resultEl.textContent=`❌ ${data.error}`;
-        }
-    }catch(e){resultEl.className='result error';resultEl.textContent='❌ فشل الاتصال';}
+        if(data.success){resultEl.className='result success';resultEl.textContent=`✅ ${data.message}`;}
+        else{resultEl.className='result error';resultEl.textContent=`❌ ${data.error}`;}
+    }catch(e){resultEl.className='result error';resultEl.textContent='❌ فشل';}
     resultEl.style.display='block';
-}
-
-async function loadOrders(){
-    try{
-        const res=await fetch(`${BASE}/orders`);
-        const data=await res.json();
-        const orders=data.orders||[];
-        document.getElementById('ordersList').innerHTML=orders.length?orders.map(o=>`
-            <div class="order-card">
-                <div class="order-time">🕒 ${o.time}</div>
-                <div class="order-target">🎯 @${o.target}</div>
-                <div class="order-amount">👥 ${o.amount} متابع</div>
-                <div class="used-accounts">${o.used_accounts.map(a=>`${a.account} (${a.amount}👥)`).join(' | ')}</div>
-            </div>
-        `).join(''):'<p style="color:#888;text-align:center">لا توجد طلبات</p>';
-    }catch(e){}
 }
 
 renderCards();
