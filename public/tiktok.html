@@ -18,10 +18,12 @@ body{background:#000;color:#0f0;min-height:100vh;padding:15px}
 .card.paused{border-color:#f00;opacity:.5}
 .card .name{color:#0f0;font-size:12px;font-weight:bold;word-break:break-all}
 .card .score{font-size:28px;font-weight:bold;color:#0f0;margin:8px 0}
-.pause-btn{background:rgba(255,0,0,.1);border:1px solid #f00;color:#f00;padding:8px 15px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:bold;margin-top:8px;width:100%}
-.pause-btn.active{background:#f00;color:#000}
-.resume-btn{background:rgba(0,255,0,.1);border:1px solid #0f0;color:#0f0;padding:8px 15px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:bold;margin-top:5px;width:100%;display:none}
-.btn{display:block;margin:20px auto;padding:18px 40px;background:rgba(255,0,0,.1);border:2px solid #f00;border-radius:10px;color:#f00;font-size:18px;font-weight:bold;cursor:pointer;width:80%;max-width:300px}
+.btn-row{display:flex;gap:5px;margin-top:8px}
+.pause-btn{flex:1;background:rgba(255,0,0,.1);border:1px solid #f00;color:#f00;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:bold}
+.delete-btn{flex:1;background:rgba(255,0,0,.2);border:1px solid #f00;color:#f00;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:bold}
+.delete-btn:hover{background:#f00;color:#000}
+.add-btn{display:block;margin:15px auto;padding:12px 25px;background:rgba(0,255,0,.1);border:2px solid #0f0;border-radius:10px;color:#0f0;font-size:16px;font-weight:bold;cursor:pointer}
+.buy-btn{display:block;margin:20px auto;padding:18px 40px;background:rgba(255,0,0,.1);border:2px solid #f00;border-radius:10px;color:#f00;font-size:18px;font-weight:bold;cursor:pointer;width:80%;max-width:300px}
 .input-box{max-width:400px;margin:20px auto;padding:25px;background:rgba(0,20,0,.8);border:2px solid #0f0;border-radius:15px;text-align:center}
 .input-box input{width:100%;padding:14px;background:#000;border:1px solid #0f0;border-radius:10px;color:#0f0;font-size:14px;margin:8px 0;outline:none}
 .result{margin:15px 0;padding:15px;border-radius:10px;display:none}
@@ -34,14 +36,23 @@ body{background:#000;color:#0f0;min-height:100vh;padding:15px}
 <body>
 <div class="scanline"></div>
 
-<div class="page active" id="monitorPage">
+<div class="page active" id="mainPage">
     <div class="header"><h1>💀 MOON PANEL</h1></div>
-    <div class="total-box">
-        <div style="color:#0f0;font-size:14px">⚡ إجمالي النقاط</div>
-        <div class="total-score" id="totalScore">0</div>
-    </div>
+    <div class="total-box"><div style="color:#0f0">⚡ إجمالي النقاط</div><div class="total-score" id="totalScore">0</div></div>
+    <button class="add-btn" onclick="showAddPage()">➕ إضافة حساب</button>
     <div class="stats" id="stats"></div>
-    <button class="btn" onclick="showBuyPage()">💉 شراء متابعين</button>
+    <button class="buy-btn" onclick="showBuyPage()">💉 شراء متابعين</button>
+</div>
+
+<div class="page" id="addPage">
+    <div class="header"><h1>➕ إضافة حساب</h1></div>
+    <div class="input-box">
+        <input type="text" id="newUsername" placeholder="👤 اليوزرنيم">
+        <input type="text" id="newPassword" placeholder="🔑 الباسورد (اختياري)">
+        <button class="buy-btn" onclick="addAccount()">✅ إضافة</button>
+        <div class="result" id="addResult"></div>
+        <button class="back-btn" onclick="showMainPage()">← رجوع</button>
+    </div>
 </div>
 
 <div class="page" id="buyPage">
@@ -50,61 +61,92 @@ body{background:#000;color:#0f0;min-height:100vh;padding:15px}
         <p style="color:#0f0">💰 الرصيد: <span id="buyBalance" style="color:#f00;font-size:20px">0</span></p>
         <input type="text" id="targetUser" placeholder="🎯 يوزرنيم الهدف">
         <input type="number" id="amount" placeholder="👥 عدد المتابعين">
-        <button class="btn" onclick="buy()">⚡ تنفيذ</button>
+        <button class="buy-btn" onclick="buy()">⚡ تنفيذ</button>
         <div class="result" id="result"></div>
-        <button class="back-btn" onclick="showMonitorPage()">← رجوع</button>
+        <button class="back-btn" onclick="showMainPage()">← رجوع</button>
     </div>
 </div>
 
 <script>
 const BASE='https://ai-proxy-production-59b3.up.railway.app';
-const accounts=['ahmed.alsher0','zoor579','ahmedppl','mmjjk','mmjjjk','mmjjjjk','aappi','aappii','aappmm','o785769','appmmm','pubg.ameeer'];
+let accounts=[];
 let totalPoints=0;
-let pausedAccounts = JSON.parse(localStorage.getItem('paused') || '[]');
+let pausedAccounts=JSON.parse(localStorage.getItem('paused')||'[]');
 
-function showBuyPage(){document.getElementById('monitorPage').classList.remove('active');document.getElementById('buyPage').classList.add('active');document.getElementById('buyBalance').textContent=totalPoints;}
-function showMonitorPage(){document.getElementById('buyPage').classList.remove('active');document.getElementById('monitorPage').classList.add('active');refresh();}
+function showMainPage(){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('mainPage').classList.add('active');loadAccounts();}
+function showAddPage(){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('addPage').classList.add('active');}
+function showBuyPage(){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('buyPage').classList.add('active');document.getElementById('buyBalance').textContent=totalPoints;}
 
-function togglePause(account, index) {
-    if (pausedAccounts.includes(account)) {
-        pausedAccounts = pausedAccounts.filter(a => a !== account);
-    } else {
-        pausedAccounts.push(account);
-    }
-    localStorage.setItem('paused', JSON.stringify(pausedAccounts));
-    
-    // إرسال للسيرفر
-    fetch(BASE + '/toggle-pause', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({account, paused: pausedAccounts.includes(account)})
-    }).catch(() => {});
-    
-    renderCards();
+async function loadAccounts(){
+    try{
+        const res=await fetch(BASE+'/accounts-list');
+        const data=await res.json();
+        accounts=data.accounts||[];
+        renderCards();
+    }catch(e){}
 }
 
 function renderCards(){
-    document.getElementById('stats').innerHTML = accounts.map((acc, i) => {
-        const isPaused = pausedAccounts.includes(acc);
-        return '<div class="card' + (isPaused ? ' paused' : '') + '">' +
-            '<div class="name">👤 ' + acc + '</div>' +
-            '<div class="score" id="s' + i + '">--</div>' +
-            (isPaused ? 
-                '<button class="resume-btn" style="display:block" onclick="togglePause(\'' + acc + '\',' + i + ')">▶️ تشغيل</button>' :
-                '<button class="pause-btn" onclick="togglePause(\'' + acc + '\',' + i + ')">⏸️ إيقاف</button>'
-            ) +
+    document.getElementById('stats').innerHTML=accounts.map((acc,i)=>{
+        const isPaused=pausedAccounts.includes(acc);
+        return '<div class="card'+(isPaused?' paused':'')+'">'+
+            '<div class="name">👤 '+acc+'</div>'+
+            '<div class="score" id="s'+i+'">--</div>'+
+            '<div class="btn-row">'+
+                '<button class="pause-btn" onclick="togglePause(\''+acc+'\')">'+(isPaused?'▶️ تشغيل':'⏸️ إيقاف')+'</button>'+
+                '<button class="delete-btn" onclick="deleteAccount(\''+acc+'\')">🗑️ حذف</button>'+
+            '</div>'+
         '</div>';
     }).join('');
 }
 
+async function togglePause(account){
+    const isPaused=pausedAccounts.includes(account);
+    if(isPaused){pausedAccounts=pausedAccounts.filter(a=>a!==account);}
+    else{pausedAccounts.push(account);}
+    localStorage.setItem('paused',JSON.stringify(pausedAccounts));
+    await fetch(BASE+'/toggle-pause',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account,paused:!isPaused})});
+    renderCards();
+}
+
+async function deleteAccount(account){
+    if(!confirm('حذف '+account+'؟'))return;
+    const res=await fetch(BASE+'/delete-account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account})});
+    const data=await res.json();
+    if(data.success){loadAccounts();}
+    else{alert(data.error||'فشل');}
+}
+
+async function addAccount(){
+    const username=document.getElementById('newUsername').value.trim();
+    const password=document.getElementById('newPassword').value.trim();
+    const resultEl=document.getElementById('addResult');
+    if(!username){resultEl.className='result error';resultEl.textContent='❌ اكتب اليوزرنيم';resultEl.style.display='block';return;}
+    resultEl.className='result';resultEl.textContent='⏳ جاري الإضافة...';resultEl.style.display='block';
+    try{
+        const res=await fetch(BASE+'/add-account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+        const data=await res.json();
+        if(data.success){
+            resultEl.className='result success';
+            resultEl.textContent='✅ '+data.message;
+            setTimeout(showMainPage,1500);
+        }else{
+            resultEl.className='result error';
+            resultEl.textContent='❌ '+data.error;
+        }
+    }catch(e){resultEl.className='result error';resultEl.textContent='❌ فشل';}
+    resultEl.style.display='block';
+}
+
 async function refresh(){
     try{
-        const res=await fetch(BASE + '/scores');
+        const res=await fetch(BASE+'/scores');
         const data=await res.json();
         totalPoints=data.total||0;
         document.getElementById('totalScore').textContent=totalPoints;
         accounts.forEach((acc,i)=>{
-            document.getElementById('s'+i).textContent=data.scores?.[acc]||0;
+            const el=document.getElementById('s'+i);
+            if(el)el.textContent=data.scores?.[acc]||0;
         });
     }catch(e){}
 }
@@ -124,7 +166,7 @@ async function buy(){
     resultEl.style.display='block';
 }
 
-renderCards();
+loadAccounts();
 refresh();
 setInterval(refresh,1000);
 </script>
