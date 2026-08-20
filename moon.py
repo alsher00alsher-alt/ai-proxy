@@ -1,5 +1,5 @@
 import threading
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import requests,hmac,hashlib,time,uuid,json,random
 
 app = Flask(__name__)
@@ -7,12 +7,21 @@ app = Flask(__name__)
 PASSWORD = "d02d5189"
 DEVINFO = '{"d":"61393235613366373261636533656632","n":"494e46494e495820496e66696e6978205836383733","o":"16","t":"d","v":"2.2.9","s":"0,0"}'
 KEY = bytes([b ^ 0x43 for b in [0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31,0x35,0x30,0x1c,0x2f,0x2c,0x2c,0x28,0x31]])
-OP_IDS = {"LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b29a24a17c43","AttestDevice":"bfaf5a72aeb9a337811da6a6d13e0b73680a18ffde0c59a23701e55b98ac2515","FetchScore":"88d30eeca55c0538539ad8217dfefd52b2f47015200cdbb7cb6ea5a765381d69"}
-ACCOUNTS = ["ahmed.alsher0","zoor579","ahmedppl","mmjjk","mmjjjk","mmjjjjk","aappi","aappii","aappmm","appmmm"]
+OP_IDS = {
+    "LoginAccount":"3522613813036d73817b2715e67743f8d23d7a85ad08b7e12aa3b29a24a17c43",
+    "AttestDevice":"bfaf5a72aeb9a337811da6a6d13e0b73680a18ffde0c59a23701e55b98ac2515",
+    "FetchScore":"88d30eeca55c0538539ad8217dfefd52b2f47015200cdbb7cb6ea5a765381d69",
+    "CreateOrder":"ad7a6397c3970b1e7601f69d24989bff330e256ee5e39321a8d1ad3fe3879b48",
+    "GetUsers":"41454e2194d7c30f1c6e11c2c246bcc0377da65a8bf06276ca5ea9ec9ff538b6"
+}
+ACCOUNTS = ["ahmed.alsher0","zoor579","ahmedppl","mmjjk","mmjjjk","mmjjjjk","aappi","aappii","aappmm"]
 scores = {acc: 0 for acc in ACCOUNTS}
+tokens = {}
 
 def add_cors(res):
     res.headers['Access-Control-Allow-Origin'] = '*'
+    res.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+    res.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     return res
 
 def sig(ts,nonce,payload):return hmac.new(KEY,f"{ts}-{nonce}-{payload}".encode(),hashlib.sha256).hexdigest()
@@ -29,17 +38,18 @@ def gql(query,op,token=None,csrf=None):
     except:return None,{"error":"conn"}
 
 def login(u):
-    q={"operationName":"LoginAccount","variables":{"data":{"id":"","uniqueId":u,"nickname":"","avatarMedium":"","followerCount":0,"followingCount":0,"videoCount":0,"privateAccount":False,"diggCount":0,"authMethod":"local","password":PASSWORD}},"query":"mutation LoginAccount($data: TiktokInfo){loginTiktok(data:$data){accessToken user{username score}}}"}
+    q={"operationName":"LoginAccount","variables":{"data":{"id":"","uniqueId":u,"nickname":"","avatarMedium":"","followerCount":0,"followingCount":0,"videoCount":0,"privateAccount":False,"diggCount":0,"authMethod":"local","password":PASSWORD}},"query":"mutation LoginAccount($data: TiktokInfo){loginTiktok(data:$data){accessToken user{username score avatar followerCount}}}"}
     for _ in range(3):
         r,d=gql(q,"LoginAccount")
         if r and "errors" not in d:
             t=d['data']['loginTiktok']['accessToken']
             c=r.headers.get("x-csrf-token","")
-            s=d['data']['loginTiktok']['user'].get('score',0)
-            scores[u]=s
-            print(f"[✓] {u} - Score: {s}",flush=True)
+            user=d['data']['loginTiktok']['user']
+            scores[u]=user.get('score',0)
+            tokens[u]={"token":t,"csrf":c,"avatar":user.get('avatar',''),"followers":user.get('followerCount',0)}
+            print(f"[✓] {u} - Score: {scores[u]}",flush=True)
             return t,c
-        time.sleep(3)
+        time.sleep(5)
     return None,None
 
 def attest(t,c):
@@ -70,19 +80,76 @@ def farm(u,t,c):
                 time.sleep(random.uniform(1.5,2.5))
         except:time.sleep(5)
 
+def create_order(account, target_user, amount):
+    """طلب متابعين باستخدام نقاط حساب معين"""
+    if account not in tokens:
+        return {"success": False, "error": "الحساب مش متصل"}
+    
+    t = tokens[account]["token"]
+    c = tokens[account]["csrf"]
+    avatar = tokens[account]["avatar"]
+    followers = tokens[account]["followers"]
+    
+    q={"operationName":"CreateOrder","variables":{"type":"followers","amount":amount,"tiktokerUsername":target_user,"avatar":avatar,"initialCount":followers},"query":"mutation CreateOrder($type: Action!, $amount: Int!, $tiktokerUsername: String, $avatar: String, $initialCount: Int){createOrder(orderInput:{type:$type amount:$amount tiktokerUsername:$tiktokerUsername avatar:$avatar initialCount:$initialCount}){_id status}}"}
+    _,d=gql(q,"CreateOrder",t,c)
+    
+    if "errors" not in d:
+        return {"success": True, "order": d.get("data",{}).get("createOrder",{})}
+    else:
+        return {"success": False, "error": d.get('errors',[{}])[0].get('message','')}
+
+# API Routes
 @app.route('/score/<account>')
 def score(account):
     return add_cors(jsonify({"score": scores.get(account, 0)}))
 
 @app.route('/scores')
 def all_scores():
-    return add_cors(jsonify(scores))
+    total = sum(scores.values())
+    return add_cors(jsonify({"scores": scores, "total": total}))
+
+@app.route('/buy-followers', methods=['POST', 'OPTIONS'])
+def buy_followers():
+    if request.method == 'OPTIONS':
+        return add_cors(jsonify({}))
+    
+    data = request.json
+    target = data.get('target', '').replace('@','')
+    amount = data.get('amount', 0)
+    
+    if not target or amount <= 0:
+        return add_cors(jsonify({"success": False, "error": "بيانات ناقصة"}))
+    
+    # حساب النقاط المطلوبة (100 نقطة = 20 متابع)
+    points_needed = (amount / 20) * 100
+    total_points = sum(scores.values())
+    
+    if points_needed > total_points:
+        return add_cors(jsonify({
+            "success": False,
+            "error": f"نقاط غير كافية! تحتاج {int(points_needed)} نقطة",
+            "points_needed": int(points_needed),
+            "total_points": total_points
+        }))
+    
+    # نطلب من أول حساب عنده نقاط
+    for account in ACCOUNTS:
+        if scores.get(account, 0) >= 100:
+            result = create_order(account, target, amount)
+            if result["success"]:
+                return add_cors(jsonify({
+                    "success": True,
+                    "message": f"تم طلب {amount} متابع لـ @{target}",
+                    "account": account
+                }))
+    
+    return add_cors(jsonify({"success": False, "error": "فشل الطلب"}))
 
 @app.route('/ping')
 def ping():
     return "pong"
 
-print("MOON 6 ACCOUNTS FARMER",flush=True)
+print("MOON CONTROL PANEL 24/7",flush=True)
 
 def start():
     for a in ACCOUNTS:
@@ -90,7 +157,7 @@ def start():
         if t:
             attest(t,c)
             threading.Thread(target=farm,args=(a,t,c),daemon=True).start()
-            time.sleep(2)
+            time.sleep(5)
 
 threading.Thread(target=start,daemon=True).start()
 

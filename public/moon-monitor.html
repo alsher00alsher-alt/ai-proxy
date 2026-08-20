@@ -3,26 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>🌙 MOON MONITOR</title>
+<title>🌙 MOON CONTROL PANEL</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#0f0;font-family:'Courier New',monospace;padding:15px}
-h1{text-align:center;color:#8b5cf6;font-size:22px;margin-bottom:15px}
-.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-width:800px;margin:15px auto}
-.card{background:#111;border:2px solid #8b5cf6;border-radius:15px;padding:18px;text-align:center}
-.name{color:#8b5cf6;font-size:13px;font-weight:bold}
-.score{font-size:32px;font-weight:bold;color:#22c55e;margin:8px 0}
-button{display:block;margin:15px auto;padding:12px 30px;background:#8b5cf6;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:bold}
+body{background:#0a0a0a;color:#0f0;font-family:'Courier New',monospace;padding:15px;min-height:100vh}
+h1{text-align:center;color:#8b5cf6;font-size:22px;margin-bottom:10px}
+h2{text-align:center;color:#8b5cf6;font-size:16px;margin-bottom:15px}
+.total-box{text-align:center;margin:15px auto;padding:20px;background:#111;border:2px solid #8b5cf6;border-radius:15px;max-width:300px}
+.total-box .label{color:#888;font-size:14px}
+.total-box .total-score{font-size:48px;font-weight:bold;color:#22c55e;margin:10px 0}
+.total-box .total-followers{font-size:16px;color:#f59e0b}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;max-width:800px;margin:15px auto}
+.card{background:#111;border:2px solid #8b5cf6;border-radius:15px;padding:15px;text-align:center}
+.card .name{color:#8b5cf6;font-size:12px;font-weight:bold}
+.card .score{font-size:28px;font-weight:bold;color:#22c55e;margin:8px 0}
+.buy-box{max-width:500px;margin:20px auto;padding:25px;background:#111;border:2px solid #8b5cf6;border-radius:20px;text-align:center}
+.buy-box input{width:100%;padding:14px;background:#1a1a1a;border:1px solid #333;border-radius:10px;color:#fff;font-size:14px;margin:8px 0;outline:none}
+.buy-box input:focus{border-color:#8b5cf6}
+.buy-box button{width:100%;padding:15px;background:#8b5cf6;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:10px}
+.buy-box button:hover{background:#7c3aed}
+.result{margin:15px 0;padding:15px;border-radius:10px;display:none}
+.success{background:rgba(34,197,94,.15);color:#22c55e}
+.error{background:rgba(239,68,68,.15);color:#ef4444}
 </style>
 </head>
 <body>
-<h1>🌙 MOON MONITOR - 6 Accounts</h1>
+<h1>🌙 MOON CONTROL PANEL</h1>
+
+<div class="total-box">
+    <div class="label">💰 إجمالي النقاط</div>
+    <div class="total-score" id="totalScore">0</div>
+    <div class="total-followers" id="totalFollowers">= 0 متابع</div>
+</div>
+
+<h2>📊 نقاط الحسابات</h2>
 <div class="stats" id="stats"></div>
-<button onclick="refresh()">🔄 تحديث</button>
+
+<h2>🛒 شراء متابعين</h2>
+<div class="buy-box">
+    <input type="text" id="targetUser" placeholder="يوزرنيم الهدف (@username)">
+    <input type="number" id="amount" placeholder="عدد المتابعين (مثال: 100)">
+    <button onclick="buy()">🛒 شراء</button>
+    <div class="result" id="result"></div>
+</div>
 
 <script>
 const BASE = 'https://ai-proxy-production-59b3.up.railway.app';
-const accounts = ['ahmed.alsher0','zoor579','ahmedppl','mmjjk','mmjjjk','mmjjjjk','aappi','aappii','aappmm','appmmm'];;
+const accounts = ['ahmed.alsher0','zoor579','ahmedppl','mmjjk','mmjjjk','mmjjjjk','aappi','aappii','aappmm'];
+let totalPoints = 0;
 
 function renderCards() {
     document.getElementById('stats').innerHTML = accounts.map((acc, i) => `
@@ -34,15 +62,60 @@ function renderCards() {
 }
 
 async function refresh() {
-    for (let i = 0; i < accounts.length; i++) {
-        try {
-            const res = await fetch(`${BASE}/score/${accounts[i]}`);
-            const data = await res.json();
-            document.getElementById('s' + i).textContent = data.score;
-        } catch(e) {
-            document.getElementById('s' + i).textContent = '❌';
-        }
+    try {
+        const res = await fetch(`${BASE}/scores`);
+        const data = await res.json();
+        totalPoints = data.total || 0;
+        document.getElementById('totalScore').textContent = totalPoints;
+        
+        // 100 نقطة = 20 متابع
+        const maxFollowers = Math.floor(totalPoints / 5);
+        document.getElementById('totalFollowers').textContent = `= ${maxFollowers} متابع`;
+        
+        accounts.forEach((acc, i) => {
+            document.getElementById('s' + i).textContent = data.scores?.[acc] || 0;
+        });
+    } catch(e) {}
+}
+
+async function buy() {
+    const target = document.getElementById('targetUser').value.replace('@', '').trim();
+    const amount = parseInt(document.getElementById('amount').value);
+    const resultEl = document.getElementById('result');
+    
+    if (!target || !amount) {
+        resultEl.className = 'result error';
+        resultEl.textContent = '❌ اكتب اليوزرنيم والعدد';
+        resultEl.style.display = 'block';
+        return;
     }
+    
+    resultEl.className = 'result';
+    resultEl.textContent = '⏳ جاري الشراء...';
+    resultEl.style.display = 'block';
+    
+    try {
+        const res = await fetch(`${BASE}/buy-followers`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({target, amount})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            resultEl.className = 'result success';
+            resultEl.textContent = `✅ ${data.message}`;
+        } else {
+            resultEl.className = 'result error';
+            resultEl.textContent = `❌ ${data.error}`;
+        }
+    } catch(e) {
+        resultEl.className = 'result error';
+        resultEl.textContent = '❌ فشل الاتصال';
+    }
+    
+    resultEl.style.display = 'block';
+    refresh();
 }
 
 renderCards();
