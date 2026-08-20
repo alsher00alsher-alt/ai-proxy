@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>💀 MOON HACKER PANEL</title>
+<title>💀 MOON PANEL</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;color:#0f0;font-family:'Courier New',monospace;min-height:100vh;padding:15px;overflow-x:hidden}
@@ -21,11 +21,6 @@ body{background:#000;color:#0f0;font-family:'Courier New',monospace;min-height:1
 .card{background:rgba(0,20,0,.8);border:1px solid #0f0;border-radius:10px;padding:12px;text-align:center}
 .card .name{color:#0f0;font-size:11px;font-weight:bold;word-break:break-all}
 .card .score{font-size:26px;font-weight:bold;color:#0f0;margin:8px 0}
-.services{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;max-width:700px;margin:20px auto}
-.service-card{background:rgba(0,20,0,.8);border:2px solid #0f0;border-radius:15px;padding:20px;text-align:center;cursor:pointer;transition:.3s}
-.service-card:hover{border-color:#f00;box-shadow:0 0 25px rgba(255,0,0,.3);transform:scale(1.05)}
-.service-card .icon{font-size:40px}
-.service-card .label{color:#0f0;font-size:14px;font-weight:bold;margin-top:10px}
 .btn{display:block;margin:20px auto;padding:18px 40px;background:rgba(255,0,0,.1);border:2px solid #f00;border-radius:10px;color:#f00;font-size:18px;font-weight:bold;cursor:pointer;letter-spacing:2px}
 .btn:hover{background:#f00;color:#000;box-shadow:0 0 40px #f00}
 .input-box{max-width:400px;margin:20px auto;padding:25px;background:rgba(0,20,0,.8);border:2px solid #0f0;border-radius:15px;text-align:center}
@@ -34,12 +29,6 @@ body{background:#000;color:#0f0;font-family:'Courier New',monospace;min-height:1
 .success{background:rgba(0,255,0,.1);color:#0f0;border:1px solid #0f0}
 .error{background:rgba(255,0,0,.1);color:#f00;border:1px solid #f00}
 .back-btn{background:#0a0a0a;color:#0f0;padding:10px 20px;border:1px solid #0f0;border-radius:8px;cursor:pointer;font-size:14px;margin-top:10px}
-.orders-box{max-width:500px;margin:20px auto}
-.order-card{background:rgba(0,20,0,.8);border:1px solid #0f0;border-radius:10px;padding:15px;margin:10px 0}
-.order-card .order-time{color:#333;font-size:11px}
-.order-card .order-target{color:#f00;font-size:16px;font-weight:bold}
-.order-card .order-amount{color:#0f0;font-size:14px;margin:5px 0}
-.order-card .used{font-size:11px;color:#666}
 </style>
 </head>
 <body>
@@ -47,8 +36,8 @@ body{background:#000;color:#0f0;font-family:'Courier New',monospace;min-height:1
 
 <div class="page active" id="monitorPage">
     <div class="header">
-        <h1>💀 MOON HACKER PANEL</h1>
-        <div class="sub">12 Accounts | 24/7 | All Services</div>
+        <h1>💀 MOON PANEL</h1>
+        <div class="sub">12 Accounts | 24/7</div>
     </div>
     <div class="total-box">
         <div class="label">⚡ إجمالي النقاط</div>
@@ -56,22 +45,18 @@ body{background:#000;color:#0f0;font-family:'Courier New',monospace;min-height:1
         <div class="total-followers" id="totalFollowers">= 0 متابع</div>
     </div>
     <div class="stats" id="stats"></div>
-    
-    <h2 style="text-align:center;color:#0f0;margin:15px">🛠️ الخدمات</h2>
-    <div class="services">
-        <div class="service-card" onclick="showService('followers','👥','متابعين')"><div class="icon">👥</div><div class="label">متابعين</div></div>
-        <div class="service-card" onclick="showService('likes','❤️','لايكات')"><div class="icon">❤️</div><div class="label">لايكات</div></div>
-        <div class="service-card" onclick="showService('views','👁️','مشاهدات')"><div class="icon">👁️</div><div class="label">مشاهدات</div></div>
-        <div class="service-card" onclick="showService('comments','💬','تعليقات')"><div class="icon">💬</div><div class="label">تعليقات</div></div>
-    </div>
+    <button class="btn" onclick="showBuyPage()">💉 شراء متابعين</button>
 </div>
 
-<div class="page" id="servicePage">
-    <div class="header"><h1 id="serviceTitle">💀 خدمة</h1></div>
+<div class="page" id="buyPage">
+    <div class="header">
+        <h1>💉 شراء متابعين</h1>
+    </div>
     <div class="input-box">
-        <input type="text" id="target" placeholder="🎯 يوزرنيم أو رابط الفيديو">
-        <input type="number" id="amount" placeholder="👥 الكمية">
-        <button class="btn" onclick="executeOrder()">⚡ تنفيذ</button>
+        <p style="color:#0f0;margin-bottom:10px">💰 الرصيد: <span id="buyBalance" style="color:#f00;font-size:20px">0</span></p>
+        <input type="text" id="targetUser" placeholder="🎯 يوزرنيم الهدف">
+        <input type="number" id="amount" placeholder="👥 عدد المتابعين">
+        <button class="btn" onclick="buy()">⚡ تنفيذ</button>
         <div class="result" id="result"></div>
         <button class="back-btn" onclick="goBack()">← رجوع</button>
     </div>
@@ -80,16 +65,10 @@ body{background:#000;color:#0f0;font-family:'Courier New',monospace;min-height:1
 <script>
 const BASE='https://ai-proxy-production-59b3.up.railway.app';
 const accounts=['ahmed.alsher0','zoor579','ahmedppl','mmjjk','mmjjjk','mmjjjjk','aappi','aappii','aappmm','o785769','appmmm','pubg.ameeer'];
-let currentService='followers';
 let totalPoints=0;
 
-function showService(service,icon,label){
-    currentService=service;
-    document.getElementById('serviceTitle').textContent=`💀 ${icon} ${label}`;
-    document.getElementById('monitorPage').classList.remove('active');
-    document.getElementById('servicePage').classList.add('active');
-}
-function goBack(){document.getElementById('servicePage').classList.remove('active');document.getElementById('monitorPage').classList.add('active');}
+function showBuyPage(){document.getElementById('monitorPage').classList.remove('active');document.getElementById('buyPage').classList.add('active');document.getElementById('buyBalance').textContent=totalPoints;}
+function goBack(){document.getElementById('buyPage').classList.remove('active');document.getElementById('monitorPage').classList.add('active');}
 
 function renderCards(){document.getElementById('stats').innerHTML=accounts.map((acc,i)=>`<div class="card"><div class="name">👤 ${acc}</div><div class="score" id="s${i}">--</div></div>`).join('');}
 
@@ -104,14 +83,14 @@ async function refresh(){
     }catch(e){}
 }
 
-async function executeOrder(){
-    const target=document.getElementById('target').value.trim();
+async function buy(){
+    const target=document.getElementById('targetUser').value.replace('@','').trim();
     const amount=parseInt(document.getElementById('amount').value);
     const resultEl=document.getElementById('result');
     if(!target||!amount){resultEl.className='result error';resultEl.textContent='❌ اكتب البيانات';resultEl.style.display='block';return;}
     resultEl.className='result';resultEl.textContent='⏳ جاري...';resultEl.style.display='block';
     try{
-        const res=await fetch(`${BASE}/create-order`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:currentService,target,amount})});
+        const res=await fetch(`${BASE}/create-order`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:'followers',target,amount})});
         const data=await res.json();
         if(data.success){resultEl.className='result success';resultEl.textContent=`✅ ${data.message}`;}
         else{resultEl.className='result error';resultEl.textContent=`❌ ${data.error}`;}
