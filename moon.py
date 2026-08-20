@@ -80,14 +80,14 @@ def farm(u,t,c):
             orders=d.get("data",{}).get("getOrders",[])
             pending=[o["_id"] for o in orders if o.get("status")=="pending"]
             if not pending:time.sleep(8);continue
-            for task in pending:
+            for task in pending[:5]:
                 rnd=random.randint(3000,4500)
                 q={"operationName":"ActionOrder","variables":{"orderId":task,"validationData":{"attempts":1,"initialNumber":float(rnd),"timeSpent":float(random.randint(2000,4000)),"actualCount":rnd+1,"source":"CLIENT_CRONET"}},"query":"mutation ActionOrder($orderId:ID!,$validationData:ValidationDataInput!){actionOrder(orderId:$orderId,validationData:$validationData){score}}"}
                 _,r=gql(q,"ActionOrder",t,c)
                 if "errors" not in r:
                     s=get_score(t,c)
                     scores[u]=s
-                time.sleep(random.uniform(1.5,2.5))
+                time.sleep(random.uniform(0.3,0.5))
         except:time.sleep(5)
 
 def create_order(account, target_user, amount):
