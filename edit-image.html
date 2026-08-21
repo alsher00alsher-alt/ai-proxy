@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎨 GPT Gen-Edit img</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
+body{background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);min-height:100vh;padding:20px;color:#fff}
+.container{max-width:600px;margin:0 auto}
+.header{text-align:center;margin-bottom:30px}
+.header h1{font-size:28px;color:#00d4ff;text-shadow:0 0 20px rgba(0,212,255,.5)}
+.header p{color:#aaa;margin-top:5px;font-size:14px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;margin-bottom:20px;backdrop-filter:blur(10px)}
+.card h2{color:#00d4ff;font-size:18px;margin-bottom:15px}
+input[type="text"],textarea{width:100%;padding:14px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.2);border-radius:12px;color:#fff;font-size:14px;margin-bottom:15px;outline:none;transition:.3s}
+input[type="text"]:focus,textarea:focus{border-color:#00d4ff;box-shadow:0 0 10px rgba(0,212,255,.3)}
+textarea{resize:vertical;min-height:80px}
+.file-upload{border:2px dashed rgba(255,255,255,.3);border-radius:15px;padding:30px;text-align:center;cursor:pointer;transition:.3s;margin-bottom:15px}
+.file-upload:hover{border-color:#00d4ff;background:rgba(0,212,255,.05)}
+.file-upload input{display:none}
+.file-upload .icon{font-size:40px;margin-bottom:10px}
+.file-upload .text{color:#aaa;font-size:14px}
+.preview{max-width:100%;border-radius:15px;margin-bottom:15px;display:none}
+.btn{width:100%;padding:15px;background:linear-gradient(90deg,#00d4ff,#0072ff);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:bold;cursor:pointer;transition:.3s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,114,255,.4)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.result{margin-top:20px;text-align:center;display:none}
+.result img{max-width:100%;border-radius:15px;margin-bottom:15px}
+.download-btn{display:inline-block;padding:12px 30px;background:#28a745;color:#fff;border-radius:12px;text-decoration:none;font-weight:bold}
+.loading{display:none;text-align:center;padding:20px}
+.spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.1);border-top-color:#00d4ff;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error{background:rgba(255,0,0,.1);border:1px solid #ff4444;color:#ff4444;padding:15px;border-radius:12px;margin-top:15px;display:none}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🎨 GPT Gen-Edit img</h1>
+        <p>عدل صورك بالذكاء الاصطناعي</p>
+    </div>
+
+    <div class="card">
+        <h2>📁 ارفع الصورة</h2>
+        <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+            <div class="icon">📸</div>
+            <div class="text">اضغط لاختيار صورة</div>
+            <input type="file" id="fileInput" accept="image/*" onchange="previewImage()">
+        </div>
+        <img id="preview" class="preview">
+    </div>
+
+    <div class="card">
+        <h2>📝 وصف التعديل</h2>
+        <textarea id="prompt" placeholder="مثال: Make it more beautiful">Make it more beautiful</textarea>
+        <button class="btn" id="editBtn" onclick="editImage()">✨ تعديل الصورة</button>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>⏳ جاري المعالجة...</p>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="result" id="result">
+        <h2>✅ النتيجة</h2>
+        <img id="resultImg">
+        <a id="downloadBtn" class="download-btn" download>⬇️ تحميل الصورة</a>
+    </div>
+</div>
+
+<script>
+let selectedFile = null;
+
+function previewImage() {
+    const file = document.getElementById('fileInput').files[0];
+    if (file) {
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('preview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+async function editImage() {
+    const prompt = document.getElementById('prompt').value.trim();
+    const errorEl = document.getElementById('error');
+    const resultEl = document.getElementById('result');
+    const loadingEl = document.getElementById('loading');
+    const editBtn = document.getElementById('editBtn');
+
+    if (!selectedFile) {
+        errorEl.textContent = '❌ ارفع صورة الأول';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    if (!prompt) {
+        errorEl.textContent = '❌ اكتب وصف التعديل';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    errorEl.style.display = 'none';
+    resultEl.style.display = 'none';
+    loadingEl.style.display = 'block';
+    editBtn.disabled = true;
+
+    try {
+        // إنشاء authorization عشوائي
+        const authString = Array.from({length: 10}, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join('') +
+                          Array.from({length: 5}, () => String.fromCharCode(48 + Math.floor(Math.random() * 10))).join('') +
+                          Array.from({length: 10}, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join('');
+        const authorization = btoa(authString);
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('prompt', prompt);
+        formData.append('user_id', '1');
+
+        const response = await fetch('https://shorts.multiplewords.in/mwvideos/api/edit_image_from_text', {
+            method: 'POST',
+            headers: {
+                'accept': '*/*',
+                'authorization': authorization,
+                'origin': 'https://saifs.ai',
+                'x-forwarded-for': `${Math.floor(Math.random() * 254) + 1}.${Math.floor(Math.random() * 254) + 1}.${Math.floor(Math.random() * 254) + 1}.${Math.floor(Math.random() * 254) + 1}`
+            },
+            body: formData
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.edited_image_url) {
+                const resultImg = document.getElementById('resultImg');
+                resultImg.src = data.edited_image_url;
+                document.getElementById('downloadBtn').href = data.edited_image_url;
+                resultEl.style.display = 'block';
+            } else {
+                throw new Error('مفيش نتيجة');
+            }
+        } else {
+            throw new Error(`فشل: ${response.status}`);
+        }
+    } catch (error) {
+        errorEl.textContent = `❌ ${error.message}`;
+        errorEl.style.display = 'block';
+    } finally {
+        loadingEl.style.display = 'none';
+        editBtn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>
