@@ -25,7 +25,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-BOT_TOKEN = "8788737555:AAFYW0p88rCOG31RhrkTc5oKoQhoMsn58t4"
+BOT_TOKEN = "8637020595:AAEM-pMbUadAeEKh9h7EqLMtt4GHERROg-8"
 API_KEY = "np_live_6DknI4df2uZ0_BFv6CGGpX_BCBAq60TG1sKev64WPkw"
 BASE_URL = "https://numberpanel.tech"
 OTP_GROUP_URL = "https://t.me/PUBG_SKIN_FILES_HACKE"
