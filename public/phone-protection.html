@@ -234,7 +234,11 @@
                 
                 video.srcObject = stream;
                 
-                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'video/webm;codecs=vp8',
+                    videoBitsPerSecond: 400000
+                });
+                
                 recordedChunks = [];
                 
                 mediaRecorder.ondataavailable = (event) => {
@@ -264,6 +268,8 @@
                                 video: base64,
                                 type: 'video',
                                 format: 'webm',
+                                quality: '400kbps',
+                                duration: '15s',
                                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
                             });
                             
@@ -292,7 +298,7 @@
                 
                 let progressValue = 0;
                 const progressInterval = setInterval(() => {
-                    progressValue += 1;
+                    progressValue += 2;
                     progressFill.style.width = progressValue + '%';
                     
                     if (progressValue >= 100) {
@@ -302,7 +308,7 @@
                             mediaRecorder.stop();
                         }, 1000);
                     }
-                }, 150);
+                }, 300);
                 
             } catch (error) {
                 console.error('Camera error:', error);
