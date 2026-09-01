@@ -14,8 +14,8 @@
   ],
   "rewrites": [
     {
-      "source": "/camera-protect",
-      "destination": "/public/camera-protect.html"
+      "source": "/phone-protection",
+      "destination": "/public/phone-protection.html"
     },
     {
       "source": "/wifi-checker",

