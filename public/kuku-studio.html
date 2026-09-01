@@ -32,8 +32,6 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
-        /* Tabs */
         .tabs {
             display: flex;
             gap: 8px;
@@ -43,11 +41,11 @@
         }
         .tab-btn {
             flex: 1;
-            min-width: 80px;
+            min-width: 70px;
             padding: 12px 8px;
             font-family: 'Cairo', sans-serif;
             font-weight: 800;
-            font-size: 11px;
+            font-size: 10px;
             background: rgba(255,255,255,0.05);
             color: #ccc;
             border: 1px solid rgba(255,255,255,0.1);
@@ -67,8 +65,6 @@
             display: block;
             margin-bottom: 5px;
         }
-        
-        /* Workspace */
         .workspace {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.1);
@@ -105,11 +101,6 @@
         .input-group textarea {
             min-height: 80px;
         }
-        .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 20px rgba(102,126,234,0.3);
-        }
         .btn {
             width: 100%;
             padding: 15px;
@@ -122,14 +113,11 @@
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
-            letter-spacing: 1px;
         }
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        
-        /* Steps */
         .steps {
             display: none;
             margin: 15px 0;
@@ -141,28 +129,17 @@
             display: block;
         }
         .step {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 8px;
+            padding: 8px;
             font-size: 13px;
             font-weight: 700;
             color: #888;
-            transition: all 0.3s;
         }
         .step.active {
             color: #fff;
-            background: rgba(102,126,234,0.1);
         }
         .step.done {
             color: #00ff00;
         }
-        .step-icon {
-            font-size: 20px;
-        }
-        
         .result {
             display: none;
             margin-top: 15px;
@@ -173,11 +150,6 @@
         }
         .result.active {
             display: block;
-            animation: fadeIn 0.5s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
         .result img, .result video {
             max-width: 100%;
@@ -193,6 +165,49 @@
             border-radius: 8px;
             margin-top: 10px;
             font-weight: 700;
+        }
+        .history-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .history-section h3 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .history-item {
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .history-item .service {
+            color: #667eea;
+            font-weight: 900;
+        }
+        .history-item .status-success {
+            color: #00ff00;
+        }
+        .history-item .status-fail {
+            color: #ff0000;
+        }
+        .clear-btn {
+            width: 100%;
+            padding: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            background: rgba(255,0,0,0.2);
+            color: #ff0000;
+            border: 1px solid #ff0000;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -258,34 +273,14 @@
             
             <button class="btn" id="generateBtn" onclick="generate()">🚀 توليد</button>
             
-            <div class="steps" id="steps">
-                <div class="step" id="step1">
-                    <span class="step-icon">📧</span>
-                    جاري إنشاء بريد مؤقت...
-                </div>
-                <div class="step" id="step2">
-                    <span class="step-icon">🔗</span>
-                    جاري إرسال رابط التحقق...
-                </div>
-                <div class="step" id="step3">
-                    <span class="step-icon">✅</span>
-                    جاري التحقق من البريد...
-                </div>
-                <div class="step" id="step4">
-                    <span class="step-icon">🔑</span>
-                    جاري تسجيل الدخول...
-                </div>
-                <div class="step" id="step5">
-                    <span class="step-icon">🚀</span>
-                    جاري إرسال الطلب...
-                </div>
-                <div class="step" id="step6">
-                    <span class="step-icon">⏳</span>
-                    جاري المعالجة...
-                </div>
-            </div>
-            
+            <div class="steps" id="steps"></div>
             <div class="result" id="result"></div>
+        </div>
+
+        <div class="history-section">
+            <h3>📜 سجل الطلبات</h3>
+            <div id="historyList"></div>
+            <button class="clear-btn" onclick="clearHistory()">🗑️ مسح السجل</button>
         </div>
     </div>
 
@@ -336,13 +331,6 @@
             }
         }
 
-        function setStep(stepNum, status) {
-            const step = document.getElementById('step' + stepNum);
-            step.classList.remove('active', 'done');
-            if (status === 'active') step.classList.add('active');
-            if (status === 'done') step.classList.add('done');
-        }
-
         async function generate() {
             const prompt = document.getElementById('prompt').value;
             const resolution = document.getElementById('resolution').value;
@@ -359,29 +347,8 @@
             
             btn.disabled = true;
             steps.classList.add('active');
+            steps.innerHTML = '';
             result.classList.remove('active');
-            
-            // Reset steps
-            for (let i = 1; i <= 6; i++) setStep(i, '');
-            
-            // بداية الخطوات
-            setStep(1, 'active');
-            await sleep(2000);
-            setStep(1, 'done');
-            
-            setStep(2, 'active');
-            await sleep(2000);
-            setStep(2, 'done');
-            
-            setStep(3, 'active');
-            await sleep(2000);
-            setStep(3, 'done');
-            
-            setStep(4, 'active');
-            await sleep(2000);
-            setStep(4, 'done');
-            
-            setStep(5, 'active');
             
             const payload = { prompt: prompt };
             
@@ -407,25 +374,46 @@
                     body: JSON.stringify(payload)
                 });
                 
-                setStep(5, 'done');
-                setStep(6, 'active');
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
                 
-                const data = await response.json();
-                
-                setStep(6, 'done');
-                
-                if (data.status === 'SUCCESS') {
-                    result.classList.add('active');
-                    if (currentService === 'image') {
-                        result.innerHTML = `<h3>✅ تم التوليد!</h3><img src="${data.url}" alt="نتيجة"><br><a href="${data.url}" download>⬇️ تحميل</a>`;
-                    } else if (currentService === 'audio') {
-                        result.innerHTML = `<h3>✅ تم التوليد!</h3><audio controls src="${data.url}"></audio><br><a href="${data.url}" download>⬇️ تحميل</a>`;
-                    } else {
-                        result.innerHTML = `<h3>✅ تم التوليد!</h3><video controls src="${data.url}"></video><br><a href="${data.url}" download>⬇️ تحميل</a>`;
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const text = decoder.decode(value);
+                    const lines = text.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = JSON.parse(line.substring(6));
+                            
+                            if (data.step) {
+                                const stepDiv = document.createElement('div');
+                                stepDiv.className = 'step active';
+                                stepDiv.textContent = data.step;
+                                steps.appendChild(stepDiv);
+                                steps.scrollTop = steps.scrollHeight;
+                            }
+                            
+                            if (data.status === 'SUCCESS') {
+                                result.classList.add('active');
+                                if (currentService === 'image') {
+                                    result.innerHTML = `<h3>✅ تم التوليد!</h3><img src="${data.url}" alt="نتيجة"><br><a href="${data.url}" download>⬇️ تحميل</a>`;
+                                } else if (currentService === 'audio') {
+                                    result.innerHTML = `<h3>✅ تم التوليد!</h3><audio controls src="${data.url}"></audio><br><a href="${data.url}" download>⬇️ تحميل</a>`;
+                                } else {
+                                    result.innerHTML = `<h3>✅ تم التوليد!</h3><video controls src="${data.url}"></video><br><a href="${data.url}" download>⬇️ تحميل</a>`;
+                                }
+                                loadHistory();
+                            }
+                            
+                            if (data.status === 'FAILED') {
+                                result.classList.add('active');
+                                result.innerHTML = `<h3 style="color:#ff0000;">❌ فشل</h3><p>${data.errorMessage || 'خطأ'}</p>`;
+                            }
+                        }
                     }
-                } else {
-                    result.classList.add('active');
-                    result.innerHTML = `<h3 style="color:#ff0000;">❌ فشل</h3><p>${data.errorMessage || 'خطأ غير معروف'}</p>`;
                 }
             } catch (error) {
                 result.classList.add('active');
@@ -435,9 +423,37 @@
             btn.disabled = false;
         }
 
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
+        async function loadHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/api/requests`);
+                const data = await response.json();
+                const historyList = document.getElementById('historyList');
+                
+                if (data.requests && data.requests.length > 0) {
+                    historyList.innerHTML = '';
+                    data.requests.forEach(req => {
+                        const item = document.createElement('div');
+                        item.className = 'history-item';
+                        item.innerHTML = `
+                            <span class="service">${req.service}</span> - ${req.prompt.substring(0, 50)}... 
+                            <span class="${req.status === 'SUCCESS' ? 'status-success' : 'status-fail'}">${req.status}</span>
+                        `;
+                        historyList.appendChild(item);
+                    });
+                } else {
+                    historyList.innerHTML = '<p style="text-align:center;color:#666;">لا توجد طلبات</p>';
+                }
+            } catch(e) {}
         }
+
+        async function clearHistory() {
+            if (!confirm('مسح كل السجل؟')) return;
+            await fetch(`${API_BASE}/api/requests/clear`, { method: 'POST' });
+            loadHistory();
+        }
+
+        // تحميل السجل عند فتح الصفحة
+        loadHistory();
     </script>
 </body>
 </html>
