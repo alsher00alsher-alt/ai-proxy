@@ -15,7 +15,7 @@
             padding: 15px;
         }
         .container {
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
         }
         .header {
@@ -27,45 +27,48 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
         .header h1 {
-            font-size: 26px;
+            font-size: 24px;
             background: linear-gradient(90deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
         }
-        .header p {
-            color: #888;
-            font-size: 14px;
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding: 5px;
         }
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .service-btn {
-            padding: 20px 10px;
+        .tab-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 8px;
             font-family: 'Cairo', sans-serif;
             font-weight: 800;
-            font-size: 13px;
+            font-size: 11px;
             background: rgba(255,255,255,0.05);
-            color: #fff;
+            color: #ccc;
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 15px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
+            white-space: nowrap;
         }
-        .service-btn:hover, .service-btn.active {
+        .tab-btn.active {
             background: rgba(102,126,234,0.2);
+            color: #667eea;
             border-color: #667eea;
-            transform: translateY(-3px);
         }
-        .service-btn .icon {
-            font-size: 35px;
+        .tab-btn .icon {
+            font-size: 25px;
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
         }
+        
+        /* Workspace */
         .workspace {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.1);
@@ -88,7 +91,7 @@
             margin-bottom: 8px;
             font-size: 14px;
         }
-        .input-group input, .input-group textarea, .input-group select {
+        .input-group textarea, .input-group input, .input-group select {
             width: 100%;
             padding: 12px;
             font-family: 'Cairo', sans-serif;
@@ -121,32 +124,45 @@
             transition: all 0.3s;
             letter-spacing: 1px;
         }
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
-        }
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        .progress {
+        
+        /* Steps */
+        .steps {
             display: none;
             margin: 15px 0;
-            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
         }
-        .progress.active {
+        .steps.active {
             display: block;
         }
-        .progress-text {
-            font-size: 14px;
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: 700;
-            color: #f39c12;
-            animation: blink 1s infinite;
+            color: #888;
+            transition: all 0.3s;
         }
-        @keyframes blink {
-            0%,100% { opacity: 1; }
-            50% { opacity: 0.3; }
+        .step.active {
+            color: #fff;
+            background: rgba(102,126,234,0.1);
         }
+        .step.done {
+            color: #00ff00;
+        }
+        .step-icon {
+            font-size: 20px;
+        }
+        
         .result {
             display: none;
             margin-top: 15px;
@@ -184,41 +200,40 @@
     <div class="container">
         <div class="header">
             <h1>🎨 Kuvu AI Studio</h1>
-            <p>كل خدمات الذكاء الاصطناعي في مكان واحد</p>
         </div>
 
-        <div class="services-grid">
-            <button class="service-btn active" onclick="selectService('video')">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="selectService('video', this)">
                 <span class="icon">🎬</span>
-                توليد فيديو
+                فيديو
             </button>
-            <button class="service-btn" onclick="selectService('image')">
+            <button class="tab-btn" onclick="selectService('image', this)">
                 <span class="icon">🖼️</span>
-                توليد صورة
+                صورة
             </button>
-            <button class="service-btn" onclick="selectService('audio')">
+            <button class="tab-btn" onclick="selectService('audio', this)">
                 <span class="icon">🔊</span>
-                توليد صوت
+                صوت
             </button>
-            <button class="service-btn" onclick="selectService('image-to-video')">
+            <button class="tab-btn" onclick="selectService('image-to-video', this)">
                 <span class="icon">🎥</span>
-                صورة لفيديو
+                صورة➜فيديو
             </button>
-            <button class="service-btn" onclick="selectService('video-edit')">
+            <button class="tab-btn" onclick="selectService('video-edit', this)">
                 <span class="icon">✂️</span>
                 تعديل فيديو
             </button>
-            <button class="service-btn" onclick="selectService('image-edit')">
+            <button class="tab-btn" onclick="selectService('image-edit', this)">
                 <span class="icon">🔄</span>
                 تعديل صورة
             </button>
         </div>
 
-        <div class="workspace" id="workspace">
+        <div class="workspace">
             <h2 id="workspaceTitle">🎬 توليد فيديو</h2>
             
-            <div class="input-group" id="promptGroup">
-                <label>الوصف:</label>
+            <div class="input-group">
+                <label id="promptLabel">الوصف:</label>
                 <textarea id="prompt" placeholder="اكتب الوصف هنا..."></textarea>
             </div>
             
@@ -237,14 +252,37 @@
             </div>
             
             <div class="input-group" id="urlGroup" style="display:none;">
-                <label>رابط الصورة/الفيديو:</label>
+                <label id="urlLabel">رابط:</label>
                 <input type="text" id="mediaUrl" placeholder="https://...">
             </div>
             
             <button class="btn" id="generateBtn" onclick="generate()">🚀 توليد</button>
             
-            <div class="progress" id="progress">
-                <div class="progress-text" id="progressText">⏳ جاري التسجيل...</div>
+            <div class="steps" id="steps">
+                <div class="step" id="step1">
+                    <span class="step-icon">📧</span>
+                    جاري إنشاء بريد مؤقت...
+                </div>
+                <div class="step" id="step2">
+                    <span class="step-icon">🔗</span>
+                    جاري إرسال رابط التحقق...
+                </div>
+                <div class="step" id="step3">
+                    <span class="step-icon">✅</span>
+                    جاري التحقق من البريد...
+                </div>
+                <div class="step" id="step4">
+                    <span class="step-icon">🔑</span>
+                    جاري تسجيل الدخول...
+                </div>
+                <div class="step" id="step5">
+                    <span class="step-icon">🚀</span>
+                    جاري إرسال الطلب...
+                </div>
+                <div class="step" id="step6">
+                    <span class="step-icon">⏳</span>
+                    جاري المعالجة...
+                </div>
             </div>
             
             <div class="result" id="result"></div>
@@ -255,21 +293,22 @@
         const API_BASE = 'https://unique-courtesy-production.up.railway.app';
         let currentService = 'video';
 
-        function selectService(service) {
+        function selectService(service, btn) {
             currentService = service;
-            document.querySelectorAll('.service-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
             
             const title = document.getElementById('workspaceTitle');
-            const promptGroup = document.getElementById('promptGroup');
+            const promptLabel = document.getElementById('promptLabel');
             const resolutionGroup = document.getElementById('resolutionGroup');
             const durationGroup = document.getElementById('durationGroup');
             const urlGroup = document.getElementById('urlGroup');
+            const urlLabel = document.getElementById('urlLabel');
             
-            promptGroup.style.display = 'block';
             resolutionGroup.style.display = 'none';
             durationGroup.style.display = 'none';
             urlGroup.style.display = 'none';
+            promptLabel.textContent = 'الوصف:';
             
             if (service === 'video') {
                 title.textContent = '🎬 توليد فيديو';
@@ -279,22 +318,29 @@
                 title.textContent = '🖼️ توليد صورة';
             } else if (service === 'audio') {
                 title.textContent = '🔊 توليد صوت';
-                document.querySelector('#promptGroup label').textContent = 'النص:';
+                promptLabel.textContent = 'النص:';
             } else if (service === 'image-to-video') {
                 title.textContent = '🎥 صورة لفيديو';
                 durationGroup.style.display = 'block';
                 urlGroup.style.display = 'block';
-                document.querySelector('#urlGroup label').textContent = 'رابط الصورة:';
+                urlLabel.textContent = 'رابط الصورة:';
             } else if (service === 'video-edit') {
                 title.textContent = '✂️ تعديل فيديو';
                 durationGroup.style.display = 'block';
                 urlGroup.style.display = 'block';
-                document.querySelector('#urlGroup label').textContent = 'رابط الفيديو:';
+                urlLabel.textContent = 'رابط الفيديو:';
             } else if (service === 'image-edit') {
                 title.textContent = '🔄 تعديل صورة';
                 urlGroup.style.display = 'block';
-                document.querySelector('#urlGroup label').textContent = 'رابط الصورة:';
+                urlLabel.textContent = 'رابط الصورة:';
             }
+        }
+
+        function setStep(stepNum, status) {
+            const step = document.getElementById('step' + stepNum);
+            step.classList.remove('active', 'done');
+            if (status === 'active') step.classList.add('active');
+            if (status === 'done') step.classList.add('done');
         }
 
         async function generate() {
@@ -303,8 +349,7 @@
             const duration = document.getElementById('duration').value;
             const mediaUrl = document.getElementById('mediaUrl').value;
             const btn = document.getElementById('generateBtn');
-            const progress = document.getElementById('progress');
-            const progressText = document.getElementById('progressText');
+            const steps = document.getElementById('steps');
             const result = document.getElementById('result');
             
             if (!prompt) {
@@ -313,8 +358,30 @@
             }
             
             btn.disabled = true;
-            progress.classList.add('active');
+            steps.classList.add('active');
             result.classList.remove('active');
+            
+            // Reset steps
+            for (let i = 1; i <= 6; i++) setStep(i, '');
+            
+            // بداية الخطوات
+            setStep(1, 'active');
+            await sleep(2000);
+            setStep(1, 'done');
+            
+            setStep(2, 'active');
+            await sleep(2000);
+            setStep(2, 'done');
+            
+            setStep(3, 'active');
+            await sleep(2000);
+            setStep(3, 'done');
+            
+            setStep(4, 'active');
+            await sleep(2000);
+            setStep(4, 'done');
+            
+            setStep(5, 'active');
             
             const payload = { prompt: prompt };
             
@@ -333,8 +400,6 @@
                 payload.image_url = mediaUrl;
             }
             
-            progressText.textContent = '⏳ جاري تسجيل الدخول...';
-            
             try {
                 const response = await fetch(`${API_BASE}/api/${currentService}`, {
                     method: 'POST',
@@ -342,7 +407,12 @@
                     body: JSON.stringify(payload)
                 });
                 
+                setStep(5, 'done');
+                setStep(6, 'active');
+                
                 const data = await response.json();
+                
+                setStep(6, 'done');
                 
                 if (data.status === 'SUCCESS') {
                     result.classList.add('active');
@@ -363,7 +433,10 @@
             }
             
             btn.disabled = false;
-            progress.classList.remove('active');
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
     </script>
 </body>
