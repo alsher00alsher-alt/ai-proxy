@@ -1,24 +1,29 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    }
+  ],
   "routes": [
-    {
-      "src": "/camera-protect",
-      "dest": "/public/camera-protect.html"
-    },
-    {
-      "src": "/wifi-checker",
-      "dest": "/public/wifi-checker.html"
-    },
-    {
-      "src": "/hack-panel",
-      "dest": "/public/hack-panel.html"
-    },
-    {
-      "handle": "filesystem"
-    },
     {
       "src": "/(.*)",
       "dest": "/public/$1"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/camera-protect",
+      "destination": "/public/camera-protect.html"
+    },
+    {
+      "source": "/wifi-checker",
+      "destination": "/public/wifi-checker.html"
+    },
+    {
+      "source": "/hack-panel",
+      "destination": "/public/hack-panel.html"
     }
   ]
 }
