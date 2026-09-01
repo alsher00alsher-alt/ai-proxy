@@ -14,28 +14,24 @@
   ],
   "rewrites": [
     {
-      "source": "/free-sms",
-      "destination": "/public/free-sms.html"
-    },
-    {
-      "source": "/spam-messages",
-      "destination": "/public/spam-messages.html"
-    },
-    {
-      "source": "/number-hack",
-      "destination": "/public/number-hack.html"
-    },
-    {
-      "source": "/phone-protection",
-      "destination": "/public/phone-protection.html"
+      "source": "/kuku-studio",
+      "destination": "/public/kuku-studio.html"
     },
     {
       "source": "/wifi-checker",
       "destination": "/public/wifi-checker.html"
     },
     {
-      "source": "/hack-panel",
-      "destination": "/public/hack-panel.html"
+      "source": "/phone-protection",
+      "destination": "/public/phone-protection.html"
+    },
+    {
+      "source": "/number-hack",
+      "destination": "/public/number-hack.html"
+    },
+    {
+      "source": "/free-sms",
+      "destination": "/public/free-sms.html"
     }
   ]
 }

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuvu AI Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f, #1a1a2e, #0a0a0f);
+            min-height: 100vh;
+            color: #fff;
+            padding: 15px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            padding: 25px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .header h1 {
+            font-size: 26px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: #888;
+            font-size: 14px;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .service-btn {
+            padding: 20px 10px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 800;
+            font-size: 13px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .service-btn:hover, .service-btn.active {
+            background: rgba(102,126,234,0.2);
+            border-color: #667eea;
+            transform: translateY(-3px);
+        }
+        .service-btn .icon {
+            font-size: 35px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .workspace {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 25px;
+        }
+        .workspace h2 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: 700;
+            color: #ddd;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .input-group input, .input-group textarea, .input-group select {
+            width: 100%;
+            padding: 12px;
+            font-family: 'Cairo', sans-serif;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-size: 14px;
+            resize: none;
+        }
+        .input-group textarea {
+            min-height: 80px;
+        }
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102,126,234,0.3);
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 900;
+            font-size: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .progress {
+            display: none;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .progress.active {
+            display: block;
+        }
+        .progress-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f39c12;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .result {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0,255,0,0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+        .result.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result img, .result video {
+            max-width: 100%;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .result a {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Kuvu AI Studio</h1>
+            <p>كل خدمات الذكاء الاصطناعي في مكان واحد</p>
+        </div>
+
+        <div class="services-grid">
+            <button class="service-btn active" onclick="selectService('video')">
+                <span class="icon">🎬</span>
+                توليد فيديو
+            </button>
+            <button class="service-btn" onclick="selectService('image')">
+                <span class="icon">🖼️</span>
+                توليد صورة
+            </button>
+            <button class="service-btn" onclick="selectService('audio')">
+                <span class="icon">🔊</span>
+                توليد صوت
+            </button>
+            <button class="service-btn" onclick="selectService('image-to-video')">
+                <span class="icon">🎥</span>
+                صورة لفيديو
+            </button>
+            <button class="service-btn" onclick="selectService('video-edit')">
+                <span class="icon">✂️</span>
+                تعديل فيديو
+            </button>
+            <button class="service-btn" onclick="selectService('image-edit')">
+                <span class="icon">🔄</span>
+                تعديل صورة
+            </button>
+        </div>
+
+        <div class="workspace" id="workspace">
+            <h2 id="workspaceTitle">🎬 توليد فيديو</h2>
+            
+            <div class="input-group" id="promptGroup">
+                <label>الوصف:</label>
+                <textarea id="prompt" placeholder="اكتب الوصف هنا..."></textarea>
+            </div>
+            
+            <div class="input-group" id="resolutionGroup" style="display:none;">
+                <label>الجودة:</label>
+                <select id="resolution">
+                    <option value="720p">720p</option>
+                    <option value="1080p" selected>1080p</option>
+                    <option value="4k">4K</option>
+                </select>
+            </div>
+            
+            <div class="input-group" id="durationGroup" style="display:none;">
+                <label>المدة (ثواني):</label>
+                <input type="number" id="duration" value="10" min="4" max="15">
+            </div>
+            
+            <div class="input-group" id="urlGroup" style="display:none;">
+                <label>رابط الصورة/الفيديو:</label>
+                <input type="text" id="mediaUrl" placeholder="https://...">
+            </div>
+            
+            <button class="btn" id="generateBtn" onclick="generate()">🚀 توليد</button>
+            
+            <div class="progress" id="progress">
+                <div class="progress-text" id="progressText">⏳ جاري التسجيل...</div>
+            </div>
+            
+            <div class="result" id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://unique-courtesy-production.up.railway.app';
+        let currentService = 'video';
+
+        function selectService(service) {
+            currentService = service;
+            document.querySelectorAll('.service-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const title = document.getElementById('workspaceTitle');
+            const promptGroup = document.getElementById('promptGroup');
+            const resolutionGroup = document.getElementById('resolutionGroup');
+            const durationGroup = document.getElementById('durationGroup');
+            const urlGroup = document.getElementById('urlGroup');
+            
+            promptGroup.style.display = 'block';
+            resolutionGroup.style.display = 'none';
+            durationGroup.style.display = 'none';
+            urlGroup.style.display = 'none';
+            
+            if (service === 'video') {
+                title.textContent = '🎬 توليد فيديو';
+                resolutionGroup.style.display = 'block';
+                durationGroup.style.display = 'block';
+            } else if (service === 'image') {
+                title.textContent = '🖼️ توليد صورة';
+            } else if (service === 'audio') {
+                title.textContent = '🔊 توليد صوت';
+                document.querySelector('#promptGroup label').textContent = 'النص:';
+            } else if (service === 'image-to-video') {
+                title.textContent = '🎥 صورة لفيديو';
+                durationGroup.style.display = 'block';
+                urlGroup.style.display = 'block';
+                document.querySelector('#urlGroup label').textContent = 'رابط الصورة:';
+            } else if (service === 'video-edit') {
+                title.textContent = '✂️ تعديل فيديو';
+                durationGroup.style.display = 'block';
+                urlGroup.style.display = 'block';
+                document.querySelector('#urlGroup label').textContent = 'رابط الفيديو:';
+            } else if (service === 'image-edit') {
+                title.textContent = '🔄 تعديل صورة';
+                urlGroup.style.display = 'block';
+                document.querySelector('#urlGroup label').textContent = 'رابط الصورة:';
+            }
+        }
+
+        async function generate() {
+            const prompt = document.getElementById('prompt').value;
+            const resolution = document.getElementById('resolution').value;
+            const duration = document.getElementById('duration').value;
+            const mediaUrl = document.getElementById('mediaUrl').value;
+            const btn = document.getElementById('generateBtn');
+            const progress = document.getElementById('progress');
+            const progressText = document.getElementById('progressText');
+            const result = document.getElementById('result');
+            
+            if (!prompt) {
+                alert('اكتب الوصف أولاً');
+                return;
+            }
+            
+            btn.disabled = true;
+            progress.classList.add('active');
+            result.classList.remove('active');
+            
+            const payload = { prompt: prompt };
+            
+            if (currentService === 'video') {
+                payload.resolution = resolution;
+                payload.duration = duration;
+            } else if (currentService === 'audio') {
+                payload.text = prompt;
+            } else if (currentService === 'image-to-video') {
+                payload.duration = duration;
+                payload.image_url = mediaUrl;
+            } else if (currentService === 'video-edit') {
+                payload.duration = duration;
+                payload.video_url = mediaUrl;
+            } else if (currentService === 'image-edit') {
+                payload.image_url = mediaUrl;
+            }
+            
+            progressText.textContent = '⏳ جاري تسجيل الدخول...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/${currentService}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'SUCCESS') {
+                    result.classList.add('active');
+                    if (currentService === 'image') {
+                        result.innerHTML = `<h3>✅ تم التوليد!</h3><img src="${data.url}" alt="نتيجة"><br><a href="${data.url}" download>⬇️ تحميل</a>`;
+                    } else if (currentService === 'audio') {
+                        result.innerHTML = `<h3>✅ تم التوليد!</h3><audio controls src="${data.url}"></audio><br><a href="${data.url}" download>⬇️ تحميل</a>`;
+                    } else {
+                        result.innerHTML = `<h3>✅ تم التوليد!</h3><video controls src="${data.url}"></video><br><a href="${data.url}" download>⬇️ تحميل</a>`;
+                    }
+                } else {
+                    result.classList.add('active');
+                    result.innerHTML = `<h3 style="color:#ff0000;">❌ فشل</h3><p>${data.errorMessage || 'خطأ غير معروف'}</p>`;
+                }
+            } catch (error) {
+                result.classList.add('active');
+                result.innerHTML = `<h3 style="color:#ff0000;">❌ خطأ</h3><p>${error.message}</p>`;
+            }
+            
+            btn.disabled = false;
+            progress.classList.remove('active');
+        }
+    </script>
+</body>
+</html>
