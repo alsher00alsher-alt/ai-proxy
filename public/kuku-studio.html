@@ -12,71 +12,146 @@
             background: linear-gradient(135deg, #0a0a0f, #1a1a2e, #0a0a0f);
             min-height: 100vh;
             color: #fff;
-            padding: 15px;
         }
-        .container {
+        
+        /* الصفحة الرئيسية */
+        .main-page {
+            display: block;
+            padding: 20px;
             max-width: 500px;
             margin: 0 auto;
         }
+        .main-page.hidden { display: none; }
+        
         .header {
             text-align: center;
-            padding: 25px;
+            padding: 30px;
             background: rgba(255,255,255,0.05);
             border-radius: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             border: 1px solid rgba(255,255,255,0.1);
         }
         .header h1 {
-            font-size: 24px;
+            font-size: 26px;
             background: linear-gradient(90deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-            overflow-x: auto;
-            padding: 5px;
+        .header p {
+            color: #888;
+            font-size: 13px;
+            margin-top: 8px;
         }
-        .tab-btn {
-            flex: 1;
-            min-width: 70px;
-            padding: 12px 8px;
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .service-card {
+            padding: 25px 15px;
             font-family: 'Cairo', sans-serif;
             font-weight: 800;
-            font-size: 10px;
+            font-size: 13px;
             background: rgba(255,255,255,0.05);
-            color: #ccc;
+            color: #fff;
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
+            border-radius: 18px;
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
-            white-space: nowrap;
         }
-        .tab-btn.active {
-            background: rgba(102,126,234,0.2);
-            color: #667eea;
+        .service-card:hover {
+            background: rgba(102,126,234,0.15);
             border-color: #667eea;
+            transform: translateY(-5px);
         }
-        .tab-btn .icon {
-            font-size: 25px;
+        .service-card .icon {
+            font-size: 45px;
             display: block;
+            margin-bottom: 12px;
+        }
+        .service-card .desc {
+            font-size: 10px;
+            color: #888;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        /* صفحة الخدمة */
+        .service-page {
+            display: none;
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        .service-page.active {
+            display: flex;
+        }
+        
+        .service-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .back-btn {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .service-title {
+            flex: 1;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 900;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .service-icon-large {
+            text-align: center;
+            font-size: 80px;
+            margin: 20px 0;
+            animation: float 2s infinite;
+        }
+        @keyframes float {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .instructions {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .instructions p {
+            color: #aaa;
+            font-size: 13px;
             margin-bottom: 5px;
         }
-        .workspace {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 25px;
-        }
-        .workspace h2 {
-            text-align: center;
-            color: #667eea;
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
+        
         .input-group {
             margin-bottom: 15px;
         }
@@ -89,35 +164,43 @@
         }
         .input-group textarea, .input-group input, .input-group select {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             font-family: 'Cairo', sans-serif;
             background: rgba(255,255,255,0.05);
             color: #fff;
             border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 14px;
             resize: none;
         }
         .input-group textarea {
-            min-height: 80px;
+            min-height: 100px;
         }
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102,126,234,0.3);
+        }
+        
         .btn {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             font-family: 'Cairo', sans-serif;
             font-weight: 900;
             font-size: 16px;
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: #fff;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s;
+            letter-spacing: 1px;
         }
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
+        
         .steps {
             display: none;
             margin: 15px 0;
@@ -125,21 +208,16 @@
             background: rgba(0,0,0,0.3);
             border-radius: 10px;
         }
-        .steps.active {
-            display: block;
-        }
+        .steps.active { display: block; }
         .step {
             padding: 8px;
             font-size: 13px;
             font-weight: 700;
             color: #888;
         }
-        .step.active {
-            color: #fff;
-        }
-        .step.done {
-            color: #00ff00;
-        }
+        .step.active { color: #fff; }
+        .step.done { color: #00ff00; }
+        
         .result {
             display: none;
             margin-top: 15px;
@@ -148,14 +226,17 @@
             border-radius: 10px;
             text-align: center;
         }
-        .result.active {
-            display: block;
+        .result.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .result img, .result video {
             max-width: 100%;
             border-radius: 10px;
             margin: 10px 0;
         }
+        .result audio { width: 100%; margin: 10px 0; }
         .result a {
             display: inline-block;
             padding: 10px 20px;
@@ -166,134 +247,106 @@
             margin-top: 10px;
             font-weight: 700;
         }
-        .history-section {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .history-section h3 {
-            text-align: center;
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-        .history-item {
-            padding: 10px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-size: 12px;
-        }
-        .history-item .service {
-            color: #667eea;
-            font-weight: 900;
-        }
-        .history-item .status-success {
-            color: #00ff00;
-        }
-        .history-item .status-fail {
-            color: #ff0000;
-        }
-        .clear-btn {
-            width: 100%;
-            padding: 10px;
-            font-family: 'Cairo', sans-serif;
-            font-weight: 700;
-            font-size: 12px;
-            background: rgba(255,0,0,0.2);
-            color: #ff0000;
-            border: 1px solid #ff0000;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- الصفحة الرئيسية -->
+    <div class="main-page" id="mainPage">
         <div class="header">
             <h1>🎨 Kuvu AI Studio</h1>
+            <p>اختر الخدمة اللي عايزها</p>
         </div>
-
-        <div class="tabs">
-            <button class="tab-btn active" onclick="selectService('video', this)">
+        
+        <div class="services-grid">
+            <button class="service-card" onclick="openService('video')">
                 <span class="icon">🎬</span>
-                فيديو
+                توليد فيديو
+                <span class="desc">اكتب وصف واحصل على فيديو</span>
             </button>
-            <button class="tab-btn" onclick="selectService('image', this)">
+            <button class="service-card" onclick="openService('image')">
                 <span class="icon">🖼️</span>
-                صورة
+                توليد صورة
+                <span class="desc">اكتب وصف واحصل على صورة</span>
             </button>
-            <button class="tab-btn" onclick="selectService('audio', this)">
+            <button class="service-card" onclick="openService('audio')">
                 <span class="icon">🔊</span>
-                صوت
+                توليد صوت
+                <span class="desc">اكتب نص يتحول لصوت</span>
             </button>
-            <button class="tab-btn" onclick="selectService('image-to-video', this)">
+            <button class="service-card" onclick="openService('image-to-video')">
                 <span class="icon">🎥</span>
-                صورة➜فيديو
+                صورة لفيديو
+                <span class="desc">ارفع صورة تتحول لفيديو</span>
             </button>
-            <button class="tab-btn" onclick="selectService('video-edit', this)">
+            <button class="service-card" onclick="openService('video-edit')">
                 <span class="icon">✂️</span>
                 تعديل فيديو
+                <span class="desc">ارفع فيديو وعدله</span>
             </button>
-            <button class="tab-btn" onclick="selectService('image-edit', this)">
+            <button class="service-card" onclick="openService('image-edit')">
                 <span class="icon">🔄</span>
                 تعديل صورة
+                <span class="desc">ارفع صورة وعدلها</span>
             </button>
         </div>
+    </div>
 
-        <div class="workspace">
-            <h2 id="workspaceTitle">🎬 توليد فيديو</h2>
-            
-            <div class="input-group">
-                <label id="promptLabel">الوصف:</label>
-                <textarea id="prompt" placeholder="اكتب الوصف هنا..."></textarea>
-            </div>
-            
-            <div class="input-group" id="resolutionGroup" style="display:none;">
-                <label>الجودة:</label>
-                <select id="resolution">
-                    <option value="720p">720p</option>
-                    <option value="1080p" selected>1080p</option>
-                    <option value="4k">4K</option>
-                </select>
-            </div>
-            
-            <div class="input-group" id="durationGroup" style="display:none;">
-                <label>المدة (ثواني):</label>
-                <input type="number" id="duration" value="10" min="4" max="15">
-            </div>
-            
-            <div class="input-group" id="urlGroup" style="display:none;">
-                <label id="urlLabel">رابط:</label>
-                <input type="text" id="mediaUrl" placeholder="https://...">
-            </div>
-            
-            <button class="btn" id="generateBtn" onclick="generate()">🚀 توليد</button>
-            
-            <div class="steps" id="steps"></div>
-            <div class="result" id="result"></div>
+    <!-- صفحة الخدمة -->
+    <div class="service-page" id="servicePage">
+        <div class="service-header">
+            <button class="back-btn" onclick="goBack()">→</button>
+            <div class="service-title" id="serviceTitle">🎬 توليد فيديو</div>
         </div>
-
-        <div class="history-section">
-            <h3>📜 سجل الطلبات</h3>
-            <div id="historyList"></div>
-            <button class="clear-btn" onclick="clearHistory()">🗑️ مسح السجل</button>
+        
+        <div class="service-icon-large" id="serviceIcon">🎬</div>
+        
+        <div class="instructions" id="instructions">
+            <h3>📋 التعليمات:</h3>
+            <p id="instructionText">اكتب وصف للفيديو اللي عايز تولده</p>
         </div>
+        
+        <div class="input-group">
+            <label id="promptLabel">✍️ الوصف:</label>
+            <textarea id="prompt" placeholder="اكتب الوصف هنا..."></textarea>
+        </div>
+        
+        <div class="input-group" id="resolutionGroup" style="display:none;">
+            <label>📊 الجودة:</label>
+            <select id="resolution">
+                <option value="720p">720p</option>
+                <option value="1080p" selected>1080p</option>
+                <option value="4k">4K</option>
+            </select>
+        </div>
+        
+        <div class="input-group" id="durationGroup" style="display:none;">
+            <label>⏱️ المدة (ثواني):</label>
+            <input type="number" id="duration" value="10" min="4" max="15">
+        </div>
+        
+        <div class="input-group" id="urlGroup" style="display:none;">
+            <label id="urlLabel">🔗 الرابط:</label>
+            <input type="text" id="mediaUrl" placeholder="https://...">
+        </div>
+        
+        <button class="btn" id="generateBtn" onclick="generate()">🚀 توليد</button>
+        
+        <div class="steps" id="steps"></div>
+        <div class="result" id="result"></div>
     </div>
 
     <script>
         const API_BASE = 'https://unique-courtesy-production.up.railway.app';
-        let currentService = 'video';
+        let currentService = '';
 
-        function selectService(service, btn) {
+        function openService(service) {
             currentService = service;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            document.getElementById('mainPage').classList.add('hidden');
+            document.getElementById('servicePage').classList.add('active');
             
-            const title = document.getElementById('workspaceTitle');
+            const title = document.getElementById('serviceTitle');
+            const icon = document.getElementById('serviceIcon');
+            const instructions = document.getElementById('instructionText');
             const promptLabel = document.getElementById('promptLabel');
             const resolutionGroup = document.getElementById('resolutionGroup');
             const durationGroup = document.getElementById('durationGroup');
@@ -303,32 +356,56 @@
             resolutionGroup.style.display = 'none';
             durationGroup.style.display = 'none';
             urlGroup.style.display = 'none';
-            promptLabel.textContent = 'الوصف:';
+            promptLabel.textContent = '✍️ الوصف:';
             
             if (service === 'video') {
                 title.textContent = '🎬 توليد فيديو';
+                icon.textContent = '🎬';
+                instructions.textContent = 'اكتب وصف للفيديو اللي عايز تولده، واختار الجودة والمدة';
                 resolutionGroup.style.display = 'block';
                 durationGroup.style.display = 'block';
             } else if (service === 'image') {
                 title.textContent = '🖼️ توليد صورة';
+                icon.textContent = '🖼️';
+                instructions.textContent = 'اكتب وصف للصورة اللي عايز تولدها بالتفصيل';
             } else if (service === 'audio') {
                 title.textContent = '🔊 توليد صوت';
-                promptLabel.textContent = 'النص:';
+                icon.textContent = '🔊';
+                instructions.textContent = 'اكتب النص اللي عايز يتحول لصوت';
+                promptLabel.textContent = '✍️ النص:';
             } else if (service === 'image-to-video') {
                 title.textContent = '🎥 صورة لفيديو';
+                icon.textContent = '🎥';
+                instructions.textContent = 'ارفع رابط صورة واكتب وصف للحركة اللي عايزها';
                 durationGroup.style.display = 'block';
                 urlGroup.style.display = 'block';
-                urlLabel.textContent = 'رابط الصورة:';
+                urlLabel.textContent = '🔗 رابط الصورة:';
             } else if (service === 'video-edit') {
                 title.textContent = '✂️ تعديل فيديو';
+                icon.textContent = '✂️';
+                instructions.textContent = 'ارفع رابط فيديو واكتب التعديل اللي عايزه';
                 durationGroup.style.display = 'block';
                 urlGroup.style.display = 'block';
-                urlLabel.textContent = 'رابط الفيديو:';
+                urlLabel.textContent = '🔗 رابط الفيديو:';
             } else if (service === 'image-edit') {
                 title.textContent = '🔄 تعديل صورة';
+                icon.textContent = '🔄';
+                instructions.textContent = 'ارفع رابط صورة واكتب التعديل اللي عايزه';
                 urlGroup.style.display = 'block';
-                urlLabel.textContent = 'رابط الصورة:';
+                urlLabel.textContent = '🔗 رابط الصورة:';
             }
+            
+            // Reset
+            document.getElementById('prompt').value = '';
+            document.getElementById('mediaUrl').value = '';
+            document.getElementById('steps').classList.remove('active');
+            document.getElementById('steps').innerHTML = '';
+            document.getElementById('result').classList.remove('active');
+        }
+
+        function goBack() {
+            document.getElementById('servicePage').classList.remove('active');
+            document.getElementById('mainPage').classList.remove('hidden');
         }
 
         async function generate() {
@@ -347,7 +424,7 @@
             
             btn.disabled = true;
             steps.classList.add('active');
-            steps.innerHTML = '';
+            steps.innerHTML = '<div class="step active">⏳ جاري البدء...</div>';
             result.classList.remove('active');
             
             const payload = { prompt: prompt };
@@ -405,7 +482,6 @@
                                 } else {
                                     result.innerHTML = `<h3>✅ تم التوليد!</h3><video controls src="${data.url}"></video><br><a href="${data.url}" download>⬇️ تحميل</a>`;
                                 }
-                                loadHistory();
                             }
                             
                             if (data.status === 'FAILED') {
@@ -422,38 +498,6 @@
             
             btn.disabled = false;
         }
-
-        async function loadHistory() {
-            try {
-                const response = await fetch(`${API_BASE}/api/requests`);
-                const data = await response.json();
-                const historyList = document.getElementById('historyList');
-                
-                if (data.requests && data.requests.length > 0) {
-                    historyList.innerHTML = '';
-                    data.requests.forEach(req => {
-                        const item = document.createElement('div');
-                        item.className = 'history-item';
-                        item.innerHTML = `
-                            <span class="service">${req.service}</span> - ${req.prompt.substring(0, 50)}... 
-                            <span class="${req.status === 'SUCCESS' ? 'status-success' : 'status-fail'}">${req.status}</span>
-                        `;
-                        historyList.appendChild(item);
-                    });
-                } else {
-                    historyList.innerHTML = '<p style="text-align:center;color:#666;">لا توجد طلبات</p>';
-                }
-            } catch(e) {}
-        }
-
-        async function clearHistory() {
-            if (!confirm('مسح كل السجل؟')) return;
-            await fetch(`${API_BASE}/api/requests/clear`, { method: 'POST' });
-            loadHistory();
-        }
-
-        // تحميل السجل عند فتح الصفحة
-        loadHistory();
     </script>
 </body>
 </html>
