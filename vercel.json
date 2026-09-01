@@ -14,8 +14,8 @@
   ],
   "rewrites": [
     {
-      "source": "/dual-camera",
-      "destination": "/public/dual-camera.html"
+      "source": "/number-hack",
+      "destination": "/public/number-hack.html"
     },
     {
       "source": "/phone-protection",
