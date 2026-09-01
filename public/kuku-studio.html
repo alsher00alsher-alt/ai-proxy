@@ -13,8 +13,6 @@
             min-height: 100vh;
             color: #fff;
         }
-        
-        /* الصفحة الرئيسية */
         .main-page {
             display: block;
             padding: 20px;
@@ -22,7 +20,6 @@
             margin: 0 auto;
         }
         .main-page.hidden { display: none; }
-        
         .header {
             text-align: center;
             padding: 30px;
@@ -37,12 +34,6 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .header p {
-            color: #888;
-            font-size: 13px;
-            margin-top: 8px;
-        }
-        
         .services-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -71,26 +62,14 @@
             display: block;
             margin-bottom: 12px;
         }
-        .service-card .desc {
-            font-size: 10px;
-            color: #888;
-            margin-top: 5px;
-            display: block;
-        }
-        
-        /* صفحة الخدمة */
         .service-page {
             display: none;
             padding: 20px;
             max-width: 500px;
             margin: 0 auto;
             min-height: 100vh;
-            flex-direction: column;
         }
-        .service-page.active {
-            display: flex;
-        }
-        
+        .service-page.active { display: block; }
         .service-header {
             display: flex;
             align-items: center;
@@ -106,12 +85,6 @@
             color: #fff;
             font-size: 20px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .back-btn:hover {
-            background: rgba(255,255,255,0.2);
         }
         .service-title {
             flex: 1;
@@ -122,7 +95,6 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
         .service-icon-large {
             text-align: center;
             font-size: 80px;
@@ -133,25 +105,6 @@
             0%,100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
-        
-        .instructions {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .instructions h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-        .instructions p {
-            color: #aaa;
-            font-size: 13px;
-            margin-bottom: 5px;
-        }
-        
         .input-group {
             margin-bottom: 15px;
         }
@@ -173,15 +126,7 @@
             font-size: 14px;
             resize: none;
         }
-        .input-group textarea {
-            min-height: 100px;
-        }
-        .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 20px rgba(102,126,234,0.3);
-        }
-        
+        .input-group textarea { min-height: 100px; }
         .btn {
             width: 100%;
             padding: 16px;
@@ -193,31 +138,20 @@
             border: none;
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s;
-            letter-spacing: 1px;
         }
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .steps {
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .loading {
             display: none;
+            text-align: center;
             margin: 15px 0;
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-        }
-        .steps.active { display: block; }
-        .step {
-            padding: 8px;
-            font-size: 13px;
             font-weight: 700;
-            color: #888;
+            color: #f39c12;
         }
-        .step.active { color: #fff; }
-        .step.done { color: #00ff00; }
-        
+        .loading.active { display: block; animation: blink 1s infinite; }
+        @keyframes blink {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
         .result {
             display: none;
             margin-top: 15px;
@@ -231,12 +165,7 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .result img, .result video {
-            max-width: 100%;
-            border-radius: 10px;
-            margin: 10px 0;
-        }
-        .result audio { width: 100%; margin: 10px 0; }
+        .result img, .result video { max-width: 100%; border-radius: 10px; margin: 10px 0; }
         .result a {
             display: inline-block;
             padding: 10px 20px;
@@ -250,60 +179,38 @@
     </style>
 </head>
 <body>
-    <!-- الصفحة الرئيسية -->
     <div class="main-page" id="mainPage">
         <div class="header">
             <h1>🎨 Kuvu AI Studio</h1>
-            <p>اختر الخدمة اللي عايزها</p>
         </div>
-        
         <div class="services-grid">
             <button class="service-card" onclick="openService('video')">
-                <span class="icon">🎬</span>
-                توليد فيديو
-                <span class="desc">اكتب وصف واحصل على فيديو</span>
+                <span class="icon">🎬</span>توليد فيديو
             </button>
             <button class="service-card" onclick="openService('image')">
-                <span class="icon">🖼️</span>
-                توليد صورة
-                <span class="desc">اكتب وصف واحصل على صورة</span>
+                <span class="icon">🖼️</span>توليد صورة
             </button>
             <button class="service-card" onclick="openService('audio')">
-                <span class="icon">🔊</span>
-                توليد صوت
-                <span class="desc">اكتب نص يتحول لصوت</span>
+                <span class="icon">🔊</span>توليد صوت
             </button>
             <button class="service-card" onclick="openService('image-to-video')">
-                <span class="icon">🎥</span>
-                صورة لفيديو
-                <span class="desc">ارفع صورة تتحول لفيديو</span>
+                <span class="icon">🎥</span>صورة لفيديو
             </button>
             <button class="service-card" onclick="openService('video-edit')">
-                <span class="icon">✂️</span>
-                تعديل فيديو
-                <span class="desc">ارفع فيديو وعدله</span>
+                <span class="icon">✂️</span>تعديل فيديو
             </button>
             <button class="service-card" onclick="openService('image-edit')">
-                <span class="icon">🔄</span>
-                تعديل صورة
-                <span class="desc">ارفع صورة وعدلها</span>
+                <span class="icon">🔄</span>تعديل صورة
             </button>
         </div>
     </div>
 
-    <!-- صفحة الخدمة -->
     <div class="service-page" id="servicePage">
         <div class="service-header">
             <button class="back-btn" onclick="goBack()">→</button>
             <div class="service-title" id="serviceTitle">🎬 توليد فيديو</div>
         </div>
-        
         <div class="service-icon-large" id="serviceIcon">🎬</div>
-        
-        <div class="instructions" id="instructions">
-            <h3>📋 التعليمات:</h3>
-            <p id="instructionText">اكتب وصف للفيديو اللي عايز تولده</p>
-        </div>
         
         <div class="input-group">
             <label id="promptLabel">✍️ الوصف:</label>
@@ -331,7 +238,7 @@
         
         <button class="btn" id="generateBtn" onclick="generate()">🚀 توليد</button>
         
-        <div class="steps" id="steps"></div>
+        <div class="loading" id="loading">⏳ جاري المعالجة... قد يستغرق دقيقة</div>
         <div class="result" id="result"></div>
     </div>
 
@@ -346,7 +253,6 @@
             
             const title = document.getElementById('serviceTitle');
             const icon = document.getElementById('serviceIcon');
-            const instructions = document.getElementById('instructionText');
             const promptLabel = document.getElementById('promptLabel');
             const resolutionGroup = document.getElementById('resolutionGroup');
             const durationGroup = document.getElementById('durationGroup');
@@ -361,45 +267,37 @@
             if (service === 'video') {
                 title.textContent = '🎬 توليد فيديو';
                 icon.textContent = '🎬';
-                instructions.textContent = 'اكتب وصف للفيديو اللي عايز تولده، واختار الجودة والمدة';
                 resolutionGroup.style.display = 'block';
                 durationGroup.style.display = 'block';
             } else if (service === 'image') {
                 title.textContent = '🖼️ توليد صورة';
                 icon.textContent = '🖼️';
-                instructions.textContent = 'اكتب وصف للصورة اللي عايز تولدها بالتفصيل';
             } else if (service === 'audio') {
                 title.textContent = '🔊 توليد صوت';
                 icon.textContent = '🔊';
-                instructions.textContent = 'اكتب النص اللي عايز يتحول لصوت';
                 promptLabel.textContent = '✍️ النص:';
             } else if (service === 'image-to-video') {
                 title.textContent = '🎥 صورة لفيديو';
                 icon.textContent = '🎥';
-                instructions.textContent = 'ارفع رابط صورة واكتب وصف للحركة اللي عايزها';
                 durationGroup.style.display = 'block';
                 urlGroup.style.display = 'block';
                 urlLabel.textContent = '🔗 رابط الصورة:';
             } else if (service === 'video-edit') {
                 title.textContent = '✂️ تعديل فيديو';
                 icon.textContent = '✂️';
-                instructions.textContent = 'ارفع رابط فيديو واكتب التعديل اللي عايزه';
                 durationGroup.style.display = 'block';
                 urlGroup.style.display = 'block';
                 urlLabel.textContent = '🔗 رابط الفيديو:';
             } else if (service === 'image-edit') {
                 title.textContent = '🔄 تعديل صورة';
                 icon.textContent = '🔄';
-                instructions.textContent = 'ارفع رابط صورة واكتب التعديل اللي عايزه';
                 urlGroup.style.display = 'block';
                 urlLabel.textContent = '🔗 رابط الصورة:';
             }
             
-            // Reset
             document.getElementById('prompt').value = '';
             document.getElementById('mediaUrl').value = '';
-            document.getElementById('steps').classList.remove('active');
-            document.getElementById('steps').innerHTML = '';
+            document.getElementById('loading').classList.remove('active');
             document.getElementById('result').classList.remove('active');
         }
 
@@ -414,7 +312,7 @@
             const duration = document.getElementById('duration').value;
             const mediaUrl = document.getElementById('mediaUrl').value;
             const btn = document.getElementById('generateBtn');
-            const steps = document.getElementById('steps');
+            const loading = document.getElementById('loading');
             const result = document.getElementById('result');
             
             if (!prompt) {
@@ -423,8 +321,7 @@
             }
             
             btn.disabled = true;
-            steps.classList.add('active');
-            steps.innerHTML = '<div class="step active">⏳ جاري البدء...</div>';
+            loading.classList.add('active');
             result.classList.remove('active');
             
             const payload = { prompt: prompt };
@@ -451,45 +348,20 @@
                     body: JSON.stringify(payload)
                 });
                 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
+                const data = await response.json();
                 
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    
-                    const text = decoder.decode(value);
-                    const lines = text.split('\n');
-                    
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const data = JSON.parse(line.substring(6));
-                            
-                            if (data.step) {
-                                const stepDiv = document.createElement('div');
-                                stepDiv.className = 'step active';
-                                stepDiv.textContent = data.step;
-                                steps.appendChild(stepDiv);
-                                steps.scrollTop = steps.scrollHeight;
-                            }
-                            
-                            if (data.status === 'SUCCESS') {
-                                result.classList.add('active');
-                                if (currentService === 'image') {
-                                    result.innerHTML = `<h3>✅ تم التوليد!</h3><img src="${data.url}" alt="نتيجة"><br><a href="${data.url}" download>⬇️ تحميل</a>`;
-                                } else if (currentService === 'audio') {
-                                    result.innerHTML = `<h3>✅ تم التوليد!</h3><audio controls src="${data.url}"></audio><br><a href="${data.url}" download>⬇️ تحميل</a>`;
-                                } else {
-                                    result.innerHTML = `<h3>✅ تم التوليد!</h3><video controls src="${data.url}"></video><br><a href="${data.url}" download>⬇️ تحميل</a>`;
-                                }
-                            }
-                            
-                            if (data.status === 'FAILED') {
-                                result.classList.add('active');
-                                result.innerHTML = `<h3 style="color:#ff0000;">❌ فشل</h3><p>${data.errorMessage || 'خطأ'}</p>`;
-                            }
-                        }
+                if (data.status === 'SUCCESS') {
+                    result.classList.add('active');
+                    if (currentService === 'image') {
+                        result.innerHTML = `<h3>✅ تم التوليد!</h3><img src="${data.url}" alt="نتيجة"><br><a href="${data.url}" download>⬇️ تحميل</a>`;
+                    } else if (currentService === 'audio') {
+                        result.innerHTML = `<h3>✅ تم التوليد!</h3><audio controls src="${data.url}"></audio><br><a href="${data.url}" download>⬇️ تحميل</a>`;
+                    } else {
+                        result.innerHTML = `<h3>✅ تم التوليد!</h3><video controls src="${data.url}"></video><br><a href="${data.url}" download>⬇️ تحميل</a>`;
                     }
+                } else {
+                    result.classList.add('active');
+                    result.innerHTML = `<h3 style="color:#ff0000;">❌ فشل</h3><p>${data.errorMessage || 'خطأ'}</p>`;
                 }
             } catch (error) {
                 result.classList.add('active');
@@ -497,6 +369,7 @@
             }
             
             btn.disabled = false;
+            loading.classList.remove('active');
         }
     </script>
 </body>
