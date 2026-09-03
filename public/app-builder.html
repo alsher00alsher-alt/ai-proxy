@@ -28,10 +28,8 @@ textarea { height: 180px; font-family: monospace; resize: vertical; }
 
 .btn-main { width: 100%; padding: 14px; background: #00ffcc; border: none; color: #0b0b16; font-weight: bold; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
 .btn-main:hover { background: #00cc99; }
-
 .btn-notify { background: #ff3366; color: #fff; margin-top: 10px; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-/* قائمة تطبيقاتي */
 .apps-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
 .app-card { background: #15152b; border: 1px solid #2a2a4e; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; }
 .app-card:hover { border-color: #00ffcc; }
@@ -39,12 +37,10 @@ textarea { height: 180px; font-family: monospace; resize: vertical; }
 .app-card h3 { font-size: 16px; color: #fff; margin-bottom: 4px; }
 .app-card p { font-size: 12px; color: #8888a5; }
 
-/* لوحة تحكم التطبيق المحدد */
 #appDashboard { display: none; }
 .dash-header { display: flex; align-items: center; gap: 15px; background: #15152b; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #2a2a4e; }
-.dash-header img { width: 50px; height: 50px; border-radius: 8px; }
+.dash-header img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
 .back-btn { background: #333; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
-
 .status-msg { margin-top: 15px; padding: 12px; background: #0b0b16; border-radius: 8px; text-align: center; font-size: 14px; display: none; }
 .status-msg a { color: #00ffcc; font-weight: bold; text-decoration: none; word-break: break-all; }
 </style>
@@ -70,7 +66,7 @@ textarea { height: 180px; font-family: monospace; resize: vertical; }
         </div>
 
         <div class="form-group">
-            <label>أيقونة التطبيق (صورة من الهاتف):</label>
+            <label>أيقونة التطبيق (صورة مربعة من الهاتف):</label>
             <input type="file" id="appIcon" accept="image/*" style="color:#fff;">
         </div>
 
@@ -80,11 +76,9 @@ textarea { height: 180px; font-family: monospace; resize: vertical; }
         </div>
 
         <div class="form-group">
-            <label>قوة الإطارات (Frames):</label>
+            <label>قوة الإطارات (Frames / Refresh Rate):</label>
             <select id="fpsRate">
-                <option value="185">🚀 185 FPS (أقصى أداء 144Hz/185Hz)</option>
-                <option value="120">120 FPS</option>
-                <option value="60">60 FPS</option>
+                <option value="max">🚀 أقصى أداء تلقائي (حسب شاشة الهاتف 120Hz/144Hz)</option>
             </select>
         </div>
     </div>
@@ -122,7 +116,7 @@ textarea { height: 180px; font-family: monospace; resize: vertical; }
         </div>
     </div>
 
-    <!-- لوحة تحكم التطبيق عند الضغط عليه -->
+    <!-- لوحة تحكم التطبيق -->
     <div id="appDashboard">
         <button class="back-btn" onclick="backToList()">⬅ رجوع لقائمة التطبيقات</button>
         <div class="dash-header">
@@ -134,9 +128,9 @@ textarea { height: 180px; font-family: monospace; resize: vertical; }
         </div>
 
         <div class="card-box">
-            <label>تعديل كود الـ HTML (يتم تحديثه داخل التطبيق لحظياً):</label>
+            <label>تعديل كود الـ HTML (يتحدث داخل التطبيق فوراً عند الحفظ):</label>
             <textarea id="dashHtmlCode"></textarea>
-            <button class="btn-main" onclick="updateAppHtml()">💾 حفظ التعديلات والـ HTML</button>
+            <button class="btn-main" onclick="updateAppHtmlOnServer()">💾 حفظ وتحديث الـ HTML على السيرفر</button>
             <button class="btn-main" style="background:#27ae60; color:#fff;" onclick="buildSelectedAppAPK()">📥 بناء وتحميل ملف APK (30 ميجا)</button>
             
             <hr style="border-color:#2a2a4e; margin:20px 0;">
@@ -189,7 +183,6 @@ document.getElementById('appIcon').addEventListener('change', function(e) {
     }
 });
 
-// حفظ التطبيق محلياً في الـ LocalStorage ليظهر في قائمة "تطبيقاتي"
 function createNewApp() {
     let name = document.getElementById('appName').value.trim();
     let packageName = document.getElementById('packageName').value.trim();
@@ -217,9 +210,22 @@ function createNewApp() {
     apps.push(newApp);
     localStorage.setItem('my_custom_apps', JSON.stringify(apps));
 
+    // إرسال التطبيق أول مرة للبناء والسيرفر
+    fetch(`${BACKEND_URL}/build`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            app_name: newApp.name,
+            package_name: newApp.packageName,
+            app_type: newApp.type,
+            app_url: newApp.url,
+            html_content: newApp.html,
+            app_icon: newApp.icon
+        })
+    }).catch(e => {});
+
     statusDiv.style.display = 'block';
-    statusDiv.innerHTML = '✅ تم إنشاء التطبيق وحفظه في "تطبيقاتي" بنجاح!';
-    
+    statusDiv.innerHTML = '✅ تم إنشاء التطبيق وحفظه بنجاح!';
     setTimeout(() => { switchTab('apps'); }, 1000);
 }
 
@@ -231,7 +237,7 @@ function loadMyApps() {
     document.getElementById('appsListContainer').style.display = 'block';
 
     if(apps.length === 0) {
-        grid.innerHTML = '<p style="text-align:center; color:#888; padding:30px;">لا توجد تطبيقات مصممة حتى الآن. أنشئ تطبيقك الأول!</p>';
+        grid.innerHTML = '<p style="text-align:center; color:#888; padding:30px;">لا توجد تطبيقات مسجلة حالياً.</p>';
         return;
     }
 
@@ -266,26 +272,42 @@ function backToList() {
     loadMyApps();
 }
 
-async function updateAppHtml() {
+// حفظ وتحديث الـ HTML على السيرفر مباشرة ليعمل التحديث اللحظي
+async function updateAppHtmlOnServer() {
     if(!currentSelectedApp) return;
     let newHtml = document.getElementById('dashHtmlCode').value;
     currentSelectedApp.html = newHtml;
 
-    // تحديث في LocalStorage
+    // تحديث محلي
     let apps = JSON.parse(localStorage.getItem('my_custom_apps') || '[]');
     apps = apps.map(a => a.id === currentSelectedApp.id ? currentSelectedApp : a);
     localStorage.setItem('my_custom_apps', JSON.stringify(apps));
 
     let statusDiv = document.getElementById('dashStatus');
     statusDiv.style.display = 'block';
-    statusDiv.innerHTML = '✅ تم حفظ الكود بنجاح وسيتم تحديثه داخل التطبيق لحظياً!';
+    statusDiv.innerHTML = '⏳ جاري تحديث الـ HTML على السيرفر...';
+
+    try {
+        let res = await fetch(`${BACKEND_URL}/update-html`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                package_name: currentSelectedApp.packageName,
+                html_content: newHtml
+            })
+        });
+        let data = await res.json();
+        statusDiv.innerHTML = data.message;
+    } catch(err) {
+        statusDiv.innerHTML = `❌ خطأ في الاتصال: ${err.message}`;
+    }
 }
 
 async function buildSelectedAppAPK() {
     if(!currentSelectedApp) return;
     let statusDiv = document.getElementById('dashStatus');
     statusDiv.style.display = 'block';
-    statusDiv.innerHTML = '⏳ جاري بناء التطبيق وضبط الأيقونة وربط الـ 144Hz (30 ميجا)...';
+    statusDiv.innerHTML = '⏳ جاري بناء ملف APK (30 ميجا)...';
 
     try {
         let res = await fetch(`${BACKEND_URL}/build`, {
@@ -307,7 +329,7 @@ async function buildSelectedAppAPK() {
             statusDiv.innerHTML = `❌ خطأ في البناء: ${data.message}`;
         }
     } catch(err) {
-        statusDiv.innerHTML = `❌ خطأ في الاتصال بالسيرفر: ${err.message}`;
+        statusDiv.innerHTML = `❌ خطأ: ${err.message}`;
     }
 }
 
@@ -315,7 +337,7 @@ async function sendPushNotification() {
     let msg = document.getElementById('notifyMsgText').value;
     let statusDiv = document.getElementById('dashStatus');
     statusDiv.style.display = 'block';
-    statusDiv.innerHTML = '⏳ جاري إرسال الإشعار الصوتي الفوري...';
+    statusDiv.innerHTML = '⏳ جاري إرسال الإشعار...';
 
     try {
         let res = await fetch(`${BACKEND_URL}/api/notify`, {
@@ -326,7 +348,7 @@ async function sendPushNotification() {
         let data = await res.json();
         statusDiv.innerHTML = `✅ ${data.message}`;
     } catch(err) {
-        statusDiv.innerHTML = `❌ خطأ في إرسال الإشعار: ${err.message}`;
+        statusDiv.innerHTML = `❌ خطأ: ${err.message}`;
     }
 }
 </script>
