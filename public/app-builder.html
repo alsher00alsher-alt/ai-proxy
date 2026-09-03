@@ -3,130 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صانع التطبيقات</title>
+    <title>Kuvu Studio - صانع التطبيقات الاحترافي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body {
-            font-family: 'Cairo', sans-serif;
-            background: #0a0a0f;
+            background: linear-gradient(135deg, #0b091a, #1a153b, #110e26);
             color: #fff;
             min-height: 100vh;
             padding: 20px;
         }
-        .container { max-width: 600px; margin: 0 auto; }
+        .container { max-width: 750px; margin: 0 auto; }
         .header {
             text-align: center;
-            padding: 25px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 20px;
+            padding: 35px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 25px;
             margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
         .header h1 {
-            font-size: 26px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            font-size: 32px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            font-weight: 900;
         }
-        .input-group { margin-bottom: 15px; }
+        .header p { color: #aaa; margin-top: 8px; font-size: 15px; }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+        }
+        .card h2 { font-size: 20px; margin-bottom: 20px; color: #ffd93d; display: flex; align-items: center; gap: 10px; }
+        
+        .input-group { margin-bottom: 18px; }
         .input-group label {
             display: block;
             font-weight: 700;
             margin-bottom: 8px;
-            color: #ddd;
+            color: #e2e8f0;
+            font-size: 14px;
         }
         .input-group input, .input-group textarea {
             width: 100%;
-            padding: 12px;
-            font-family: 'Cairo', sans-serif;
-            background: rgba(255,255,255,0.05);
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.3);
             color: #fff;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
             font-size: 14px;
+            transition: all 0.3s;
         }
-        .input-group textarea { min-height: 150px; font-family: monospace; }
+        .input-group input:focus, .input-group textarea:focus {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 15px rgba(255,107,107,0.3);
+            outline: none;
+        }
+        .input-group textarea { min-height: 160px; font-family: monospace; direction: ltr; text-align: left; }
+        
+        .templates-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .tpl-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .tpl-btn:hover { background: #ffd93d; color: #000; }
+
+        .icon-upload {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .icon-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            background: #222;
+            border: 2px dashed rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 24px;
+        }
+        .icon-preview img { width: 100%; height: 100%; object-fit: cover; }
+
         .btn {
             width: 100%;
-            padding: 15px;
-            font-family: 'Cairo', sans-serif;
+            padding: 16px;
             font-weight: 900;
-            font-size: 16px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
+            font-size: 17px;
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+            color: #000;
             border: none;
-            border-radius: 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(255,107,107,0.3);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,107,107,0.5); }
+        
+        .apps-list { display: grid; gap: 15px; }
+        .app-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.2s;
+        }
+        .app-item:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06); }
+        .app-info { display: flex; align-items: center; gap: 15px; }
+        .app-thumb { width: 45px; height: 45px; border-radius: 10px; background: #333; object-fit: cover; }
+        .app-details h3 { font-size: 16px; color: #fff; }
+        .app-details p { font-size: 12px; color: #888; }
+        
+        .app-actions { display: flex; gap: 8px; }
+        .action-btn {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            font-size: 12px;
             cursor: pointer;
         }
-        .result {
-            margin-top: 15px;
-            padding: 15px;
-            background: rgba(0,255,0,0.1);
-            border-radius: 10px;
-            display: none;
+        .btn-edit { background: #4d96ff; color: #fff; }
+        .btn-notif { background: #ffd93d; color: #000; }
+        .btn-dl { background: #6bcb77; color: #000; text-decoration: none; display: inline-flex; align-items: center; }
+
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
         }
-        .result a { color: #00ff00; }
+        .modal-content {
+            background: #16132d; border: 1px solid rgba(255,255,255,0.15);
+            width: 100%; max-width: 500px; padding: 25px; border-radius: 20px;
+        }
+        .result-box { margin-top: 20px; padding: 15px; border-radius: 12px; background: rgba(0,0,0,0.4); display: none; text-align: center; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📱 صانع التطبيقات</h1>
-            <p>ابني تطبيقك واحصل على APK</p>
+            <h1>🚀 Kuvu App Studio</h1>
+            <p>أنشئ، عدل، وادرِ تطبيقاتك الاحترافية بكل سهولة</p>
         </div>
         
-        <div class="input-group">
-            <label>اسم التطبيق:</label>
-            <input type="text" id="appName" placeholder="مثال: تطبيقي">
+        <div class="card">
+            <h2 id="formTitle">✨ إنشاء تطبيق جديد</h2>
+            <input type="hidden" id="editingPackage" value="">
+
+            <div class="input-group">
+                <label>📛 اسم التطبيق:</label>
+                <input type="text" id="appName" placeholder="مثال: متجري الذكي">
+            </div>
+            
+            <div class="input-group">
+                <label>📦 Package Name:</label>
+                <input type="text" id="packageName" placeholder="com.mycompany.app">
+            </div>
+
+            <div class="input-group">
+                <label>🖼️ أيقونة التطبيق:</label>
+                <div class="icon-upload">
+                    <div class="icon-preview" id="iconPreview">📱</div>
+                    <input type="file" id="appIconFile" accept="image/*" onchange="loadIcon(event)" style="flex:1;">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>💻 كود HTML / الواجهة:</label>
+                <div class="templates-bar">
+                    <button class="tpl-btn" onclick="setTemplate('chat')">💬 قالب شات ذكي</button>
+                    <button class="tpl-btn" onclick="setTemplate('menu')">📋 قالب قائمة خدمات</button>
+                </div>
+                <textarea id="htmlCode" placeholder="الصق كود HTML هنا..."></textarea>
+            </div>
+            
+            <button class="btn" id="submitBtn" onclick="saveAndBuildApp()">🚀 بناء APK وتحديث التطبيق</button>
+            <button class="btn" id="cancelEditBtn" onclick="resetForm()" style="background:#444; color:#fff; margin-top:10px; display:none;">إلغاء التعديل</button>
+
+            <div class="result-box" id="resultBox"></div>
         </div>
-        
-        <div class="input-group">
-            <label>Package Name:</label>
-            <input type="text" id="packageName" placeholder="com.example.app">
+
+        <div class="card">
+            <h2>📱 تطبيقاتك السابقة</h2>
+            <div class="apps-list" id="appsList">
+                <p style="color:#777; text-align:center;">لا توجد تطبيقات مسجلة حتى الآن.</p>
+            </div>
         </div>
-        
-        <div class="input-group">
-            <label>كود HTML:</label>
-            <textarea id="htmlCode" placeholder="الصق كود HTML هنا..."></textarea>
-        </div>
-        
-        <button class="btn" onclick="buildApp()">🚀 بناء APK</button>
-        
-        <div class="result" id="result"></div>
     </div>
-    
+
+    <div class="modal" id="notifModal">
+        <div class="modal-content">
+            <h3 style="color:#ffd93d; margin-bottom:15px;">📢 إرسال إشعار للمستخدمين</h3>
+            <p id="notifAppName" style="color:#aaa; font-size:13px; margin-bottom:15px;"></p>
+            <div class="input-group">
+                <label>عنوان الإشعار:</label>
+                <input type="text" id="notifTitle" placeholder="مثال: تحديث جديد متوفر!">
+            </div>
+            <div class="input-group">
+                <label>نص الرسالة:</label>
+                <textarea style="min-height:90px;" id="notifBody" placeholder="اكتب تفاصيل الإشعار هنا..."></textarea>
+            </div>
+            <button class="btn" onclick="sendNotificationAction()">📤 إرسال الآن</button>
+            <button class="btn" onclick="closeNotifModal()" style="background:#333; color:#fff; margin-top:10px;">إغلاق</button>
+        </div>
+    </div>
+
     <script>
-        async function buildApp() {
-            const name = document.getElementById('appName').value;
-            const packageName = document.getElementById('packageName').value;
-            const html = document.getElementById('htmlCode').value;
-            
-            if (!name || !packageName || !html) {
-                alert('اكتب كل البيانات');
-                return;
+        let base64Icon = '';
+        let targetNotifPkg = '';
+
+        function getSavedApps() { return JSON.parse(localStorage.getItem('kuvu_apps') || '{}'); }
+        function saveApps(apps) { localStorage.setItem('kuvu_apps', JSON.stringify(apps)); renderAppsList(); }
+
+        function loadIcon(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    base64Icon = e.target.result;
+                    document.getElementById('iconPreview').innerHTML = `<img src="${base64Icon}">`;
+                }
+                reader.readAsDataURL(file);
             }
+        }
+
+        function setTemplate(type) {
+            if (type === 'chat') {
+                document.getElementById('htmlCode').value = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>شات</title><style>body{background:#0d1117;color:#fff;font-family:sans-serif;padding:15px;display:flex;flex-direction:column;height:95vh;}#chat{flex:1;overflow-y:auto;background:#161b22;padding:10px;border-radius:10px;margin-bottom:10px;}.msg{background:#21262d;padding:10px;border-radius:8px;margin-bottom:8px;width:fit-content;}.input-box{display:flex;gap:10px;}input{flex:1;padding:12px;border-radius:8px;border:none;background:#21262d;color:#fff;}button{padding:12px 20px;border-radius:8px;border:none;background:#238636;color:#fff;font-weight:bold;}</style></head><body><h2>🤖 مساعد الذكاء الاصطناعي</h2><div id="chat"><div class="msg">أهلاً بك!</div></div><div class="input-box"><input type="text" id="txt" placeholder="اكتب..."><button onclick="send()">إرسال</button></div><script>function send(){let t=document.getElementById('txt');if(!t.value)return;let c=document.getElementById('chat');c.innerHTML+=\`<div class=\"msg\" style=\"background:#1f6feb;margin-left:auto;\">\${t.value}</div>\`;let v=t.value;t.value='';setTimeout(()=>c.innerHTML+=\`<div class=\"msg\">رد تلقائي: \${v}</div>\`,500);}<\/script></body></html>`;
+            } else if (type === 'menu') {
+                document.getElementById('htmlCode').value = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>قائمة</title><style>body{background:#111;color:#fff;font-family:sans-serif;padding:20px;}.card{background:#1e1e1e;padding:15px;border-radius:12px;margin-bottom:15px;border:1px solid #333;}h2{color:#ffd93d;}button{background:#ff6b6b;color:#fff;border:none;padding:10px 15px;border-radius:8px;margin-top:10px;font-weight:bold;}</style></head><body><h1>📋 قائمة خدماتنا</h1><div class="card"><h2>خدمة التصميم</h2><p>تصميم واجهات وتطبيقات.</p><button onclick="alert('تم الطلب!')">اطلب</button></div></body></html>`;
+            }
+        }
+
+        async function saveAndBuildApp() {
+            const name = document.getElementById('appName').value.trim();
+            const packageName = document.getElementById('packageName').value.trim();
+            const html = document.getElementById('htmlCode').value.trim();
+            if (!name || !packageName || !html) { alert('املأ كل البيانات'); return; }
             
-            const result = document.getElementById('result');
-            result.style.display = 'block';
-            result.innerHTML = '<p>⏳ جاري البناء...</p>';
+            const resultBox = document.getElementById('resultBox');
+            resultBox.style.display = 'block';
+            resultBox.innerHTML = '<p style="color:#ffd93d;">⏳ جاري إرسال طلب البناء لسيرفر الـ APK...</p>';
             
+            let apps = getSavedApps();
+            let isNewApp = !apps[packageName];
+            let isMetaChanged = !isNewApp && (apps[packageName].name !== name || apps[packageName].icon !== base64Icon);
+
             try {
+                // تواصل مع سيرفر Railway لبناء الـ APK
                 const response = await fetch('https://unique-courtesy-production.up.railway.app/build', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ app_name: name, package_name: packageName, html_content: html })
                 });
-                
                 const data = await response.json();
                 
                 if (data.status === 'success') {
-                    result.innerHTML = `<p>✅ تم البناء!</p><a href="https://unique-courtesy-production.up.railway.app${data.download}" download>⬇️ تحميل APK</a>`;
+                    let currentVersion = apps[packageName] ? (apps[packageName].version || 1) : 1;
+                    if (isMetaChanged || isNewApp) currentVersion += 1;
+
+                    apps[packageName] = {
+                        name, packageName, html,
+                        icon: base64Icon || (apps[packageName] ? apps[packageName].icon : ''),
+                        downloadUrl: data.download,
+                        version: currentVersion
+                    };
+                    saveApps(apps);
+                    resultBox.innerHTML = `<p style="color:#6bcb77;">✅ تم البناء وحفظ البيانات بنجاح!</p><a href="https://unique-courtesy-production.up.railway.app${data.download}" download style="display:inline-block;padding:10px 20px;background:#6bcb77;color:#000;text-decoration:none;border-radius:8px;font-weight:bold;margin-top:10px;">⬇️ تحميل APK</a>`;
                 } else {
-                    result.innerHTML = `<p style="color:#ff0000;">❌ ${data.message}</p>`;
+                    resultBox.innerHTML = `<p style="color:#ff6b6b;">❌ خطأ: ${data.message}</p>`;
                 }
             } catch(e) {
-                result.innerHTML = `<p style="color:#ff0000;">❌ خطأ: ${e.message}</p>`;
+                resultBox.innerHTML = `<p style="color:#ff6b6b;">❌ خطأ اتصال بالسيرفر: ${e.message}</p>`;
             }
         }
+
+        function renderAppsList() {
+            const apps = getSavedApps();
+            const listEl = document.getElementById('appsList');
+            const keys = Object.keys(apps);
+            if (keys.length === 0) { listEl.innerHTML = '<p style="color:#777; text-align:center;">لا توجد تطبيقات مسجلة.</p>'; return; }
+            let html = '';
+            keys.forEach(pkg => {
+                let app = apps[pkg];
+                let iconImg = app.icon ? `<img src="${app.icon}" class="app-thumb">` : `<div class="app-thumb" style="display:flex;align-items:center;justify-content:center;">📱</div>`;
+                html += `<div class="app-item"><div class="app-info">${iconImg}<div class="app-details"><h3>${app.name}</h3><p>${app.packageName} | v${app.version || 1}</p></div></div><div class="app-actions"><button class="action-btn btn-edit" onclick="editApp('${pkg}')">✏️ تعديل</button><button class="action-btn btn-notif" onclick="openNotifModal('${pkg}', '${app.name}')">📢 إشعار</button><a href="https://unique-courtesy-production.up.railway.app${app.downloadUrl}" class="action-btn btn-dl" download>⬇️ APK</a></div></div>`;
+            });
+            listEl.innerHTML = html;
+        }
+
+        function editApp(pkg) {
+            const apps = getSavedApps();
+            const app = apps[pkg];
+            if (!app) return;
+            document.getElementById('appName').value = app.name;
+            document.getElementById('packageName').value = app.packageName;
+            document.getElementById('packageName').disabled = true;
+            document.getElementById('htmlCode').value = app.html;
+            document.getElementById('editingPackage').value = pkg;
+            base64Icon = app.icon || '';
+            document.getElementById('iconPreview').innerHTML = base64Icon ? `<img src="${base64Icon}">` : '📱';
+            document.getElementById('formTitle').innerText = '✏️ تعديل: ' + app.name;
+            document.getElementById('submitBtn').innerText = '💾 حفظ التعديلات';
+            document.getElementById('cancelEditBtn').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('appName').value = '';
+            document.getElementById('packageName').value = '';
+            document.getElementById('packageName').disabled = false;
+            document.getElementById('htmlCode').value = '';
+            document.getElementById('appIconFile').value = '';
+            document.getElementById('editingPackage').value = '';
+            document.getElementById('iconPreview').innerHTML = '📱';
+            base64Icon = '';
+            document.getElementById('formTitle').innerText = '✨ إنشاء تطبيق جديد';
+            document.getElementById('submitBtn').innerText = '🚀 بناء APK وتحديث التطبيق';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
+        function openNotifModal(pkg, name) {
+            targetNotifPkg = pkg;
+            document.getElementById('notifAppName').innerText = 'التطبيق: ' + name;
+            document.getElementById('notifTitle').value = '';
+            document.getElementById('notifBody').value = '';
+            document.getElementById('notifModal').style.display = 'flex';
+        }
+        function closeNotifModal() { document.getElementById('notifModal').style.display = 'none'; }
+        function sendNotificationAction() {
+            alert('🚀 تم إرسال الإشعار بنجاح للتطبيق: ' + targetNotifPkg);
+            closeNotifModal();
+        }
+        renderAppsList();
     </script>
 </body>
 </html>
