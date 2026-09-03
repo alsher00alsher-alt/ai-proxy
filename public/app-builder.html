@@ -1,133 +1,269 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
-<title>Android Creator | Create your real android app | AHMED APP</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta charset="UTF-8" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<style>
-body { margin:0px; font-family:'Roboto',Arial; background-color:#EEEEEE; color:#212121; direction:ltr; }
-header { background-color: #333333; color: #fff; padding: 15px; }
-.top-banner { background-color: rgba(4,131,151,0.9); padding: 30px; color: #fff; text-align: center; }
-.panel-box { background: #FFFFFF; border: 1px solid #CCCCCC; border-radius: 4px; padding: 20px; max-width: 700px; margin: 20px auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-.panel-title { font-size: 18px; font-weight: bold; background-color: #023C44; color: #fff; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; }
-label { display: block; font-weight: bold; margin-top: 10px; font-size: 14px; }
-input[type="text"], textarea, select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-textarea { height: 150px; font-family: monospace; }
-.btn-main { background-color:#023C44; color:#FAFAFA; border:0; border-radius:4px; padding:12px 30px; font-size:16px; cursor:pointer; width:100%; margin-top:15px; font-weight: bold; }
-.btn-main:hover { background-color: #046370; }
-#status { text-align: center; margin-top: 15px; font-weight: bold; font-size: 15px; }
-.grid-sections { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; text-align: center; }
-.sec-item { background: #f9f9f9; border: 1px solid #ddd; padding: 10px; border-radius: 4px; font-size: 13px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHMED APP - المنصة الاحترافية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0f172a; --panel: #1e293b; --primary: #3b82f6; --text: #f8fafc; --border: #334155; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+        .logo { padding: 25px 20px; font-size: 24px; font-weight: 900; color: var(--primary); border-bottom: 1px solid var(--border); letter-spacing: 1px; }
+        .nav-item { padding: 18px 20px; cursor: pointer; transition: 0.3s; font-size: 16px; font-weight: 700; color: #94a3b8; border-bottom: 1px solid var(--border); }
+        .nav-item:hover, .nav-item.active { background: #2563eb15; color: var(--primary); border-right: 4px solid var(--primary); }
+        
+        /* Main Content */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .view-section { display: none; animation: fadeIn 0.4s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .header-title { font-size: 28px; font-weight: 900; margin-bottom: 25px; color: #fff; }
+        
+        /* Cards & Forms */
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 700; color: #cbd5e1; font-size: 15px; }
+        input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; font-size: 15px; outline: none; transition: 0.3s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        textarea { height: 120px; resize: none; direction: ltr; }
+        
+        /* Radios */
+        .radio-group { display: flex; gap: 15px; }
+        .radio-label { display: flex; align-items: center; gap: 8px; cursor: pointer; background: var(--bg); padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); }
+        .radio-label input { width: auto; cursor: pointer; }
+        
+        /* Buttons */
+        .btn { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; border: none; padding: 15px 30px; font-size: 16px; font-weight: 900; border-radius: 10px; cursor: pointer; transition: 0.3s; width: 100%; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        
+        /* Apps Grid */
+        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .app-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .app-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .app-icon { width: 80px; height: 80px; border-radius: 16px; object-fit: cover; margin-bottom: 15px; background: var(--bg); border: 1px solid var(--border); }
+        .app-name { font-weight: 900; font-size: 18px; color: #fff; }
+        .app-pkg { font-size: 12px; color: #64748b; margin-top: 5px; }
+        
+        #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; font-size: 15px; }
+    </style>
 </head>
 <body>
 
-<header>
-    <table style="width:100%;">
-        <tr>
-            <td><span style="font-size:22px; font-weight:bold; color:#00ffcc;">AHMED APP Creator</span></td>
-            <td align="right"><span style="color:#aaa;">AppCreator24 Clone</span></td>
-        </tr>
-    </table>
-</header>
+    <aside class="sidebar">
+        <div class="logo">📱 AHMED APP</div>
+        <div class="nav-item active" onclick="switchView('myAppsView', this)">📂 تطبيقاتي</div>
+        <div class="nav-item" onclick="switchView('createAppView', this)">✨ إنشاء تطبيق جديد</div>
+    </aside>
 
-<div class="top-banner">
-    <span style="font-weight:bold; font-size:xx-large;">Make your app for Android phones and tablets</span><br>
-    <span style="font-size:large;">Create custom APK with frames up to 185!</span>
-</div>
+    <main class="main-content">
+        <div id="myAppsView" class="view-section active">
+            <h2 class="header-title">تطبيقاتي المصممة</h2>
+            <div class="apps-grid" id="appsContainer">
+                </div>
+        </div>
 
-<div class="panel-box">
-    <div class="panel-title">App Name and Icon</div>
-    
-    <label>App name:</label>
-    <input type="text" id="appName" value="AHMED APP">
-    
-    <label>Package Name:</label>
-    <input type="text" id="packageName" value="com.ahmed.app">
-
-    <label>Frames (Up to 185):</label>
-    <select id="maxFrames">
-        <option value="60">60 Frames</option>
-        <option value="120">120 Frames</option>
-        <option value="185" selected>185 Frames (Max Performance)</option>
-    </select>
-    
-    <label>App Icon (Select image from phone):</label>
-    <input type="file" id="iconFile" accept="image/*" style="margin-top:5px;">
-</div>
-
-<div class="panel-box">
-    <div class="panel-title">HTML Content / WebView</div>
-    <label>Source HTML code:</label>
-    <textarea id="htmlContent">&lt;h1 style="text-align:center; color:#023C44;"&gt;Welcome to AHMED APP&lt;/h1&gt;&lt;p style="text-align:center;"&gt;Your app is running smoothly!&lt;/p&gt;</textarea>
-</div>
-
-<div class="panel-box">
-    <div class="panel-title">Available Sections & Services</div>
-    <div class="grid-sections">
-        <div class="sec-item"><i class="fa fa-globe"></i> Web</div>
-        <div class="sec-item"><i class="fa fa-comments"></i> Chat</div>
-        <div class="sec-item"><i class="fa fa-gamepad"></i> Games</div>
-        <div class="sec-item"><i class="fa fa-play"></i> Videos</div>
-        <div class="sec-item"><i class="fa fa-shopping-cart"></i> Products</div>
-        <div class="sec-item"><i class="fa fa-bell"></i> Push</div>
-    </div>
-    
-    <button class="btn-main" onclick="buildApp()">Save and Build APK 🚀</button>
-    <div id="status"></div>
-</div>
-
-<script>
-    async function buildApp() {
-        const name = document.getElementById('appName').value;
-        const packageName = document.getElementById('packageName').value;
-        const html = document.getElementById('htmlContent').value;
-        const iconInput = document.getElementById('iconFile');
-        const status = document.getElementById('status');
-        
-        if(!name || !html) {
-            alert('Please enter App Name and HTML content');
-            return;
-        }
-
-        status.innerHTML = "⏳ Processing and building APK (Frames optimized)...";
-        status.style.color = "#d97706";
-
-        if(iconInput.files && iconInput.files[0]) {
-            const reader = new FileReader();
-            reader.readAsDataURL(iconInput.files[0]);
-            reader.onload = function() {
-                sendToServer(name, packageName, html, reader.result);
-            }
-        } else {
-            sendToServer(name, packageName, html, "");
-        }
-    }
-
-    async function sendToServer(name, packageName, html, icon) {
-        const status = document.getElementById('status');
-        try {
-            const response = await fetch('https://unique-courtesy-production.up.railway.app/build', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ app_name: name, package_name: packageName, html_content: html, app_icon: icon })
-            });
+        <div id="createAppView" class="view-section">
+            <h2 class="header-title">بناء تطبيق جديد</h2>
             
-            const data = await response.json();
-            if(data.status === 'success') {
-                status.innerHTML = `✅ Build successful! <br><a href="https://unique-courtesy-production.up.railway.app${data.download}" style="color:#023C44; text-decoration:underline;" download>📥 Click here to download your APK</a>`;
-            } else {
-                status.innerHTML = `❌ Error: ${data.message}`;
-                status.style.color = "red";
-            }
-        } catch(e) {
-            status.innerHTML = `❌ Connection Error: ${e.message}`;
-            status.style.color = "red";
-        }
-    }
-</script>
+            <div class="card">
+                <div class="form-group">
+                    <label>اسم التطبيق:</label>
+                    <input type="text" id="appName" placeholder="مثال: متجري السري">
+                </div>
+                <div class="form-group">
+                    <label>أيقونة التطبيق (صورة من الهاتف):</label>
+                    <input type="file" id="appIcon" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>Package Name (معرف التطبيق):</label>
+                    <input type="text" id="appPkg" placeholder="com.ahmed.app">
+                </div>
+                <div class="form-group">
+                    <label>قوة الإطارات (Frames):</label>
+                    <select id="appFrames">
+                        <option value="60">60 FPS (عادي)</option>
+                        <option value="120">120 FPS (سريع)</option>
+                        <option value="185" selected>185 FPS (أقصى أداء 🚀)</option>
+                    </select>
+                </div>
+            </div>
 
+            <div class="card">
+                <label>نوع التطبيق:</label>
+                <div class="radio-group form-group">
+                    <label class="radio-label"><input type="radio" name="appType" value="webview" checked onchange="toggleType()"> رابط موقع (WebView)</label>
+                    <label class="radio-label"><input type="radio" name="appType" value="html" onchange="toggleType()"> كود HTML مباشر</label>
+                </div>
+
+                <div id="urlInputGroup" class="form-group">
+                    <label>رابط الموقع (URL):</label>
+                    <input type="url" id="appUrl" placeholder="https://google.com" dir="ltr">
+                </div>
+
+                <div id="htmlInputGroup" class="form-group" style="display:none;">
+                    <label>كود الـ HTML:</label>
+                    <textarea id="appHtml" placeholder="<h1>Hello</h1>"></textarea>
+                </div>
+            </div>
+
+            <button class="btn" onclick="submitApp(false)">🚀 بناء التطبيق الآن</button>
+            <div id="statusMsg"></div>
+        </div>
+
+        <div id="manageAppView" class="view-section">
+            <button class="btn" style="width:auto; padding:10px 20px; margin-bottom:20px; background:#475569;" onclick="switchView('myAppsView', document.querySelectorAll('.nav-item')[0])">🔙 رجوع لتطبيقاتي</button>
+            
+            <h2 class="header-title" id="manageTitle">إدارة التطبيق</h2>
+            
+            <div class="card">
+                <h3 style="margin-bottom:15px; color:var(--primary);">🔔 إرسال إشعار للمستخدمين</h3>
+                <div class="form-group">
+                    <label>عنوان الإشعار:</label>
+                    <input type="text" id="notifTitle" placeholder="تحديث جديد متاح!">
+                </div>
+                <div class="form-group">
+                    <label>محتوى الإشعار:</label>
+                    <input type="text" id="notifBody" placeholder="اضغط هنا لمعرفة المزيد...">
+                </div>
+                <button class="btn btn-success" onclick="sendPush()">إرسال الإشعار الفوري 📤</button>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom:15px; color:#f59e0b;">⚙️ تحديث التطبيق وإعادة البناء</h3>
+                <p style="color:#94a3b8; margin-bottom:15px;">هل قمت بتغيير الرابط أو تريد استخراج ملف APK جديد لتحديث تطبيقك؟</p>
+                <button class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);" onclick="submitApp(true)">🔄 استخراج تحديث APK (Rebuild)</button>
+                <div id="updateStatusMsg"></div>
+            </div>
+            
+            <input type="hidden" id="manageAppId">
+        </div>
+    </main>
+
+    <script>
+        const SERVER = 'https://unique-courtesy-production.up.railway.app';
+        let myApps = JSON.parse(localStorage.getItem('ahmed_apps')) || [];
+
+        function switchView(viewId, navElement) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            if(navElement) {
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                navElement.classList.add('active');
+            }
+            if(viewId === 'myAppsView') renderApps();
+        }
+
+        function toggleType() {
+            const type = document.querySelector('input[name="appType"]:checked').value;
+            document.getElementById('urlInputGroup').style.display = type === 'webview' ? 'block' : 'none';
+            document.getElementById('htmlInputGroup').style.display = type === 'html' ? 'block' : 'none';
+        }
+
+        function renderApps() {
+            const container = document.getElementById('appsContainer');
+            container.innerHTML = '';
+            if(myApps.length === 0) {
+                container.innerHTML = '<p style="color:#64748b;">لا يوجد تطبيقات حتى الآن.. ابدأ بإنشاء تطبيقك الأول!</p>';
+                return;
+            }
+            myApps.forEach(app => {
+                const card = document.createElement('div');
+                card.className = 'app-card';
+                card.onclick = () => openManageView(app.id);
+                card.innerHTML = `
+                    <img src="${app.icon || 'https://via.placeholder.com/80?text=App'}" class="app-icon">
+                    <div class="app-name">${app.name}</div>
+                    <div class="app-pkg">${app.pkg}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openManageView(appId) {
+            const app = myApps.find(a => a.id === appId);
+            if(!app) return;
+            document.getElementById('manageTitle').innerText = `إدارة تطبيق: ${app.name}`;
+            document.getElementById('manageAppId').value = app.id;
+            switchView('manageAppView');
+        }
+
+        async function submitApp(isUpdate) {
+            let name, pkg, type, url, html, iconFile;
+            const statusDiv = document.getElementById(isUpdate ? 'updateStatusMsg' : 'statusMsg');
+            
+            if (isUpdate) {
+                const appId = document.getElementById('manageAppId').value;
+                const app = myApps.find(a => a.id === appId);
+                name = app.name; pkg = app.pkg; type = app.type; url = app.url; html = app.html; iconFile = null;
+            } else {
+                name = document.getElementById('appName').value;
+                pkg = document.getElementById('appPkg').value;
+                type = document.querySelector('input[name="appType"]:checked').value;
+                url = document.getElementById('appUrl').value;
+                html = document.getElementById('appHtml').value;
+                iconFile = document.getElementById('appIcon').files[0];
+                if (!name || !pkg) return alert('يرجى ملء الاسم و Package Name');
+                if (type === 'webview' && !url) return alert('يرجى وضع رابط الموقع');
+            }
+
+            statusDiv.innerHTML = "⏳ جاري الإتصال بالسيرفر وبناء التطبيق...";
+            statusDiv.style.color = "#f59e0b";
+
+            let iconBase64 = isUpdate ? myApps.find(a=>a.id===document.getElementById('manageAppId').value).icon : "";
+            
+            const sendReq = async (base64) => {
+                try {
+                    const res = await fetch(SERVER + '/build', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ app_name: name, package_name: pkg, app_type: type, app_url: url, html_content: html, app_icon: base64 })
+                    });
+                    const data = await res.json();
+                    if(data.status === 'success') {
+                        statusDiv.innerHTML = `✅ اكتمل البناء! <a href="${SERVER}${data.download}" style="color:#10b981;" download>📥 تحميل الـ APK</a>`;
+                        if(!isUpdate) {
+                            myApps.push({ id: Date.now().toString(), name, pkg, type, url, html, icon: base64 });
+                            localStorage.setItem('ahmed_apps', JSON.stringify(myApps));
+                            setTimeout(() => { switchView('myAppsView', document.querySelectorAll('.nav-item')[0]); }, 3000);
+                        }
+                    } else {
+                        statusDiv.innerHTML = `❌ خطأ: ${data.message}`; statusDiv.style.color = "#ef4444";
+                    }
+                } catch(e) {
+                    statusDiv.innerHTML = `❌ خطأ في السيرفر`; statusDiv.style.color = "#ef4444";
+                }
+            };
+
+            if (iconFile && !isUpdate) {
+                const reader = new FileReader();
+                reader.readAsDataURL(iconFile);
+                reader.onload = () => sendReq(reader.result);
+            } else {
+                sendReq(iconBase64);
+            }
+        }
+
+        async function sendPush() {
+            const title = document.getElementById('notifTitle').value;
+            const body = document.getElementById('notifBody').value;
+            if(!title || !body) return alert('اكتب عنوان ومحتوى الإشعار');
+            
+            try {
+                const res = await fetch(SERVER + '/api/notify', { method: 'POST' });
+                const data = await res.json();
+                alert(data.message);
+            } catch(e) { alert('فشل الإرسال'); }
+        }
+
+        // تهيئة الصفحة
+        renderApps();
+    </script>
 </body>
 </html>
