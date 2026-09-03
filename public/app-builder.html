@@ -1,426 +1,361 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AHMED APP BUILDER</title>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
-        body { background: #f0f2f5; color: #333; direction: rtl; }
-        
-        .top-bar {
-            background: #1a1a2e;
-            color: #fff;
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 3px solid #667eea;
-        }
-        .top-bar h1 { font-size: 20px; }
-        .top-bar .badge {
-            background: #667eea;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-        }
-        
-        .main-container {
-            max-width: 1000px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
-        
-        .apps-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .apps-header h2 { font-size: 18px; color: #1a1a2e; }
-        .create-btn {
-            background: #667eea;
-            color: #fff;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .create-btn:hover { background: #5568d3; transform: translateY(-2px); }
-        
-        .apps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        .app-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-            border: 1px solid #e0e0e0;
-        }
-        .app-card:hover {
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            transform: translateY(-5px);
-        }
-        .app-card img {
-            width: 70px;
-            height: 70px;
-            border-radius: 15px;
-            margin-bottom: 10px;
-            object-fit: cover;
-        }
-        .app-card h3 { font-size: 14px; margin-bottom: 5px; }
-        .app-card p { font-size: 11px; color: #888; }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: #fff;
-            border-radius: 15px;
-            padding: 25px;
-            width: 90%;
-            max-width: 500px;
-        }
-        .modal-content h2 {
-            margin-bottom: 20px;
-            color: #1a1a2e;
-        }
-        .form-group { margin-bottom: 15px; }
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #555;
-        }
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-        .form-group textarea { height: 100px; font-family: monospace; }
-        .btn-row { display: flex; gap: 10px; }
-        .btn-primary {
-            flex: 1;
-            background: #667eea;
-            color: #fff;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .btn-secondary {
-            flex: 1;
-            background: #ddd;
-            color: #333;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .dashboard {
-            display: none;
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-        }
-        .dashboard.active { display: block; }
-        .dash-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        .dash-header img {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-        }
-        .dash-menu {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .dash-menu button {
-            padding: 10px 20px;
-            border: 1px solid #ddd;
-            background: #f8f9fa;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: 0.2s;
-        }
-        .dash-menu button:hover, .dash-menu button.active {
-            background: #667eea;
-            color: #fff;
-            border-color: #667eea;
-        }
-    </style>
+<title>Ahmed Creator | Create your real android app</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+body { margin:0; font-family:'Roboto',Arial; }
+table { border-collapse: collapse; }
+a { text-decoration: none; }
+.hidden { display: none; }
+
+.top-bar { background:#333; height:10px; }
+
+.header-logo { padding:15px; border-bottom:1px solid #ccc; }
+.logo-text { font-size:32px; font-weight:bold; color:#023C44; }
+.logo-text span { color:#048397; }
+.stats { font-size:14px; color:#333; }
+
+.hero { background:rgba(4,131,151,0.9); padding:40px; color:#fff; text-align:center; }
+.hero h1 { font-size:34px; }
+.hero p { font-size:22px; }
+.btn-signup {
+    background:#023C44;
+    color:#fff;
+    border:0;
+    border-radius:4px;
+    padding:12px 35px;
+    font-size:20px;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.stats-row { padding:25px; text-align:center; }
+.stat-box { display:inline-block; margin:0 40px; text-align:center; }
+.stat-num { font-size:28px; font-weight:bold; color:#212121; }
+.stat-label { font-size:14px; color:#666; }
+
+.categories { background:#eee; padding:40px; text-align:center; }
+.cat-box { display:inline-block; margin:0 40px; text-align:center; }
+.cat-box i { font-size:45px; color:#048397; }
+.cat-box p { font-size:14px; }
+
+.my-apps { padding:30px; text-align:center; }
+.my-apps h2 { font-size:26px; }
+.apps-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(150px,1fr));
+    gap:15px;
+    max-width:900px;
+    margin:20px auto;
+}
+.app-card {
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:6px;
+    padding:15px;
+    cursor:pointer;
+    transition:0.3s;
+}
+.app-card:hover { box-shadow:0 3px 15px rgba(0,0,0,0.15); }
+.app-card img { width:50px; height:50px; border-radius:10px; margin-bottom:8px; }
+.app-card h3 { font-size:13px; margin:0; }
+
+.signup-section { background:#eee; padding:40px; }
+.form-table { margin:0 auto; }
+.form-table td { padding:3px; }
+.form-table input, .form-table select {
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:4px;
+    width:200px;
+    font-size:13px;
+}
+.btn-submit {
+    background:#023C44;
+    color:#fff;
+    border:0;
+    border-radius:4px;
+    padding:10px 30px;
+    cursor:pointer;
+    font-size:15px;
+}
+.status { text-align:center; font-weight:bold; margin-top:10px; }
+
+footer { background:#212121; color:#999; padding:20px; text-align:center; font-size:13px; }
+footer a { color:#999; margin:0 10px; }
+footer a:hover { color:#fff; }
+
+.dashboard { padding:30px; max-width:800px; margin:0 auto; }
+.dash-header { display:flex; align-items:center; gap:15px; padding:15px; background:#fff; border-radius:8px; margin-bottom:20px; }
+.dash-header img { width:50px; height:50px; border-radius:10px; }
+.dash-menu { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.dash-menu button {
+    padding:10px 18px;
+    border:1px solid #ccc;
+    background:#fff;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:13px;
+    transition:0.2s;
+}
+.dash-menu button:hover, .dash-menu button.active {
+    background:#048397;
+    color:#fff;
+    border-color:#048397;
+}
+</style>
 </head>
 <body>
-    <div class="top-bar">
-        <h1>📱 AHMED APP BUILDER</h1>
-        <span class="badge">الإصدار الاحترافي</span>
+
+<div class="top-bar"></div>
+
+<table style="width:100%">
+<tr>
+<td class="header-logo">
+    <span class="logo-text">Ahmed<span>Creator</span></span>
+    <span class="stats">&nbsp;&nbsp;4.168.483 apps created</span>
+</td>
+</tr>
+</table>
+
+<div class="hero">
+    <h1>Make your app for Android phones and tablets</h1>
+    <p>It's free & Earn money showing ads!</p>
+    <button class="btn-signup" onclick="scrollToSignup()">Sign up</button>
+</div>
+
+<div class="stats-row">
+    <div class="stat-box"><div class="stat-num">1M+</div><div class="stat-label">Clients</div></div>
+    <div class="stat-box"><div class="stat-num">2M+</div><div class="stat-label">Created apps</div></div>
+    <div class="stat-box"><div class="stat-num">5M+</div><div class="stat-label">Daily users</div></div>
+    <div class="stat-box"><div class="stat-num">10+</div><div class="stat-label">Years working</div></div>
+</div>
+
+<div class="categories">
+    <h2 style="font-size:24px;">You decide what kind of app to create</h2>
+    <div class="cat-box"><i class="fa fa-play"></i><p>Videos, Music, Radio</p></div>
+    <div class="cat-box"><i class="fa fa-comments"></i><p>Chat, Forums</p></div>
+    <div class="cat-box"><i class="fa fa-gamepad"></i><p>Games, Quizzes</p></div>
+    <div class="cat-box"><i class="fa fa-plus"></i><p>And much more</p></div>
+</div>
+
+<div class="my-apps" id="myApps">
+    <h2>My Apps</h2>
+    <div class="apps-grid" id="appsGrid">
+        <p style="text-align:center;color:#888;">Loading...</p>
     </div>
-    
-    <div class="main-container">
-        <div class="apps-header">
-            <h2>📱 تطبيقاتي</h2>
-            <button class="create-btn" onclick="openCreateModal()">➕ إنشاء تطبيق جديد</button>
+    <button class="btn-signup" onclick="scrollToSignup()">+ Create New App</button>
+</div>
+
+<div class="signup-section" id="signup">
+    <h2 style="text-align:center;">Sign up</h2>
+    <p style="text-align:center;">Create your app</p>
+    <table class="form-table">
+    <tr>
+        <td>Name:*</td>
+        <td><input type="text" id="appName" placeholder="App Name"></td>
+    </tr>
+    <tr>
+        <td>Package:*</td>
+        <td><input type="text" id="packageName" placeholder="com.example.app"></td>
+    </tr>
+    <tr>
+        <td>Icon:</td>
+        <td><input type="file" id="appIcon" accept="image/*"></td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align:center;padding-top:15px;">
+            <button class="btn-submit" onclick="createApp()">Create App</button>
+        </td>
+    </tr>
+    </table>
+    <div class="status" id="status"></div>
+</div>
+
+<div class="dashboard hidden" id="dashboard">
+    <div class="dash-header">
+        <img id="dashIcon" src="" alt="">
+        <div>
+            <h3 id="dashName" style="margin:0;"></h3>
+            <p id="dashPackage" style="margin:0;font-size:11px;color:#888;"></p>
         </div>
-        
-        <div class="apps-grid" id="appsGrid">
-            <p style="text-align:center;width:100%;color:#888;">لا توجد تطبيقات بعد</p>
-        </div>
+        <button class="btn-submit" onclick="closeDashboard()" style="margin-right:auto;">Back</button>
     </div>
-    
-    <!-- Modal إنشاء تطبيق -->
-    <div class="modal" id="createModal">
-        <div class="modal-content">
-            <h2>➕ إنشاء تطبيق جديد</h2>
-            <div class="form-group">
-                <label>📛 اسم التطبيق:</label>
-                <input type="text" id="appName" placeholder="مثال: تطبيقي">
-            </div>
-            <div class="form-group">
-                <label>📦 Package Name:</label>
-                <input type="text" id="packageName" placeholder="com.example.app">
-            </div>
-            <div class="form-group">
-                <label>🖼️ أيقونة التطبيق:</label>
-                <input type="file" id="appIcon" accept="image/*">
-            </div>
-            <div class="btn-row">
-                <button class="btn-primary" onclick="createApp()">✅ إنشاء</button>
-                <button class="btn-secondary" onclick="closeCreateModal()">إلغاء</button>
-            </div>
-        </div>
+    <div class="dash-menu">
+        <button class="active" onclick="showSection('html')">HTML</button>
+        <button onclick="showSection('chat')">Chat</button>
+        <button onclick="showSection('clock')">Clock</button>
+        <button onclick="showSection('calendar')">Calendar</button>
+        <button onclick="showSection('webview')">WebView</button>
+        <button onclick="showSection('notify')">Notifications</button>
+        <button onclick="buildAPK()" style="background:#27ae60;color:#fff;border:none;">Build APK</button>
     </div>
-    
-    <!-- لوحة تحكم التطبيق -->
-    <div class="dashboard" id="dashboard">
-        <div class="dash-header">
-            <img id="dashIcon" src="" alt="">
-            <div>
-                <h2 id="dashName"></h2>
-                <p id="dashPackage" style="font-size:11px;color:#888;"></p>
-            </div>
-            <button class="btn-secondary" onclick="closeDashboard()" style="width:auto;padding:8px 20px;">↩️ رجوع</button>
-        </div>
-        
-        <div class="dash-menu">
-            <button class="active" onclick="showSection('html')">💻 HTML</button>
-            <button onclick="showSection('chat')">💬 شات</button>
-            <button onclick="showSection('clock')">🕐 ساعة</button>
-            <button onclick="showSection('calendar')">📅 تقويم</button>
-            <button onclick="showSection('webview')">🌐 WebView</button>
-            <button onclick="showSection('notify')">🔔 إشعارات</button>
-            <button onclick="buildAPK()" style="background:#27ae60;color:#fff;border:none;">🚀 بناء APK</button>
-        </div>
-        
-        <div id="sectionContent">
-            <div class="form-group">
-                <label>كود HTML:</label>
-                <textarea id="htmlCode" style="height:200px;"></textarea>
-            </div>
-            <button class="btn-primary" onclick="saveHTML()">💾 حفظ</button>
-        </div>
-        
-        <div id="buildStatus" style="margin-top:15px;text-align:center;font-weight:bold;"></div>
+    <div id="sectionContent">
+        <textarea id="htmlCode" style="width:100%;height:200px;font-family:monospace;padding:10px;border:1px solid #ccc;border-radius:4px;"></textarea>
+        <button class="btn-submit" onclick="saveHTML()">Save</button>
     </div>
+    <div class="status" id="buildStatus"></div>
+</div>
+
+<footer>
+    <a href="#">Facebook</a> | <a href="#">Twitter</a> | <a href="#">Telegram</a>
+    <br><br>
+    2026 AhmedCreator | <a href="#">Terms</a> | <a href="#">About</a>
+</footer>
+
+<script>
+firebase.initializeApp({
+    apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
+    projectId: "game-a1aca",
+    storageBucket: "game-a1aca.firebasestorage.app",
+    appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+});
+const db = firebase.firestore();
+
+let currentAppId = null;
+
+function scrollToSignup() {
+    document.getElementById('signup').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function loadApps() {
+    const grid = document.getElementById('appsGrid');
+    const snapshot = await db.collection('app_builder').get();
+    const apps = [];
+    snapshot.forEach(doc => apps.push({ id: doc.id, ...doc.data() }));
     
-    <script>
-        firebase.initializeApp({
-            apiKey: "AIzaSyBu-9Z0T-OHPzauWXh8hmNSMDZKhAFnkf0",
-            projectId: "game-a1aca",
-            storageBucket: "game-a1aca.firebasestorage.app",
-            appId: "1:598280425947:android:0e4ead8d9b50cfc92157fe"
+    if (apps.length === 0) {
+        grid.innerHTML = '<p style="text-align:center;color:#888;">No apps yet</p>';
+        return;
+    }
+    
+    grid.innerHTML = '';
+    apps.forEach(app => {
+        const card = document.createElement('div');
+        card.className = 'app-card';
+        card.onclick = () => openDashboard(app);
+        card.innerHTML = `
+            <img src="${app.icon || 'https://via.placeholder.com/50'}" alt="">
+            <h3>${app.name}</h3>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+async function createApp() {
+    const name = document.getElementById('appName').value;
+    const packageName = document.getElementById('packageName').value;
+    const iconFile = document.getElementById('appIcon').files[0];
+    const status = document.getElementById('status');
+    
+    if (!name || !packageName) {
+        status.innerHTML = 'Please fill all fields';
+        status.style.color = '#dc2626';
+        return;
+    }
+    
+    status.innerHTML = 'Creating...';
+    status.style.color = '#d97706';
+    
+    let icon = '';
+    if (iconFile) {
+        icon = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(iconFile);
         });
-        const db = firebase.firestore();
-        
-        let currentAppId = null;
-        
-        async function loadApps() {
-            const grid = document.getElementById('appsGrid');
-            grid.innerHTML = '<p style="text-align:center;width:100%;color:#888;">⏳ تحميل...</p>';
-            
-            const snapshot = await db.collection('app_builder').get();
-            const apps = [];
-            snapshot.forEach(doc => apps.push({ id: doc.id, ...doc.data() }));
-            
-            if (apps.length === 0) {
-                grid.innerHTML = '<p style="text-align:center;width:100%;color:#888;">لا توجد تطبيقات بعد</p>';
-                return;
-            }
-            
-            grid.innerHTML = '';
-            apps.forEach(app => {
-                const card = document.createElement('div');
-                card.className = 'app-card';
-                card.onclick = () => openDashboard(app);
-                card.innerHTML = `
-                    <img src="${app.icon || 'https://via.placeholder.com/70'}" alt="${app.name}">
-                    <h3>${app.name}</h3>
-                    <p>${app.packageName}</p>
-                `;
-                grid.appendChild(card);
-            });
-        }
-        
-        function openCreateModal() {
-            document.getElementById('createModal').classList.add('active');
-        }
-        
-        function closeCreateModal() {
-            document.getElementById('createModal').classList.remove('active');
-        }
-        
-        async function createApp() {
-            const name = document.getElementById('appName').value;
-            const packageName = document.getElementById('packageName').value;
-            const iconFile = document.getElementById('appIcon').files[0];
-            
-            if (!name || !packageName) {
-                alert('اكتب اسم التطبيق و Package Name');
-                return;
-            }
-            
-            let icon = '';
-            if (iconFile) {
-                icon = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(iconFile);
-                });
-            }
-            
-            await db.collection('app_builder').add({
-                name,
-                packageName,
-                icon,
-                html: '<h1>مرحباً</h1>',
-                created: new Date().toISOString()
-            });
-            
-            closeCreateModal();
-            loadApps();
-        }
-        
-        function openDashboard(app) {
-            currentAppId = app.id;
-            document.getElementById('dashboard').classList.add('active');
-            document.getElementById('dashName').textContent = app.name;
-            document.getElementById('dashPackage').textContent = app.packageName;
-            document.getElementById('dashIcon').src = app.icon || 'https://via.placeholder.com/60';
-            document.getElementById('htmlCode').value = app.html || '';
-            document.querySelector('.apps-grid').style.display = 'none';
-            document.querySelector('.apps-header').style.display = 'none';
-        }
-        
-        function closeDashboard() {
-            document.getElementById('dashboard').classList.remove('active');
-            document.querySelector('.apps-grid').style.display = 'grid';
-            document.querySelector('.apps-header').style.display = 'flex';
-        }
-        
-        function showSection(section) {
-            const content = document.getElementById('sectionContent');
-            
-            if (section === 'html') {
-                content.innerHTML = `
-                    <div class="form-group">
-                        <label>كود HTML:</label>
-                        <textarea id="htmlCode" style="height:200px;">${document.getElementById('htmlCode').value}</textarea>
-                    </div>
-                    <button class="btn-primary" onclick="saveHTML()">💾 حفظ</button>
-                `;
-            } else if (section === 'chat') {
-                content.innerHTML = `<p>💬 قسم الشات - جاهز للتفعيل</p>`;
-            } else if (section === 'clock') {
-                content.innerHTML = `<p>🕐 قسم الساعة - جاهز للتفعيل</p>`;
-            } else if (section === 'calendar') {
-                content.innerHTML = `<p>📅 قسم التقويم - جاهز للتفعيل</p>`;
-            } else if (section === 'webview') {
-                content.innerHTML = `<p>🌐 قسم WebView - جاهز للتفعيل</p>`;
-            } else if (section === 'notify') {
-                content.innerHTML = `
-                    <div class="form-group">
-                        <label>عنوان الإشعار:</label>
-                        <input type="text" id="notifyTitle">
-                    </div>
-                    <div class="form-group">
-                        <label>نص الإشعار:</label>
-                        <input type="text" id="notifyBody">
-                    </div>
-                    <button class="btn-primary" onclick="sendNotification()">📨 إرسال</button>
-                `;
-            }
-        }
-        
-        async function saveHTML() {
-            const html = document.getElementById('htmlCode').value;
-            await db.collection('app_builder').doc(currentAppId).update({ html });
-            alert('✅ تم الحفظ');
-        }
-        
-        function sendNotification() {
-            alert('📨 سيتم الإرسال للمستخدمين');
-        }
-        
-        async function buildAPK() {
-            const status = document.getElementById('buildStatus');
-            status.innerHTML = '⏳ جاري البناء...';
-            
-            const doc = await db.collection('app_builder').doc(currentAppId).get();
-            const app = doc.data();
-            
-            const response = await fetch('https://unique-courtesy-production.up.railway.app/build', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    app_name: app.name,
-                    package_name: app.packageName,
-                    html_content: app.html
-                })
-            });
-            
-            const data = await response.json();
-            if (data.status === 'success') {
-                status.innerHTML = `<a href="https://unique-courtesy-production.up.railway.app${data.download}" download>✅ اضغط للتحميل</a>`;
-            } else {
-                status.innerHTML = `❌ ${data.message}`;
-            }
-        }
-        
-        loadApps();
-    </script>
+    }
+    
+    await db.collection('app_builder').add({
+        name, packageName, icon,
+        html: '<h1>Welcome to ' + name + '</h1>',
+        created: new Date().toISOString()
+    });
+    
+    status.innerHTML = 'App created!';
+    status.style.color = '#27ae60';
+    
+    document.getElementById('appName').value = '';
+    document.getElementById('packageName').value = '';
+    document.getElementById('appIcon').value = '';
+    
+    loadApps();
+}
+
+function openDashboard(app) {
+    currentAppId = app.id;
+    document.getElementById('dashboard').classList.remove('hidden');
+    document.getElementById('myApps').classList.add('hidden');
+    document.getElementById('signup').classList.add('hidden');
+    document.getElementById('dashName').textContent = app.name;
+    document.getElementById('dashPackage').textContent = app.packageName;
+    document.getElementById('dashIcon').src = app.icon || 'https://via.placeholder.com/50';
+    document.getElementById('htmlCode').value = app.html || '';
+}
+
+function closeDashboard() {
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('myApps').classList.remove('hidden');
+    document.getElementById('signup').classList.remove('hidden');
+}
+
+function showSection(section) {
+    const content = document.getElementById('sectionContent');
+    if (section === 'html') {
+        content.innerHTML = `<textarea id="htmlCode" style="width:100%;height:200px;font-family:monospace;padding:10px;border:1px solid #ccc;border-radius:4px;"></textarea>
+        <button class="btn-submit" onclick="saveHTML()">Save</button>`;
+        document.getElementById('htmlCode').value = document.querySelector('#dashPackage').textContent ? '<h1>App</h1>' : '';
+    } else if (section === 'chat') {
+        content.innerHTML = '<p>Chat section - ready</p>';
+    } else if (section === 'clock') {
+        content.innerHTML = '<p>Clock section - ready</p>';
+    } else if (section === 'calendar') {
+        content.innerHTML = '<p>Calendar section - ready</p>';
+    } else if (section === 'webview') {
+        content.innerHTML = '<p>WebView section - ready</p>';
+    } else if (section === 'notify') {
+        content.innerHTML = '<p>Notifications - ready</p>';
+    }
+}
+
+async function saveHTML() {
+    const html = document.getElementById('htmlCode').value;
+    await db.collection('app_builder').doc(currentAppId).update({ html });
+    alert('Saved!');
+}
+
+async function buildAPK() {
+    const status = document.getElementById('buildStatus');
+    status.innerHTML = 'Building...';
+    
+    const doc = await db.collection('app_builder').doc(currentAppId).get();
+    const app = doc.data();
+    
+    const response = await fetch('https://unique-courtesy-production.up.railway.app/build', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            app_name: app.name,
+            package_name: app.packageName,
+            html_content: app.html
+        })
+    });
+    
+    const data = await response.json();
+    if (data.status === 'success') {
+        status.innerHTML = `<a href="https://unique-courtesy-production.up.railway.app${data.download}" download>Download APK</a>`;
+    } else {
+        status.innerHTML = data.message;
+    }
+}
+
+loadApps();
+</script>
 </body>
 </html>
