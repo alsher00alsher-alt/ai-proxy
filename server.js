@@ -5,34 +5,54 @@ const cors = require('cors');
 const fs = require('fs');
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 app.get('/', (req, res) => {
-    res.json({ status: 'running', service: 'APK Builder' });
+    res.json({ status: 'running', service: 'AHMED APP Creator Pro' });
 });
 
 app.post('/build', (req, res) => {
-    const { app_name, package_name, html_content } = req.body;
-    if (!app_name || !html_content) {
-        return res.json({ status: 'error', message: 'محتاج اسم التطبيق والمحتوى' });
-    }
-    
-    const safeName = (package_name || 'com.app.' + app_name.toLowerCase()).replace(/[^a-z0-9.]/g, '');
-    const appDir = `/app/apps/${safeName}`;
-    fs.mkdirSync(`${appDir}/assets`, { recursive: true });
-    fs.mkdirSync(`${appDir}/classes`, { recursive: true });
-    
-    const javaDir = `${appDir}/java/${safeName.replace(/\./g, '/')}`;
-    fs.mkdirSync(javaDir, { recursive: true });
-    
-    fs.writeFileSync(`${appDir}/assets/index.html`, html_content);
-    
-    // Manifest محدث ليدعم أندرويد 16 (API 36) كهدف تشغيل
-    fs.writeFileSync(`${appDir}/AndroidManifest.xml`, `<?xml version="1.0" encoding="utf-8"?>
+    try {
+        const { app_name, package_name, html_content, app_icon } = req.body;
+        if (!app_name || !html_content) {
+            return res.json({ status: 'error', message: 'اسم التطبيق ومحتوى HTML مطلوبان' });
+        }
+        
+        const safeName = (package_name || 'com.ahmed.' + app_name.toLowerCase()).replace(/[^a-z0-9.]/g, '');
+        const appDir = `/app/apps/${safeName}`;
+        
+        if (fs.existsSync(appDir)) {
+            fs.rmSync(appDir, { recursive: true, force: true });
+        }
+
+        fs.mkdirSync(`${appDir}/assets`, { recursive: true });
+        fs.mkdirSync(`${appDir}/classes`, { recursive: true });
+        fs.mkdirSync(`${appDir}/res/mipmap`, { recursive: true });
+        
+        let hasIcon = false;
+        if (app_icon && typeof app_icon === 'string' && app_icon.startsWith('data:image')) {
+            try {
+                const base64Data = app_icon.replace(/^data:image\/\w+;base64,/, '');
+                fs.writeFileSync(`${appDir}/res/mipmap/ic_launcher.png`, Buffer.from(base64Data, 'base64'));
+                hasIcon = true;
+            } catch (err) {
+                console.error('Icon error:', err);
+            }
+        }
+        
+        const javaDir = `${appDir}/java/${safeName.replace(/\./g, '/')}`;
+        fs.mkdirSync(javaDir, { recursive: true });
+        
+        fs.writeFileSync(`${appDir}/assets/index.html`, html_content);
+        
+        const iconAttr = hasIcon ? 'android:icon="@mipmap/ic_launcher"' : '';
+        
+        fs.writeFileSync(`${appDir}/AndroidManifest.xml`, `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${safeName}">
-    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="36" />
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <application android:label="${app_name}" android:usesCleartextTraffic="true" android:enableOnBackInvokedCallback="true">
+    <application android:label="${app_name}" ${iconAttr} android:usesCleartextTraffic="true">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,9 +61,9 @@ app.post('/build', (req, res) => {
         </activity>
     </application>
 </manifest>`);
-    
-    const javaFile = `${javaDir}/MainActivity.java`;
-    fs.writeFileSync(javaFile, `package ${safeName};
+        
+        const javaFile = `${javaDir}/MainActivity.java`;
+        fs.writeFileSync(javaFile, `package ${safeName};
 import android.app.Activity;
 import android.os.Bundle;
 import android.webkit.WebView;
@@ -59,34 +79,40 @@ public class MainActivity extends Activity {
         setContentView(w);
     }
 }`);
-    
-    // أمر البناء والتوقيع المتوافق مع أندرويد 16
-    const buildCmd = `cd ${appDir} && \
-    javac -source 1.8 -target 1.8 -classpath $ANDROID_HOME/platforms/android-34/android.jar -d classes ${javaFile} && \
-    find classes -name "*.class" > classes.txt && \
-    $ANDROID_HOME/build-tools/34.0.0/d8 --release --lib $ANDROID_HOME/platforms/android-34/android.jar --output . $(cat classes.txt) && \
-    $ANDROID_HOME/build-tools/34.0.0/aapt2 link -o unaligned.apk -I $ANDROID_HOME/platforms/android-34/android.jar --manifest AndroidManifest.xml -A assets && \
-    $ANDROID_HOME/build-tools/34.0.0/aapt add unaligned.apk classes.dex && \
-    $ANDROID_HOME/build-tools/34.0.0/zipalign -p -f 4 unaligned.apk ${safeName}.apk && \
-    keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US" 2>/dev/null || true && \
-    $ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks debug.keystore --ks-pass pass:android --key-pass pass:android ${safeName}.apk`;
-    
-    exec(buildCmd, { timeout: 60000 }, (err, stdout, stderr) => {
-        if (err) {
-            return res.json({ status: 'error', message: (stderr || err.message).slice(0, 300) });
-        }
-        res.json({ status: 'success', app_name, download: `/download/${safeName}.apk` });
-    });
-});
-
-app.get('/download/:file', (req, res) => {
-    const appName = req.params.file.replace('.apk', '');
-    const filePath = `/app/apps/${appName}/${req.params.file}`;
-    if (fs.existsSync(filePath)) {
-        res.download(filePath);
-    } else {
-        res.json({ status: 'error', message: 'ملف غير موجود' });
+        
+        const buildCmd = `cd ${appDir} && \
+        javac -source 1.8 -target 1.8 -classpath $ANDROID_HOME/platforms/android-34/android.jar -d classes ${javaFile} && \
+        find classes -name "*.class" > classes.txt && \
+        $ANDROID_HOME/build-tools/34.0.0/d8 --release --lib $ANDROID_HOME/platforms/android-34/android.jar --output . $(cat classes.txt) && \
+        $ANDROID_HOME/build-tools/34.0.0/aapt2 link -o unaligned.apk -I $ANDROID_HOME/platforms/android-34/android.jar --manifest AndroidManifest.xml -R res -A assets && \
+        $ANDROID_HOME/build-tools/34.0.0/aapt add unaligned.apk classes.dex && \
+        $ANDROID_HOME/build-tools/34.0.0/zipalign -p -f 4 unaligned.apk ${safeName}.apk && \
+        keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US" 2>/dev/null || true && \
+        $ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks debug.keystore --ks-pass pass:android --key-pass pass:android ${safeName}.apk`;
+        
+        exec(buildCmd, { timeout: 60000 }, (err, stdout, stderr) => {
+            if (err) {
+                return res.json({ status: 'error', message: (stderr || err.message).slice(0, 300) });
+            }
+            res.json({ status: 'success', app_name, download: `/download/${safeName}.apk` });
+        });
+    } catch (e) {
+        res.json({ status: 'error', message: 'Server exception: ' + e.message });
     }
 });
 
-app.listen(process.env.PORT || 8080, () => console.log('Running'));
+app.get('/download/:file', (req, res) => {
+    const fileName = req.params.file;
+    const appName = fileName.replace('.apk', '');
+    const filePath = `/app/apps/${appName}/${fileName}`;
+    
+    if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.sendFile(filePath);
+    } else {
+        res.status(404).json({ status: 'error', message: 'ملف الـ APK غير موجود' });
+    }
+});
+
+app.listen(process.env.PORT || 8080, () => console.log('AHMED APP Server running smoothly'));
