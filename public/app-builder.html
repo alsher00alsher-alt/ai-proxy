@@ -1,400 +1,511 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ahmed App Builder</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#070b12;color:#fff;font-family:Arial,sans-serif}
-header{padding:18px;text-align:center;background:#0d1420;border-bottom:1px solid #202b3a}
-header h1{margin:0;color:#00e5ff;font-size:23px}
-header p{margin:7px 0 0;color:#91a0b5;font-size:13px}
-nav{display:flex;gap:8px;padding:10px;background:#0d1420;position:sticky;top:0;z-index:5}
-nav button{flex:1;border:0;border-radius:12px;padding:13px 5px;background:#172131;color:#fff;font-weight:bold}
-nav button.active{background:#00a9c7}
-.page{display:none;padding:15px;max-width:800px;margin:auto}
-.page.active{display:block}
-.card{background:#101824;border:1px solid #202d3d;border-radius:16px;padding:16px;margin-bottom:13px}
-h2{margin-top:0;color:#00e5ff}
-label{display:block;margin:12px 0 6px;color:#b9c5d5}
-input,textarea,select{width:100%;padding:13px;border:1px solid #29384b;border-radius:11px;background:#080e17;color:#fff;outline:none}
-textarea{min-height:220px;resize:vertical;font-family:monospace;direction:ltr;text-align:left}
-button.primary{width:100%;border:0;border-radius:12px;padding:14px;background:#00b8d9;color:#001018;font-weight:bold;margin-top:13px}
-button.danger{background:#c62828;color:#fff}
-button.secondary{background:#1b293b;color:#fff}
-.apps{display:grid;gap:12px}
-.app{background:#101824;border:1px solid #26364a;border-radius:15px;padding:14px}
-.app-top{display:flex;align-items:center;gap:12px}
-.icon{width:55px;height:55px;border-radius:14px;object-fit:cover;background:#172333}
-.app-name{font-weight:bold;font-size:17px}
-.pkg{font-size:11px;color:#8290a4;margin-top:4px;direction:ltr;text-align:right}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
-.actions button{border:0;border-radius:9px;padding:10px;background:#1b293b;color:#fff;font-weight:bold}
-.status{text-align:center;margin-top:12px;color:#ffd54f;white-space:pre-wrap}
-.download{display:block;text-align:center;background:#16a05d;color:#fff;text-decoration:none;padding:13px;border-radius:11px;margin-top:10px;font-weight:bold}
-.empty{text-align:center;color:#77869a;padding:30px}
-.phone-wrap{display:flex;justify-content:center}
-.phone{width:min(390px,100%);height:690px;border:9px solid #202733;border-radius:35px;overflow:hidden;background:#fff;box-shadow:0 0 35px #000}
-.phone iframe{width:100%;height:100%;border:0;background:#fff}
-.preview-head{display:flex;gap:8px;margin-bottom:12px}
-.preview-head button{flex:1;border:0;border-radius:10px;padding:11px;background:#182638;color:#fff}
-.file{margin-top:8px;color:#8fa0b5;font-size:12px}
+body{margin:0;background:#080d18;color:#fff;font-family:system-ui,Arial}
+button,input,textarea,select{font:inherit}
+button{border:0;cursor:pointer}
+.top{background:#0e1628;border-bottom:1px solid #263653;padding:14px}
+.head{max-width:1100px;margin:auto;text-align:center;font-size:21px;font-weight:900}
+.head span{color:#7180ff}
+.nav{max-width:1100px;margin:12px auto 0;display:flex;gap:8px}
+.nav button{flex:1;padding:12px;border-radius:12px;background:#18243b;color:#b9c5dc;font-weight:800}
+.nav button.active{background:#6675ff;color:white}
+main{max-width:1100px;margin:auto;padding:18px}
+.page{display:none}.page.active{display:block}
+.card{background:#0f182b;border:1px solid #243451;border-radius:18px;padding:17px;margin-bottom:15px}
+h2{margin:0 0 15px;font-size:19px}
+label{display:block;color:#aebbd3;font-size:13px;margin:11px 0 6px}
+input,textarea,select{width:100%;background:#091120;color:#fff;border:1px solid #2c3c5c;border-radius:11px;padding:12px;outline:0}
+input:focus,textarea:focus,select:focus{border-color:#7180ff}
+textarea{min-height:300px;direction:ltr;text-align:left;resize:vertical}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:11px 15px;border-radius:11px;font-weight:800}
+.primary{background:#6675ff;color:#fff}
+.secondary{background:#1b2943;color:#fff}
+.danger{background:#522333;color:#ffdfe6}
+.full{width:100%}
+.iconbox{display:flex;align-items:center;gap:12px}
+.icon{width:65px;height:65px;border-radius:15px;object-fit:cover;background:#1b2943;border:1px solid #405170}
+.project{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#091120;border:1px solid #22314c;border-radius:14px;padding:11px;margin:8px 0}
+.projectInfo{display:flex;align-items:center;gap:10px;min-width:0}
+.projectInfo img{width:48px;height:48px;border-radius:12px;object-fit:cover;background:#18243b}
+.small{font-size:12px;color:#93a1bc}
+.status{margin-top:12px;background:#091120;border-radius:11px;padding:12px;white-space:pre-wrap}
+.phoneArea{display:flex;justify-content:center;align-items:center;min-height:700px;background:radial-gradient(circle,#202d52,#080d18);border-radius:15px;padding:20px}
+.phone{width:min(390px,92vw);height:670px;background:white;border:8px solid #202637;border-radius:38px;overflow:hidden;position:relative;box-shadow:0 25px 60px #0008}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;background:#202637;border-radius:0 0 15px 15px;z-index:3}
+iframe{width:100%;height:100%;border:0;background:#fff}
+.empty{text-align:center;color:#8795b0;padding:30px}
+.loading{text-align:center;padding:20px;color:#9eacd0}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.project{align-items:flex-start;flex-direction:column}.project .row{width:100%}.project .btn{flex:1}}
 </style>
 </head>
+
 <body>
 
-<header>
-<h1>📱 Ahmed App Builder</h1>
-<p>أنشئ تطبيقك واحفظه وابنِ APK حقيقي</p>
+<header class="top">
+<div class="head">📱 <span>Ahmed</span> App Builder</div>
+<div class="nav">
+<button class="active" data-page="create">➕ إنشاء</button>
+<button data-page="apps">📱 تطبيقاتي</button>
+<button data-page="previewPage">👁️ معاينة</button>
+</div>
 </header>
 
-<nav>
-<button id="nav-create" class="active" onclick="showPage('create')">➕ إنشاء</button>
-<button id="nav-apps" onclick="showPage('apps')">📱 تطبيقاتي</button>
-<button id="nav-preview" onclick="showPage('preview')">👁️ معاينة</button>
-</nav>
+<main>
 
 <section id="create" class="page active">
+
 <div class="card">
-<h2>➕ إنشاء تطبيق</h2>
+<h2>➕ إنشاء تطبيق جديد</h2>
 
 <label>اسم التطبيق</label>
-<input id="name" placeholder="مثال: Ahmed AI">
+<input id="name" value="تطبيقي الجديد" maxlength="60">
 
+<div class="grid">
+<div>
 <label>Package Name</label>
-<input id="packageName" placeholder="com.ahmed.myapp">
+<input id="pkg" value="com.ahmed.myapp" dir="ltr">
+</div>
 
-<label>أيقونة التطبيق</label>
-<input id="icon" type="file" accept="image/*">
-<div id="iconStatus" class="file"></div>
-
+<div>
 <label>نوع التطبيق</label>
-<select id="type" onchange="changeType()">
+<select id="type">
 <option value="HTML">HTML</option>
-<option value="WEBVIEW">WEB VIEW</option>
+<option value="WebView">WebView</option>
 </select>
-
-<div id="htmlBox">
-<label>كود HTML</label>
-<textarea id="html" placeholder="ضع كود HTML هنا..."></textarea>
+</div>
 </div>
 
 <div id="urlBox" style="display:none">
 <label>رابط الموقع</label>
-<input id="url" type="url" placeholder="https://example.com" dir="ltr">
+<input id="url" placeholder="https://example.com" dir="ltr">
 </div>
 
-<button class="primary" onclick="saveApp()">💾 حفظ التطبيق</button>
-<div id="saveStatus" class="status"></div>
+<label>أيقونة التطبيق</label>
+<div class="iconbox">
+<img id="iconPreview" class="icon">
+<input id="iconFile" type="file" accept="image/png,image/jpeg,image/webp">
 </div>
+
+<label>كود HTML</label>
+<textarea id="html"></textarea>
+
+<div class="row" style="margin-top:12px">
+<button class="btn primary" id="save">💾 حفظ التطبيق</button>
+<button class="btn secondary" id="preview">👁️ معاينة</button>
+</div>
+
+<div id="saveStatus" class="status">جاهز.</div>
+</div>
+
 </section>
 
 <section id="apps" class="page">
+
 <div class="card">
 <h2>📱 تطبيقاتي</h2>
-<button class="primary secondary" onclick="loadApps()">🔄 تحديث</button>
+<div id="appsList"><div class="loading">جاري تحميل التطبيقات...</div></div>
 </div>
-<div id="appsList" class="apps"></div>
+
 </section>
 
-<section id="preview" class="page">
+<section id="previewPage" class="page">
+
 <div class="card">
-<h2>👁️ معاينة التطبيقات</h2>
-<div id="previewList" class="apps"></div>
+<h2>👁️ معاينة التطبيق</h2>
+<div id="previewName" class="small" style="margin-bottom:12px">لم يتم اختيار تطبيق</div>
+
+<div class="phoneArea">
+<div class="phone">
+<div class="notch"></div>
+<iframe id="frame"></iframe>
+</div>
+</div>
 </div>
 
-<div id="phoneBox" style="display:none">
-<div class="preview-head">
-<button onclick="closePreview()">⬅️ رجوع</button>
-<button onclick="reloadPreview()">🔄 تحديث</button>
-</div>
-<div class="phone-wrap">
-<div class="phone">
-<iframe id="previewFrame"></iframe>
-</div>
-</div>
-</div>
 </section>
+
+</main>
 
 <script>
-const API="https://unique-courtesy-production.up.railway.app";
-let editingId=null;
-let selectedIcon="";
+const API='https://unique-courtesy-production.up.railway.app';
 
-function showPage(page){
-document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
-document.getElementById(page).classList.add("active");
-document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
-document.getElementById("nav-"+page).classList.add("active");
+const $=x=>document.getElementById(x);
 
-if(page==="apps") loadApps();
-if(page==="preview") loadPreviewApps();
+let apps=[];
+let currentApp=null;
+let iconData='';
+
+const defaultHTML=`<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{
+margin:0;
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+font-family:system-ui;
+background:#fff;
+color:#111827;
+text-align:center;
+padding:20px
 }
-
-function changeType(){
-const t=document.getElementById("type").value;
-document.getElementById("htmlBox").style.display=t==="HTML"?"block":"none";
-document.getElementById("urlBox").style.display=t==="WEBVIEW"?"block":"none";
+.box{max-width:330px}
+button{
+border:0;
+border-radius:12px;
+padding:13px 22px;
+background:#6675ff;
+color:white;
+font-weight:800
 }
+</style>
+</head>
+<body>
+<div class="box">
+<h1>مرحباً بك 👋</h1>
+<p>هذا التطبيق تم إنشاؤه باستخدام Ahmed App Builder.</p>
+<button onclick="alert('أهلاً بك ❤️')">اضغط هنا</button>
+</div>
+</body>
+</html>`;
 
-document.getElementById("icon").addEventListener("change",function(){
-const file=this.files[0];
-if(!file)return;
-const reader=new FileReader();
-reader.onload=()=>{selectedIcon=reader.result;document.getElementById("iconStatus").textContent="✅ تم اختيار الأيقونة"};
-reader.readAsDataURL(file);
+$('html').value=defaultHTML;
+
+document.querySelectorAll('.nav button').forEach(btn=>{
+btn.onclick=()=>{
+document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+btn.classList.add('active');
+$(btn.dataset.page).classList.add('active');
+if(btn.dataset.page==='apps')loadApps();
+};
 });
 
-async function saveApp(){
-const status=document.getElementById("saveStatus");
-status.textContent="⏳ جاري الحفظ...";
-
-const data={
-name:document.getElementById("name").value.trim(),
-packageName:document.getElementById("packageName").value.trim(),
-icon:selectedIcon,
-type:document.getElementById("type").value,
-html:document.getElementById("html").value,
-url:document.getElementById("url").value.trim()
+$('type').onchange=()=>{
+$('urlBox').style.display=$('type').value==='WebView'?'block':'none';
 };
 
-if(!data.name){
-status.textContent="❌ اكتب اسم التطبيق";
-return;
+$('iconFile').onchange=e=>{
+const f=e.target.files[0];
+if(!f)return;
+const reader=new FileReader();
+reader.onload=()=>{
+iconData=reader.result;
+$('iconPreview').src=iconData;
+};
+reader.readAsDataURL(f);
+};
+
+$('preview').onclick=()=>{
+showPreview({
+name:$('name').value,
+type:$('type').value,
+html:$('html').value,
+url:$('url').value
+});
+};
+
+function showPreview(app){
+currentApp=app;
+$('previewName').textContent='📱 '+(app.name||'التطبيق');
+
+document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+
+document.querySelector('[data-page="previewPage"]').classList.add('active');
+$('previewPage').classList.add('active');
+
+if(app.type==='WebView' && app.url){
+$('frame').src=app.url;
+$('frame').removeAttribute('srcdoc');
+}else{
+$('frame').srcdoc=app.html||defaultHTML;
+$('frame').removeAttribute('src');
+}
 }
 
-if(data.type==="HTML"&&!data.html){
-status.textContent="❌ اكتب كود HTML";
-return;
-}
+async function saveApp(){
 
-if(data.type==="WEBVIEW"&&!data.url){
-status.textContent="❌ اكتب رابط الموقع";
-return;
-}
+const name=$('name').value.trim();
+const packageName=$('pkg').value.trim();
+const type=$('type').value;
+const url=$('url').value.trim();
+const html=$('html').value;
+
+if(!name)return alert('اكتب اسم التطبيق');
+
+$('save').disabled=true;
+$('saveStatus').textContent='⏳ جاري حفظ التطبيق...';
 
 try{
-const endpoint=editingId?`${API}/apps/${editingId}`:`${API}/apps`;
-const method=editingId?"PUT":"POST";
 
-const res=await fetch(endpoint,{
-method,
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify(data)
+const response=await fetch(API+'/apps',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+name:name,
+packageName:packageName,
+type:type,
+html:html,
+url:url,
+icon:iconData
+})
 });
 
-const result=await res.json();
+const data=await response.json();
 
-if(!res.ok)throw new Error(result.error||"فشل الحفظ");
+if(!response.ok){
+throw new Error(data.message||data.error||'فشل حفظ التطبيق');
+}
 
-status.textContent="✅ تم حفظ التطبيق بنجاح";
-editingId=null;
+currentApp=data;
+
+$('saveStatus').textContent='✅ تم حفظ التطبيق بنجاح';
+
+await loadApps();
+
 setTimeout(()=>{
-clearForm();
-showPage("apps");
-},700);
+document.querySelector('[data-page="apps"]').click();
+},500);
 
 }catch(e){
-status.textContent="❌ "+e.message;
+
+$('saveStatus').textContent='❌ '+e.message;
+
+}finally{
+$('save').disabled=false;
 }
 }
 
-function clearForm(){
-editingId=null;
-document.getElementById("name").value="";
-document.getElementById("packageName").value="";
-document.getElementById("html").value="";
-document.getElementById("url").value="";
-document.getElementById("icon").value="";
-document.getElementById("iconStatus").textContent="";
-selectedIcon="";
-document.getElementById("type").value="HTML";
-changeType();
-}
+$('save').onclick=saveApp;
 
 async function loadApps(){
-const box=document.getElementById("appsList");
-box.innerHTML='<div class="empty">⏳ جاري تحميل التطبيقات...</div>';
+
+$('appsList').innerHTML='<div class="loading">⏳ جاري تحميل التطبيقات...</div>';
 
 try{
-const res=await fetch(API+"/apps");
-const apps=await res.json();
 
-if(!Array.isArray(apps)||apps.length===0){
-box.innerHTML='<div class="empty">📭 لا توجد تطبيقات محفوظة</div>';
-return;
-}
+const response=await fetch(API+'/apps');
+const data=await response.json();
 
-box.innerHTML=apps.map(app=>`
-<div class="app">
-<div class="app-top">
-<img class="icon" src="${app.icon||'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2255%22 height=%2255%22><rect width=%22100%%22 height=%22100%%22 fill=%22%23172333%22/></svg>'}">
-<div>
-<div class="app-name">${esc(app.name||"بدون اسم")}</div>
-<div class="pkg">${esc(app.packageName||"")}</div>
-</div>
-</div>
-<div class="actions">
-<button onclick="buildApp('${app.id}')">🚀 بناء APK</button>
-<button onclick="editApp('${app.id}')">✏️ تعديل</button>
-<button onclick="openPreview('${app.id}')">👁️ معاينة</button>
-<button class="danger" onclick="deleteApp('${app.id}')">🗑️ حذف</button>
-</div>
-<div id="build-${app.id}" class="status"></div>
-</div>
-`).join("");
+apps=Array.isArray(data)?data:(data.apps||[]);
+
+renderApps();
 
 }catch(e){
-box.innerHTML='<div class="empty">❌ تعذر الاتصال بالسيرفر</div>';
+
+$('appsList').innerHTML=
+'<div class="empty">❌ تعذر الاتصال بالسيرفر<br>'+e.message+'</div>';
+
 }
 }
 
-async function buildApp(id){
-const status=document.getElementById("build-"+id);
-status.textContent="⏳ تم إرسال البناء للسيرفر... تقدر تقفل الصفحة";
-
-try{
-const res=await fetch(`${API}/build/${id}`,{method:"POST"});
-const job=await res.json();
-
-if(!res.ok)throw new Error(job.error||"فشل إرسال البناء");
-
-if(!job.jobId)throw new Error("السيرفر لم يرجع رقم عملية البناء");
-
-status.textContent="🔨 البناء يعمل على السيرفر...";
-
-let tries=0;
-
-const timer=setInterval(async()=>{
-tries++;
-
-try{
-const r=await fetch(`${API}/build-status/${job.jobId}`);
-const j=await r.json();
-
-if(j.status==="done"){
-clearInterval(timer);
-
-let url=j.downloadUrl||"";
-if(url&&!url.startsWith("http"))url=API+url;
-
-status.innerHTML=`✅ تم بناء APK بنجاح
-<a class="download" href="${url}" target="_blank">⬇️ تحميل APK</a>`;
-}
-
-if(j.status==="failed"){
-clearInterval(timer);
-status.textContent="❌ فشل البناء:\n"+(j.error||"خطأ غير معروف");
-}
-
-if(tries>360){
-clearInterval(timer);
-status.textContent="⏳ البناء ما زال يعمل على السيرفر. افتح تطبيقاتي لاحقًا.";
-}
-
-}catch(e){}
-},3000);
-
-}catch(e){
-status.textContent="❌ "+e.message;
-}
-}
-async function editApp(id){
-try{
-const res=await fetch(`${API}/apps/${id}`);
-const app=await res.json();
-
-editingId=id;
-document.getElementById("name").value=app.name||"";
-document.getElementById("packageName").value=app.packageName||"";
-document.getElementById("type").value=app.type||"HTML";
-document.getElementById("html").value=app.html||"";
-document.getElementById("url").value=app.url||"";
-selectedIcon=app.icon||"";
-document.getElementById("iconStatus").textContent=selectedIcon?"✅ الأيقونة الحالية محفوظة":"";
-changeType();
-showPage("create");
-}catch(e){alert("❌ تعذر تحميل التطبيق");}
-}
-
-async function deleteApp(id){
-if(!confirm("هل تريد حذف التطبيق؟"))return;
-try{
-const res=await fetch(`${API}/apps/${id}`,{method:"DELETE"});
-if(!res.ok)throw new Error();
-loadApps();
-}catch(e){alert("❌ فشل الحذف");}
-}
-
-async function loadPreviewApps(){
-const box=document.getElementById("previewList");
-box.innerHTML='<div class="empty">⏳ جاري التحميل...</div>';
-
-try{
-const res=await fetch(API+"/apps");
-const apps=await res.json();
+function renderApps(){
 
 if(!apps.length){
-box.innerHTML='<div class="empty">📭 لا توجد تطبيقات محفوظة</div>';
+$('appsList').innerHTML='<div class="empty">📱 لا توجد تطبيقات محفوظة حتى الآن.</div>';
 return;
 }
 
-box.innerHTML=apps.map(app=>`
-<div class="app" onclick="openPreview('${app.id}')" style="cursor:pointer">
-<div class="app-top">
-<img class="icon" src="${app.icon||''}">
+$('appsList').innerHTML=apps.map((app,i)=>{
+
+const icon=app.icon||'';
+
+return `
+<div class="project">
+
+<div class="projectInfo">
+
+${icon
+?`<img src="${escapeAttr(icon)}">`
+:'<div style="font-size:35px">📱</div>'}
+
 <div>
-<div class="app-name">${esc(app.name||"بدون اسم")}</div>
-<div class="pkg">${esc(app.type||"HTML")}</div>
+<b>${escapeHtml(app.name)}</b>
+<div class="small">${escapeHtml(app.packageName||'')} · ${escapeHtml(app.type||'HTML')}</div>
 </div>
+
 </div>
+
+<div class="row">
+
+<button class="btn secondary" onclick="openApp(${i})">
+👁️
+</button>
+
+<button class="btn primary" onclick="buildApp(${i})">
+🚀 APK
+</button>
+
 </div>
-`).join("");
-}catch(e){
-box.innerHTML='<div class="empty">❌ تعذر الاتصال بالسيرفر</div>';
-}
+
+</div>
+`;
+
+}).join('');
 }
 
-async function openPreview(id){
-try{
-const res=await fetch(`${API}/apps/${id}`);
-const app=await res.json();
-const frame=document.getElementById("previewFrame");
+window.openApp=i=>{
+const app=apps[i];
+if(!app)return;
+showPreview(app);
+};
 
-document.getElementById("previewList").parentElement.style.display="none";
-document.getElementById("phoneBox").style.display="block";
-
-if((app.type||"HTML")==="WEBVIEW"){
-frame.removeAttribute("srcdoc");
-frame.src=app.url||"about:blank";
-}else{
-frame.src="about:blank";
-frame.srcdoc=app.html||"<h2>لا يوجد HTML</h2>";
-}
-}catch(e){
-alert("❌ تعذر فتح المعاينة");
-}
-}
-
-function closePreview(){
-document.getElementById("phoneBox").style.display="none";
-document.getElementById("previewList").parentElement.style.display="block";
-document.getElementById("previewFrame").src="about:blank";
-}
-
-function reloadPreview(){
-const f=document.getElementById("previewFrame");
-try{f.contentWindow.location.reload()}catch(e){f.src=f.src}
-}
-
-function esc(v){
-return String(v??"").replace(/[&<>"']/g,m=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+function escapeHtml(s){
+return String(s??'').replace(/[&<>"']/g,m=>({
+'&':'&amp;',
+'<':'&lt;',
+'>':'&gt;',
+'"':'&quot;',
+"'":'&#39;'
 }[m]));
 }
 
+function escapeAttr(s){
+return String(s??'').replace(/"/g,'&quot;');
+}
+
+async function buildApp(i){
+
+const app=apps[i];
+
+if(!app)return;
+
+document.querySelector('[data-page="apps"]').click();
+
+const statusId='buildStatus'+i;
+
+let box=document.getElementById(statusId);
+
+if(!box){
+
+const cards=document.querySelectorAll('.project');
+const card=cards[i];
+
+box=document.createElement('div');
+box.id=statusId;
+box.className='status';
+box.textContent='⏳ جاري بدء البناء...';
+
+card.after(box);
+}
+
+try{
+
+const response=await fetch(API+'/build/'+app.id,{
+method:'POST',
+headers:{'Content-Type':'application/json'}
+});
+
+const job=await response.json();
+
+if(!response.ok){
+throw new Error(job.message||job.error||'تعذر بدء البناء');
+}
+
+if(!job.jobId){
+throw new Error('لم يتم استلام Job ID من السيرفر');
+}
+
+box.textContent='⏳ جاري بناء APK...';
+
+pollBuild(job.jobId,box);
+
+}catch(e){
+
+box.textContent='❌ '+e.message;
+
+}
+}
+
+async function pollBuild(jobId,box){
+
+try{
+
+const response=await fetch(API+'/build-status/'+jobId);
+const data=await response.json();
+
+const status=String(data.status||'').toLowerCase();
+
+if(status==='building'||status==='pending'||status==='queued'){
+
+box.textContent='⏳ البناء شغال... انتظر قليلًا';
+setTimeout(()=>pollBuild(jobId,box),2500);
+return;
+
+}
+
+if(status==='success'||status==='done'||data.downloadUrl){
+
+const link=data.downloadUrl||data.download||'';
+
+if(!link){
+box.textContent='✅ تم البناء، لكن رابط التحميل غير موجود.';
+return;
+}
+
+const finalUrl=link.startsWith('http')?link:API+link;
+
+box.innerHTML=
+'✅ تم إنشاء APK بنجاح!<br><br>'+
+'<a class="btn primary" style="display:inline-block;text-decoration:none" target="_blank" href="'+escapeAttr(finalUrl)+'">⬇️ تحميل APK</a>';
+
+return;
+
+}
+
+if(status==='failed'||status==='error'){
+
+box.textContent='❌ فشل البناء:\n'+
+(data.message||data.error||data.logs||'خطأ غير معروف');
+
+return;
+}
+
+box.textContent='ℹ️ حالة البناء: '+(data.status||'غير معروفة');
+setTimeout(()=>pollBuild(jobId,box),3000);
+
+}catch(e){
+
+box.textContent='⚠️ جاري إعادة المحاولة...';
+setTimeout(()=>pollBuild(jobId,box),4000);
+
+}
+}
+
+async function testServer(){
+
+try{
+
+const r=await fetch(API+'/');
+
+if(r.ok){
+console.log('🟢 Railway server online');
+}else{
+console.log('🔴 Railway server error');
+}
+
+}catch(e){
+console.log('🔴 Server unavailable');
+}
+
+}
+
+testServer();
 loadApps();
 </script>
+
 </body>
 </html>
