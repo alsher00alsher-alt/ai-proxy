@@ -1,37 +1,12 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "public/**/*",
-      "use": "@vercel/static"
-    }
+    { "src": "public/**/*", "use": "@vercel/static" }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/public/$1"
-    }
+    { "src": "/(.*)", "dest": "/public/$1" }
   ],
   "rewrites": [
-    {
-      "source": "/kuku-studio",
-      "destination": "/public/kuku-studio.html"
-    },
-    {
-      "source": "/wifi-checker",
-      "destination": "/public/wifi-checker.html"
-    },
-    {
-      "source": "/phone-protection",
-      "destination": "/public/phone-protection.html"
-    },
-    {
-      "source": "/number-hack",
-      "destination": "/public/number-hack.html"
-    },
-    {
-      "source": "/free-sms",
-      "destination": "/public/free-sms.html"
-    }
+    { "source": "/app-builder", "destination": "/public/app-builder.html" }
   ]
 }

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صانع التطبيقات</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            padding: 25px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            font-size: 26px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .input-group { margin-bottom: 15px; }
+        .input-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #ddd;
+        }
+        .input-group input, .input-group textarea, .input-group select {
+            width: 100%;
+            padding: 12px;
+            font-family: 'Cairo', sans-serif;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        .input-group textarea { min-height: 150px; font-family: monospace; }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 900;
+            font-size: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0,255,0,0.1);
+            border-radius: 10px;
+            display: none;
+        }
+        .result a { color: #00ff00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 صانع التطبيقات</h1>
+            <p>ابني تطبيقك واحصل على APK</p>
+        </div>
+        
+        <div class="input-group">
+            <label>اسم التطبيق:</label>
+            <input type="text" id="appName" placeholder="اكتب اسم التطبيق">
+        </div>
+        
+        <div class="input-group">
+            <label>كود HTML:</label>
+            <textarea id="htmlCode" placeholder="الصق كود HTML هنا..."></textarea>
+        </div>
+        
+        <button class="btn" onclick="buildApp()">🚀 بناء APK</button>
+        
+        <div class="result" id="result"></div>
+    </div>
+    
+    <script>
+        async function buildApp() {
+            const name = document.getElementById('appName').value;
+            const html = document.getElementById('htmlCode').value;
+            
+            if (!name || !html) {
+                alert('اكتب اسم التطبيق وكود HTML');
+                return;
+            }
+            
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.innerHTML = '<p>⏳ جاري البناء...</p>';
+            
+            try {
+                const response = await fetch('https://unique-courtesy-production.up.railway.app/build', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ app_name: name, html_content: html })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    result.innerHTML = `<p>✅ تم البناء!</p><a href="https://unique-courtesy-production.up.railway.app${data.download}" download>⬇️ تحميل APK</a>`;
+                } else {
+                    result.innerHTML = `<p style="color:#ff0000;">❌ ${data.message}</p>`;
+                }
+            } catch(e) {
+                result.innerHTML = `<p style="color:#ff0000;">❌ خطأ: ${e.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
