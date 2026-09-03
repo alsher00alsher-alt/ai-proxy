@@ -313,55 +313,132 @@ $('appsList').innerHTML=
 }
 
 function renderApps(){
+  const box=$('appsList');
+  box.innerHTML='';
 
-if(!apps.length){
-$('appsList').innerHTML='<div class="empty">📱 لا توجد تطبيقات محفوظة حتى الآن.</div>';
-return;
+  if(!apps.length){
+    box.innerHTML='<div class="empty">📱 لا توجد تطبيقات محفوظة حتى الآن.</div>';
+    return;
+  }
+
+  apps.forEach((app,i)=>{
+    const card=document.createElement('div');
+    card.className='project';
+
+    const info=document.createElement('div');
+    info.className='projectInfo';
+
+    if(app.icon){
+      const img=document.createElement('img');
+      img.src=app.icon;
+      info.appendChild(img);
+    }else{
+      const emoji=document.createElement('div');
+      emoji.style.fontSize='35px';
+      emoji.textContent='📱';
+      info.appendChild(emoji);
+    }
+
+    const text=document.createElement('div');
+
+    const title=document.createElement('b');
+    title.textContent=app.name||'بدون اسم';
+
+    const sub=document.createElement('div');
+    sub.className='small';
+    sub.textContent=(app.packageName||'')+' · '+(app.type||'HTML');
+
+    text.append(title,sub);
+    info.appendChild(text);
+
+    const buttons=document.createElement('div');
+    buttons.className='row';
+
+    const view=document.createElement('button');
+    view.className='btn secondary';
+    view.type='button';
+    view.textContent='👁️';
+    view.onclick=()=>showPreview(app);
+
+    const build=document.createElement('button');
+    build.className='btn primary';
+    build.type='button';
+    build.textContent='🚀 APK';
+
+    const status=document.createElement('div');
+    status.className='status';
+    status.style.display='none';
+
+    build.onclick=async()=>{
+      build.disabled=true;
+      status.style.display='block';
+      status.textContent='⏳ جاري بدء إنشاء APK...';
+
+      try{
+        const r=await fetch(API+'/build/'+encodeURIComponent(app.id),{
+          method:'POST',
+          headers:{'Content-Type':'application/json'}
+        });
+
+        const j=await r.json();
+
+        if(!r.ok || !j.jobId){
+          throw new Error(j.message||j.error||'السيرفر لم يبدأ البناء');
+        }
+
+        status.textContent='⏳ جاري بناء APK...';
+
+        const check=async()=>{
+          try{
+            const rr=await fetch(API+'/build-status/'+encodeURIComponent(j.jobId));
+            const x=await rr.json();
+
+            if(x.downloadUrl||x.download||x.status==='done'||x.status==='success'){
+              const link=x.downloadUrl||x.download;
+              if(link){
+                const url=link.startsWith('http')?link:API+link;
+                status.innerHTML='';
+                const ok=document.createElement('a');
+                ok.href=url;
+                ok.target='_blank';
+                ok.className='btn primary';
+                ok.style.textDecoration='none';
+                ok.textContent='⬇️ تحميل APK';
+                status.appendChild(ok);
+              }else{
+                status.textContent='✅ تم إنشاء APK';
+              }
+              build.disabled=false;
+              return;
+            }
+
+            if(x.status==='failed'||x.status==='error'){
+              status.textContent='❌ فشل البناء: '+(x.message||x.error||'خطأ غير معروف');
+              build.disabled=false;
+              return;
+            }
+
+            setTimeout(check,2500);
+
+          }catch(e){
+            status.textContent='⏳ جاري إعادة المحاولة...';
+            setTimeout(check,3000);
+          }
+        };
+
+        check();
+
+      }catch(e){
+        status.textContent='❌ '+e.message;
+        build.disabled=false;
+      }
+    };
+
+    buttons.append(view,build);
+    card.append(info,buttons);
+    box.append(card,status);
+  });
 }
-
-$('appsList').innerHTML=apps.map((app,i)=>{
-
-const icon=app.icon||'';
-
-return `
-<div class="project">
-
-<div class="projectInfo">
-
-${icon
-?`<img src="${escapeAttr(icon)}">`
-:'<div style="font-size:35px">📱</div>'}
-
-<div>
-<b>${escapeHtml(app.name)}</b>
-<div class="small">${escapeHtml(app.packageName||'')} · ${escapeHtml(app.type||'HTML')}</div>
-</div>
-
-</div>
-
-<div class="row">
-
-<button class="btn secondary" onclick="openApp(${i})">
-👁️
-</button>
-
-<button class="btn primary" onclick="buildApp(${i})">
-🚀 APK
-</button>
-
-</div>
-
-</div>
-`;
-
-}).join('');
-}
-
-window.openApp=i=>{
-const app=apps[i];
-if(!app)return;
-showPreview(app);
-};
 
 function escapeHtml(s){
 return String(s??'').replace(/[&<>"']/g,m=>({
