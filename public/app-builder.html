@@ -3,182 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AHMED APP - صانع التطبيقات الاحترافي</title>
+    <title>AHMED APP - لوحة التحكم</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Cairo', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #fff;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container { max-width: 650px; margin: 0 auto; }
-        .header {
-            text-align: center;
-            padding: 30px;
-            background: rgba(255,255,255,0.07);
-            border-radius: 25px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
-        }
-        .header h1 {
-            font-size: 32px;
-            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .header p { color: #ccc; margin-top: 8px; font-size: 14px; }
-        .card {
-            background: rgba(255,255,255,0.05);
-            padding: 20px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .card h3 { color: #ffd93d; margin-bottom: 15px; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label {
-            display: block;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: #00ffcc;
-            font-size: 13px;
-        }
-        .input-group input, .input-group textarea {
-            width: 100%;
-            padding: 12px;
-            font-family: 'Cairo', sans-serif;
-            background: rgba(0,0,0,0.3);
-            color: #fff;
-            border: 2px solid rgba(255,255,255,0.15);
-            border-radius: 12px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        .input-group input:focus, .input-group textarea:focus {
-            border-color: #ff6b6b;
-            box-shadow: 0 0 15px rgba(255,107,107,0.3);
-            outline: none;
-        }
-        .input-group textarea { min-height: 140px; font-family: monospace; }
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .service-badge {
-            background: rgba(255,255,255,0.08);
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 13px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .btn {
-            width: 100%;
-            padding: 16px;
-            font-family: 'Cairo', sans-serif;
-            font-weight: 900;
-            font-size: 18px;
-            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
-            color: #000;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            letter-spacing: 1px;
-            margin-top: 10px;
-        }
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(255,107,107,0.4);
-        }
-        .result {
-            margin-top: 20px;
-            padding: 20px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 15px;
-            display: none;
-            text-align: center;
-        }
-        .result a {
-            display: inline-block;
-            padding: 12px 25px;
-            background: #6bcb77;
-            color: #000;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 900;
-            margin-top: 10px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
+        body { background: #eef2f5; color: #333; direction: rtl; }
+        .top-bar { background: #2c3e50; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1abc9c; }
+        .top-bar h1 { font-size: 18px; }
+        .main-container { display: flex; min-height: calc(100vh - 50px); }
+        .sidebar { width: 260px; background: #fff; border-left: 1px solid #ddd; padding: 15px; overflow-y: auto; }
+        .sidebar h3 { font-size: 14px; color: #7f8c8d; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .menu-item { display: block; padding: 8px 10px; color: #34495e; text-decoration: none; font-size: 13px; margin-bottom: 5px; border-radius: 4px; transition: 0.2s; }
+        .menu-item:hover, .menu-item.active { background: #1abc9c; color: #fff; }
+        .content { flex: 1; padding: 20px; background: #f8f9fa; }
+        .panel { background: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 15px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .panel h2 { font-size: 15px; color: #2c3e50; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+        label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #475569; }
+        input[type="text"], textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; margin-bottom: 12px; background: #fff; }
+        textarea { height: 120px; font-family: monospace; }
+        input[type="file"] { margin-bottom: 12px; font-size: 13px; }
+        .btn-save { background: #27ae60; color: #fff; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .btn-save:hover { background: #219653; }
+        .grid-sections { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+        .section-box { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px; text-align: center; border-radius: 6px; font-size: 12px; font-weight: bold; color: #334155; }
+        #status { margin-top: 15px; font-weight: bold; font-size: 14px; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚀 AHMED APP</h1>
-            <p>منصة تطوير وصناعة تطبيقات الأندرويد الاحترافية</p>
-        </div>
-        
-        <div class="card">
-            <h3>⚙️ الإعدادات الأساسية</h3>
-            <div class="input-group">
-                <label>📛 اسم التطبيق:</label>
-                <input type="text" id="appName" value="AHMED APP">
-            </div>
-            <div class="input-group">
-                <label>📦 Package Name:</label>
-                <input type="text" id="packageName" value="com.ahmed.app">
-            </div>
-            <div class="input-group">
-                <label>🖼️ رابط أيقونة التطبيق (اختياري):</label>
-                <input type="text" id="appIcon" placeholder="https://example.com/icon.png">
-            </div>
-        </div>
 
-        <div class="card">
-            <h3>💻 محتوى الصفحة (HTML / WebView)</h3>
-            <div class="input-group">
-                <textarea id="htmlCode"><h1 style="text-align:center; color:#ff6b6b;">مرحباً بك في AHMED APP</h1><p style="text-align:center; color:#fff;">التطبيق يعمل بكفاءة عالية!</p></textarea>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>🧩 خدمات وأقسام المنصة المتاحة</h3>
-            <div class="services-grid">
-                <div class="service-badge">🌐 صفحة ويب (Web)</div>
-                <div class="service-badge">💬 دردشة فورية (Chat)</div>
-                <div class="service-badge">🔔 الإشعارات (Push)</div>
-                <div class="service-badge">🛒 متجر ومنتجات</div>
-                <div class="service-badge">📻 مشغل صوتيات</div>
-                <div class="service-badge">🎬 فيديوهات</div>
-            </div>
-        </div>
-        
-        <button class="btn" onclick="buildApp()">🚀 بناء APK والتحديث</button>
-        
-        <div class="result" id="result"></div>
+    <div class="top-bar">
+        <h1>AHMED APP - لوحة صانع التطبيقات</h1>
+        <span>الإصدار الاحترافي</span>
     </div>
-    
+
+    <div class="main-container">
+        <div class="sidebar">
+            <h3>الأساسية</h3>
+            <a href="#" class="menu-item active">📌 اسم وأيقونة التطبيق</a>
+            <a href="#" class="menu-item">📁 الأقسام</a>
+            <a href="#" class="menu-item">🎨 التصميم</a>
+            <a href="#" class="menu-item">🔔 الإشعارات</a>
+            <a href="#" class="menu-item">📥 تحميل الصورة</a>
+            <h3>النشر</h3>
+            <a href="#" class="menu-item">🚀 تحميل الـ APK</a>
+        </div>
+
+        <div class="content">
+            <div class="panel">
+                <h2>اسم وأيقونة التطبيق</h2>
+                <label>اسم التطبيق:</label>
+                <input type="text" id="appName" value="AHMED APP">
+
+                <label>حزمة التطبيق (Package Name):</label>
+                <input type="text" id="packageName" value="com.ahmed.app">
+
+                <label>اختر أيقونة من الهاتف:</label>
+                <input type="file" id="iconFile" accept="image/*">
+            </div>
+
+            <div class="panel">
+                <h2>محتوى التطبيق (HTML)</h2>
+                <label>كود HTML:</label>
+                <textarea id="htmlCode">&lt;h1 style="text-align:center; color:#2c3e50;"&gt;مرحباً بك في AHMED APP&lt;/h1&gt;</textarea>
+            </div>
+
+            <div class="panel">
+                <h2>الأقسام والخدمات المتاحة</h2>
+                <div class="grid-sections">
+                    <div class="section-box">🌐 ويب (Web)</div>
+                    <div class="section-box">💬 دردشة (Chat)</div>
+                    <div class="section-box">🛒 متجر</div>
+                    <div class="section-box">🎬 فيديوهات</div>
+                </div>
+            </div>
+
+            <button class="btn-save" onclick="buildApp()">حفظ وبناء APK 💾</button>
+            <div id="status"></div>
+        </div>
+    </div>
+
     <script>
         async function buildApp() {
             const name = document.getElementById('appName').value;
             const packageName = document.getElementById('packageName').value;
             const html = document.getElementById('htmlCode').value;
-            const icon = document.getElementById('appIcon').value;
+            const iconInput = document.getElementById('iconFile');
             
-            if (!name || !packageName || !html) {
-                alert('الرجاء إدخال كافة البيانات الأساسية');
-                return;
+            const status = document.getElementById('status');
+            status.innerHTML = "⏳ جاري المعالجة والبناء...";
+            status.style.color = "#d97706";
+
+            let iconBase64 = "";
+            if (iconInput.files && iconInput.files[0]) {
+                const reader = new FileReader();
+                reader.readAsDataURL(iconInput.files[0]);
+                reader.onload = async function () {
+                    iconBase64 = reader.result;
+                    sendData(name, packageName, html, iconBase64);
+                };
+            } else {
+                sendData(name, packageName, html, "");
             }
-            
-            const result = document.getElementById('result');
-            result.style.display = 'block';
-            result.innerHTML = '<p style="color:#ffd93d;">⏳ جاري بناء وتجهيز تطبيق AHMED APP...</p>';
-            
+        }
+
+        async function sendData(name, packageName, html, icon) {
+            const status = document.getElementById('status');
             try {
                 const response = await fetch('https://unique-courtesy-production.up.railway.app/build', {
                     method: 'POST',
@@ -187,14 +115,15 @@
                 });
                 
                 const data = await response.json();
-                
                 if (data.status === 'success') {
-                    result.innerHTML = `<p style="color:#6bcb77;">✅ تم بناء التطبيق بنجاح!</p><a href="https://unique-courtesy-production.up.railway.app${data.download}" download>⬇️ تحميل APK الآن</a>`;
+                    status.innerHTML = `✅ تم البناء بنجاح! <br><a href="https://unique-courtesy-production.up.railway.app${data.download}" style="color: #27ae60;" download>📥 اضغط هنا لتحميل ملف APK</a>`;
                 } else {
-                    result.innerHTML = `<p style="color:#ff6b6b;">❌ ${data.message}</p>`;
+                    status.innerHTML = `❌ خطأ: ${data.message}`;
+                    status.style.color = "#dc2626";
                 }
             } catch(e) {
-                result.innerHTML = `<p style="color:#ff6b6b;">❌ خطأ في الاتصال: ${e.message}</p>`;
+                status.innerHTML = `❌ خطأ في الاتصال: ${e.message}`;
+                status.style.color = "#dc2626";
             }
         }
     </script>
