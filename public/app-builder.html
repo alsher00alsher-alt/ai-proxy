@@ -34,7 +34,7 @@
             margin-bottom: 8px;
             color: #ddd;
         }
-        .input-group input, .input-group textarea, .input-group select {
+        .input-group input, .input-group textarea {
             width: 100%;
             padding: 12px;
             font-family: 'Cairo', sans-serif;
@@ -76,7 +76,12 @@
         
         <div class="input-group">
             <label>اسم التطبيق:</label>
-            <input type="text" id="appName" placeholder="اكتب اسم التطبيق">
+            <input type="text" id="appName" placeholder="مثال: تطبيقي">
+        </div>
+        
+        <div class="input-group">
+            <label>Package Name:</label>
+            <input type="text" id="packageName" placeholder="com.example.app">
         </div>
         
         <div class="input-group">
@@ -92,10 +97,11 @@
     <script>
         async function buildApp() {
             const name = document.getElementById('appName').value;
+            const packageName = document.getElementById('packageName').value;
             const html = document.getElementById('htmlCode').value;
             
-            if (!name || !html) {
-                alert('اكتب اسم التطبيق وكود HTML');
+            if (!name || !packageName || !html) {
+                alert('اكتب كل البيانات');
                 return;
             }
             
@@ -107,7 +113,7 @@
                 const response = await fetch('https://unique-courtesy-production.up.railway.app/build', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ app_name: name, html_content: html })
+                    body: JSON.stringify({ app_name: name, package_name: packageName, html_content: html })
                 });
                 
                 const data = await response.json();
