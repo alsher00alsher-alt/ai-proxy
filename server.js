@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 app.get('/', (req, res) => {
-    res.json({ status: 'success', message: 'APK Builder Server is running' });
+    res.sendFile(__dirname + '/index.html');
 });
 
 app.post('/build', (req, res) => {
