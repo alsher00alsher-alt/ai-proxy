@@ -252,22 +252,54 @@ box.innerHTML='<div class="empty">❌ تعذر الاتصال بالسيرفر</
 
 async function buildApp(id){
 const status=document.getElementById("build-"+id);
-status.textContent="⏳ جاري بناء APK... لا تغلق الصفحة";
+status.textContent="⏳ تم إرسال البناء للسيرفر... تقدر تقفل الصفحة";
+
 try{
 const res=await fetch(`${API}/build/${id}`,{method:"POST"});
-const result=await res.json();
-if(!res.ok)throw new Error(result.error||"فشل البناء");
+const job=await res.json();
 
-let url=result.downloadUrl||result.url;
+if(!res.ok)throw new Error(job.error||"فشل إرسال البناء");
+
+if(!job.jobId)throw new Error("السيرفر لم يرجع رقم عملية البناء");
+
+status.textContent="🔨 البناء يعمل على السيرفر...";
+
+let tries=0;
+
+const timer=setInterval(async()=>{
+tries++;
+
+try{
+const r=await fetch(`${API}/build-status/${job.jobId}`);
+const j=await r.json();
+
+if(j.status==="done"){
+clearInterval(timer);
+
+let url=j.downloadUrl||"";
 if(url&&!url.startsWith("http"))url=API+url;
 
 status.innerHTML=`✅ تم بناء APK بنجاح
 <a class="download" href="${url}" target="_blank">⬇️ تحميل APK</a>`;
-}catch(e){
-status.textContent="❌ فشل البناء: "+e.message;
-}
 }
 
+if(j.status==="failed"){
+clearInterval(timer);
+status.textContent="❌ فشل البناء:\n"+(j.error||"خطأ غير معروف");
+}
+
+if(tries>360){
+clearInterval(timer);
+status.textContent="⏳ البناء ما زال يعمل على السيرفر. افتح تطبيقاتي لاحقًا.";
+}
+
+}catch(e){}
+},3000);
+
+}catch(e){
+status.textContent="❌ "+e.message;
+}
+}
 async function editApp(id){
 try{
 const res=await fetch(`${API}/apps/${id}`);
